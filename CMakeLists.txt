@@ -26,12 +26,10 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 #    set(SANITIZER_OPTIONS -fsanitize:address)
 endif()
 
-set(INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include")
-include_directories(${INCLUDE_DIRS})
-
 add_library(ulight STATIC
-    src/main/cpp/empty.cpp
+src/main/cpp/empty.cpp
 )
+target_include_directories(ulight PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
 
 target_compile_options(ulight PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
 target_link_options(ulight PUBLIC ${SANITIZER_OPTIONS})
