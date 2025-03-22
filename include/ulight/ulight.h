@@ -104,22 +104,22 @@ typedef enum ulight_highlight_type {
     ULIGHT_HL_COMMENT = 0x10,
     /// In all languages, the delimiting characters of a comment.
     /// For example, `//` for line comments in C++.
-    ULIGHT_HL_COMMENT_DELIMITER = 0x01,
+    ULIGHT_HL_COMMENT_DELIMITER = 0x11,
     /// In all languages, a builtin constant, value, literal, etc. in general.
-    ULIGHT_HL_VALUE = 0x10,
+    ULIGHT_HL_VALUE = 0x12,
     /// In all languages, a numeric literal, like `123`.
-    ULIGHT_HL_NUMBER = 0x11,
+    ULIGHT_HL_NUMBER = 0x16,
     /// In all languages, a string or character literal, like `"etc"`.
-    ULIGHT_HL_STRING = 0x14,
+    ULIGHT_HL_STRING = 0x1a,
     /// In all languages, "escape sequences",
     /// possibly within a string literal, like `"\n"`.
-    ULIGHT_HL_ESCAPE = 0x16,
+    ULIGHT_HL_ESCAPE = 0x1b,
     /// In all languages, a `null`, `nullptr`, `undefined`, etc. keyword.
-    ULIGHT_HL_NULL = 0x18,
+    ULIGHT_HL_NULL = 0x1c,
     /// In all languages, a `true`, `false`, `yes`, `no`, etc. keyword.
-    ULIGHT_HL_BOOL = 0x19,
+    ULIGHT_HL_BOOL = 0x1d,
     /// In all languages, a self-referential keyword, like `this` or `self`.
-    ULIGHT_HL_THIS = 0x1a,
+    ULIGHT_HL_THIS = 0x1e,
 
     // 0x30..0x3f Preprocessing, macros, etc.
     // -------------------------------------------------------------------------
@@ -222,6 +222,15 @@ typedef enum ulight_highlight_type {
     ULIGHT_HL_SYM_OP = 0xc7,
 
 } ulight_highlight_type;
+
+typedef struct ulight_string_view {
+    const char* text;
+    size_t length;
+} ulight_string_view;
+
+/// Returns a textual representation made of ASCII characters and underscores of `type`.
+/// This is used as a value in `ulight_tokens_to_html`.
+ulight_string_view ulight_highlight_type_id(ulight_highlight_type type);
 
 typedef struct ulight_token {
     /// The index of the first code point within the source code that has the highlighting.

@@ -3,6 +3,7 @@
 #include <string_view>
 
 #include "ulight/ulight.h"
+#include "ulight/ulight.hpp"
 
 extern "C" {
 
@@ -65,6 +66,12 @@ ulight_lang ulight_get_lang(const char* name, size_t name_length) noexcept
             && ulight_lang_entry_to_sv(*result) == search_value
         ? result->lang
         : ULIGHT_LANG_NONE;
+}
+
+ulight_string_view ulight_highlight_type_id(ulight_highlight_type type)
+{
+    const std::string_view result = ulight::ulight_highlight_type_id(ulight::Highlight_Type(type));
+    return { result.data(), result.size() };
 }
 
 void* ulight_alloc(size_t size, size_t alignment) noexcept

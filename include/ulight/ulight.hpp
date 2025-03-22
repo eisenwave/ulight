@@ -8,8 +8,10 @@
 
 namespace ulight {
 
+/// The default underlying type for scoped enumerations.
 using Underlying = unsigned char;
 
+/// See `ulight_lang`.
 enum struct Lang : Underlying {
     cpp = ULIGHT_LANG_CPP,
     mmml = ULIGHT_LANG_MMML,
@@ -22,6 +24,7 @@ inline Lang get_lang(std::string_view name) noexcept
     return Lang(ulight_get_lang(name.data(), name.length()));
 }
 
+/// See `ulight_status`.
 enum struct Status : Underlying {
     ok = ULIGHT_STATUS_OK,
     bad_state = ULIGHT_STATUS_BAD_STATE,
@@ -29,6 +32,7 @@ enum struct Status : Underlying {
     bad_code = ULIGHT_STATUS_BAD_CODE,
 };
 
+/// See `ulight_flag`.
 enum struct Flag : Underlying {
     no_flags = ULIGHT_NO_FLAGS,
     coalesce = ULIGHT_COALESCE,
@@ -41,6 +45,7 @@ constexpr Flag operator|(Flag x, Flag y) noexcept
     return Flag(Underlying(x) | Underlying(y));
 }
 
+/// See `ulight_highlight_type`.
 enum struct Highlight_Type : Underlying {
     error = ULIGHT_HL_ERROR,
     comment = ULIGHT_HL_COMMENT,
@@ -82,14 +87,64 @@ enum struct Highlight_Type : Underlying {
     sym_op = ULIGHT_HL_SYM_OP
 };
 
+[[nodiscard]]
+constexpr std::string_view ulight_highlight_type_id(Highlight_Type type) noexcept
+{
+    switch (type) {
+        using enum Highlight_Type;
+    case error: return "err";
+    case comment: return "cmt";
+    case comment_delimiter: return "cmt_del";
+    case value: return "val";
+    case number: return "num";
+    case string: return "str";
+    case escape: return "esc";
+    case null: return "null";
+    case bool_: return "bool";
+    case this_: return "this";
+    case macro: return "macro";
+    case id: return "id";
+    case id_decl: return "id_dcl";
+    case id_use: return "id_use";
+    case id_var_decl: return "id_var_dcl";
+    case id_var_use: return "id_var_use";
+    case id_const_decl: return "id_const_dcl";
+    case id_const_use: return "id_const_use";
+    case id_type_decl: return "id_type_dcl";
+    case id_type_use: return "id_type_use";
+    case id_module_decl: return "id_mod_dcl";
+    case id_module_use: return "id_mod_use";
+    case keyword: return "kw";
+    case keyword_control: return "kw_ctrl";
+    case keyword_type: return "kw_type";
+    case diff_heading: return "diff_h";
+    case diff_common: return "diff_common";
+    case diff_hunk: return "diff_hunk";
+    case diff_deletion: return "diff_del";
+    case diff_insertion: return "diff_ins";
+    case markup_tag: return "markup_tag";
+    case markup_attr: return "markup_attr";
+    case sym: return "sym";
+    case sym_punc: return "sym_punc";
+    case sym_parens: return "sym_parens";
+    case sym_square: return "sym_square";
+    case sym_brace: return "sym_brace";
+    case sym_op: return "sym_op";
+    default: return "";
+    }
+}
+
+/// See `ulight_token`.
 using Token = ulight_token;
 
+/// See `ulight_alloc`.
 [[nodiscard]]
 inline void* alloc(std::size_t size, std::size_t alignment) noexcept
 {
     return ulight_alloc(size, alignment);
 }
 
+/// See `ulight_free`.
 inline void free(void* pointer, std::size_t size, std::size_t alignment) noexcept
 {
     ulight_free(pointer, size, alignment);
@@ -98,9 +153,11 @@ inline void free(void* pointer, std::size_t size, std::size_t alignment) noexcep
 using Alloc_Function = void*(std::size_t, std::size_t) noexcept;
 using Free_Function = void(void*, std::size_t, std::size_t) noexcept;
 
+/// See `ulight_state`.
 struct [[nodiscard]] State {
     ulight_state impl;
 
+    /// See `ulight_init`.
     State() noexcept
     {
         ulight_init(&impl);
@@ -123,6 +180,7 @@ struct [[nodiscard]] State {
         return *this;
     }
 
+    /// See `ulight_destroy`.
     ~State()
     {
         ulight_destroy(&impl);
@@ -214,18 +272,21 @@ struct [[nodiscard]] State {
         return { impl.html_output, impl.html_output_length };
     }
 
+    /// See `ulight_source_to_tokens`.
     [[nodiscard]]
     Status source_to_tokens() noexcept
     {
         return Status(ulight_source_to_tokens(&impl));
     }
 
+    /// See `ulight_tokens_to_html`.
     [[nodiscard]]
     Status tokens_to_html() noexcept
     {
         return Status(ulight_tokens_to_html(&impl));
     }
 
+    /// See `ulight_source_to_html`.
     [[nodiscard]]
     Status source_to_html() noexcept
     {
