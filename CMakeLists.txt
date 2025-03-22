@@ -27,7 +27,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 add_library(ulight STATIC
-src/main/cpp/empty.cpp
+    src/main/cpp/ulight.cpp
 )
 target_include_directories(ulight PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
 

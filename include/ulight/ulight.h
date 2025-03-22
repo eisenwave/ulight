@@ -292,53 +292,20 @@ typedef struct ulight_state {
 } ulight_state;
 
 /// "Default constructor" for ulight_state.
-static inline ulight_state* ulight_init(ulight_state* state) ULIGHT_NOEXCEPT
-{
-    state->alloc_function = ulight_alloc;
-    state->free_function = ulight_free;
-    state->source = nullptr;
-    state->source_length = 0;
-    state->lang = ULIGHT_LANG_NONE;
-    state->flags = ULIGHT_NO_FLAGS;
-    state->tokens = nullptr;
-    state->tokens_length = 0;
-    state->html_tag_name = "span";
-    state->html_tag_name_length = 4;
-    state->html_attr_name = "data-hl";
-    state->html_attr_name_length = 7;
-    state->html_output = nullptr;
-    state->html_output_length = 0;
-    return state;
-}
+ulight_state* ulight_init(ulight_state* state) ULIGHT_NOEXCEPT;
 
 /// "Destructor" for ulight_state.
-static inline void ulight_destroy(ulight_state* state) ULIGHT_NOEXCEPT
-{
-    if (state->tokens) {
-        const size_t bytes = state->tokens_length * sizeof(ulight_token);
-        state->free_function(state->tokens, bytes, alignof(ulight_token));
-    }
-    if (state->html_output) {
-        state->free_function(state->html_output, state->html_output_length, 1);
-    }
-}
+void ulight_destroy(ulight_state* state) ULIGHT_NOEXCEPT;
 
 /// Allocates a `struct ulight` object using `ulight_alloc`,
 /// and initializes it using `ulight_init`.
 ///
 /// Note that dynamic allocation of `struct ulight` isn't necessary,
 /// but this function may be helpful for use in WASM.
-static inline ulight_state* ulight_new(void) ULIGHT_NOEXCEPT
-{
-    void* result = ulight_alloc(sizeof(ulight_state), alignof(ulight_state));
-    return ulight_init((ulight_state*)result);
-}
+ulight_state* ulight_new(void) ULIGHT_NOEXCEPT;
 
 /// Frees a `struct ulight` object previously returned from `ulight_new`.
-static inline void ulight_delete(ulight_state* state) ULIGHT_NOEXCEPT
-{
-    ulight_free(state, sizeof(ulight_state), alignof(ulight_state));
-}
+void ulight_delete(ulight_state* state) ULIGHT_NOEXCEPT;
 
 /// Converts the given code in `state->source` into an array of tokens,
 /// stored in `state->tokens`,
@@ -353,14 +320,7 @@ ulight_status ulight_tokens_to_html(ulight_state* state) ULIGHT_NOEXCEPT;
 /// Convenience function which runs `ulight_source_to_tokens`,
 /// and upon success,
 /// immediately runs `ulight_tokens_to_html`.
-static inline ulight_status ulight_source_to_html(ulight_state* state) ULIGHT_NOEXCEPT
-{
-    const ulight_status to_tokens = ulight_source_to_tokens(state);
-    if (to_tokens != ULIGHT_STATUS_OK) {
-        return to_tokens;
-    }
-    return ulight_tokens_to_html(state);
-}
+ulight_status ulight_source_to_html(ulight_state* state) ULIGHT_NOEXCEPT;
 
 #ifdef __cplusplus
 }
