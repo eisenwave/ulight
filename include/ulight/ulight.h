@@ -73,7 +73,7 @@ typedef enum ulight_status {
     /// Syntax highlighting was not possible because the code is malformed.
     /// This is currently not emitted by any of the syntax highlighters,
     /// but reserved as a future possible error.
-    ULIGHT_BAD_CODE,
+    ULIGHT_STATUS_BAD_CODE,
 } ulight_status;
 
 typedef enum ulight_flag {
@@ -197,7 +197,7 @@ typedef enum ulight_highlight_type {
     /// In Markup languages, a tag, like the name of `html` in `<html>`.
     ULIGHT_HL_MARKUP_TAG = 0x90,
     /// In Markup languages, the name of an attribute.
-    ULIGHT_HL_MARKUP_ATTRIBUTE = 0x91,
+    ULIGHT_HL_MARKUP_ATTR = 0x91,
 
     // 0xc0..0xcf Symbols with special meaning
     // -------------------------------------------------------------------------
@@ -219,7 +219,7 @@ typedef enum ulight_highlight_type {
     /// such as braces in C++ class declarations, or in TeX commands.
     ULIGHT_HL_SYM_BRACE = 0xc6,
     /// Operators like `+` in languages where they have special meaning.
-    ULIGHT_HL_SYM_OP,
+    ULIGHT_HL_SYM_OP = 0xc7,
 
 } ulight_highlight_type;
 
@@ -229,7 +229,7 @@ typedef struct ulight_token {
     /// The length of the token, in code points.
     size_t length;
     /// The type of highlighting applied to the token.
-    ulight_highlight_type type;
+    unsigned char type;
 } ulight_token;
 
 // MEMORY MANAGEMENT
@@ -252,7 +252,7 @@ void ulight_free(void* pointer, size_t size, size_t alignment) ULIGHT_NOEXCEPT;
 /// Instances of ulight should be initialized using `ulight_init` (see below),
 /// and destroyed using `ulight_destroy`.
 /// Otherwise, there is no guarantee that resources won't be leaked.
-typedef struct ulight {
+typedef struct ulight_state {
     /// An allocation function used to obtain memory during syntax highlighting.
     void* (*alloc_function)(size_t, size_t)ULIGHT_NOEXCEPT;
     /// A deallocation function used to free memory during syntax highlighting.
@@ -289,10 +289,10 @@ typedef struct ulight {
     char* html_output;
     /// After HTML generation, the length of the encoded output, in code units.
     size_t html_output_length;
-} ulight;
+} ulight_state;
 
 /// "Default constructor" for ulight_state.
-static inline ulight* ulight_init(ulight* state) ULIGHT_NOEXCEPT
+static inline ulight_state* ulight_init(ulight_state* state) ULIGHT_NOEXCEPT
 {
     state->alloc_function = ulight_alloc;
     state->free_function = ulight_free;
@@ -302,17 +302,17 @@ static inline ulight* ulight_init(ulight* state) ULIGHT_NOEXCEPT
     state->flags = ULIGHT_NO_FLAGS;
     state->tokens = nullptr;
     state->tokens_length = 0;
-    state->html_tag_name = nullptr;
-    state->html_tag_name_length = 0;
-    state->html_attr_name = nullptr;
-    state->html_attr_name_length = 0;
+    state->html_tag_name = "span";
+    state->html_tag_name_length = 4;
+    state->html_attr_name = "data-hl";
+    state->html_attr_name_length = 7;
     state->html_output = nullptr;
     state->html_output_length = 0;
     return state;
 }
 
 /// "Destructor" for ulight_state.
-static inline void ulight_destroy(ulight* state) ULIGHT_NOEXCEPT
+static inline void ulight_destroy(ulight_state* state) ULIGHT_NOEXCEPT
 {
     if (state->tokens) {
         const size_t bytes = state->tokens_length * sizeof(ulight_token);
@@ -328,32 +328,32 @@ static inline void ulight_destroy(ulight* state) ULIGHT_NOEXCEPT
 ///
 /// Note that dynamic allocation of `struct ulight` isn't necessary,
 /// but this function may be helpful for use in WASM.
-static inline ulight* ulight_new(void) ULIGHT_NOEXCEPT
+static inline ulight_state* ulight_new(void) ULIGHT_NOEXCEPT
 {
-    void* result = ulight_alloc(sizeof(ulight), alignof(ulight));
-    return ulight_init((ulight*)result);
+    void* result = ulight_alloc(sizeof(ulight_state), alignof(ulight_state));
+    return ulight_init((ulight_state*)result);
 }
 
 /// Frees a `struct ulight` object previously returned from `ulight_new`.
-static inline void ulight_delete(ulight* state) ULIGHT_NOEXCEPT
+static inline void ulight_delete(ulight_state* state) ULIGHT_NOEXCEPT
 {
-    ulight_free(state, sizeof(ulight), alignof(ulight));
+    ulight_free(state, sizeof(ulight_state), alignof(ulight_state));
 }
 
 /// Converts the given code in `state->source` into an array of tokens,
 /// stored in `state->tokens`,
 /// allocated using `state->alloc_function`.
-ulight_status ulight_source_to_tokens(ulight* state) ULIGHT_NOEXCEPT;
+ulight_status ulight_source_to_tokens(ulight_state* state) ULIGHT_NOEXCEPT;
 
 /// Converts the given tokens in `state->tokens` into UTF-8 encoded HTML,
 /// stored in `state->html_output`,
 /// allocated using `state->alloc_function`.
-ulight_status ulight_tokens_to_html(ulight* state) ULIGHT_NOEXCEPT;
+ulight_status ulight_tokens_to_html(ulight_state* state) ULIGHT_NOEXCEPT;
 
 /// Convenience function which runs `ulight_source_to_tokens`,
 /// and upon success,
 /// immediately runs `ulight_tokens_to_html`.
-static inline ulight_status ulight_source_to_html(ulight* state) ULIGHT_NOEXCEPT
+static inline ulight_status ulight_source_to_html(ulight_state* state) ULIGHT_NOEXCEPT
 {
     const ulight_status to_tokens = ulight_source_to_tokens(state);
     if (to_tokens != ULIGHT_STATUS_OK) {
