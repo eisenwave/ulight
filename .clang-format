@@ -1,0 +1,17 @@
+AlignAfterOpenBracket: BlockIndent
+AlignConsecutiveAssignments: None
+AllowAllParametersOfDeclarationOnNextLine: No
+AllowShortCaseLabelsOnASingleLine: Yes
+AllowShortFunctionsOnASingleLine: Empty
+AlwaysBreakTemplateDeclarations: Yes
+BasedOnStyle: WebKit
+BinPackParameters: No
+BreakAfterAttributes: Always
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: Yes
+  BeforeElse: Yes
+ColumnLimit: 100
+FixNamespaceComments: Yes
+IndentWidth: 4
+NamespaceIndentation: None

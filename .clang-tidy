@@ -1,0 +1,50 @@
+Checks:
+  - bugprone-*
+  - cppcoreguidelines-*
+  - clang-analyzer-*
+  - modernize-*
+  - performance-*
+  - misc-*
+  - readability-*
+  - -bugprone-easily-swappable-parameters
+  - -bugprone-suspicious-stringview-data-usage
+  - -bugprone-misplaced-widening-cast
+  - -cppcoreguidelines-avoid-c-arrays
+  - -cppcoreguidelines-avoid-const-or-ref-data-members
+  - -cppcoreguidelines-avoid-do-while
+  - -cppcoreguidelines-avoid-magic-numbers
+  - -cppcoreguidelines-avoid-non-const-global-variables
+  - -cppcoreguidelines-init-variables
+  - -cppcoreguidelines-macro-usage
+  - -cppcoreguidelines-non-private-member-variables-in-classes
+  - -cppcoreguidelines-owning-memory
+  - -cppcoreguidelines-pro-bounds-array-to-pointer-decay
+  - -cppcoreguidelines-pro-bounds-constant-array-index
+  - -cppcoreguidelines-pro-bounds-pointer-arithmetic
+  - -cppcoreguidelines-pro-type-member-init
+  - -cppcoreguidelines-pro-type-reinterpret-cast
+  - -cppcoreguidelines-pro-type-union-access
+  - -cppcoreguidelines-virtual-class-destructor
+  - -modernize-use-designated-initializers
+  - -modernize-use-trailing-return-type
+  - -readability-avoid-nested-conditional-operator
+  - -readability-convert-member-functions-to-static
+  - -readability-function-cognitive-complexity
+  - -readability-identifier-length
+  - -readability-implicit-bool-conversion
+  - -readability-magic-numbers
+  - -readability-named-parameter
+  - -readability-redundant-member-init
+  - -readability-uppercase-literal-suffix
+  - -misc-non-private-member-variables-in-classes
+  - -misc-no-recursion
+  - -modernize-avoid-c-arrays
+  - -modernize-use-emplace
+WarningsAsErrors: ''
+CheckOptions:
+ - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
+   value: true
+ - key: misc-const-correctness.AnalyzeValues
+   value: true
+ - key: misc-const-correctness.WarnPointersAsValues
+   value: true
