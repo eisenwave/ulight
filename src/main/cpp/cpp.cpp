@@ -716,6 +716,9 @@ bool highlight_cpp( //
             index += non_white_length;
             continue;
         }
+        // FIXME: I believe this was actually reached with remainder:
+        //        "\\\n    a \\  \n  b \\   \n  c d</h->\n\n<h- data-h=meta>#define Y \\\n  z
+        //        </h-><h- data-h=cmt.delim>//</h-><h- data-h=cmt> \\\n  comment</h->\n"
         ULIGHT_ASSERT_UNREACHABLE(u8"Impossible state. One of the rules above should have matched."
         );
     }
