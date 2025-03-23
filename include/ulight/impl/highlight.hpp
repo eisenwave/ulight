@@ -56,7 +56,7 @@ inline Status highlight(
     case Lang::mmml: //
         return to_result(highlight_mmml(out, source, memory, options));
     default: //
-        return Status::bad_state;
+        return Status::bad_lang;
     }
 }
 
