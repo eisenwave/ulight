@@ -62,18 +62,22 @@ extern const size_t ulight_lang_list_length;
 typedef enum ulight_status {
     /// Syntax highlighting completed successfully.
     ULIGHT_STATUS_OK,
-    /// The state wasn't set up properly.
-    /// This may happen when `source` is null,
-    /// so there is no data to highlight,
-    /// or if `alloc_function` and `free_function` are null pointers.
-    /// This status is indicative of developer mistakes.
-    ULIGHT_STATUS_BAD_STATE,
+    /// An output buffer wasn't set up properly.
+    ULIGHT_STATUS_BAD_BUFFER,
+    /// The provided `ulight_lang` is invalid.
+    ULIGHT_STATUS_BAD_LANG,
     /// The given source code is not correctly UTF-8 encoded.
     ULIGHT_STATUS_BAD_TEXT,
+    /// Something else is wrong with the `ulight_state` that isn't described by one of the above.
+    ULIGHT_STATUS_BAD_STATE,
     /// Syntax highlighting was not possible because the code is malformed.
     /// This is currently not emitted by any of the syntax highlighters,
     /// but reserved as a future possible error.
     ULIGHT_STATUS_BAD_CODE,
+    /// Allocation failed somewhere during syntax highlighting.
+    ULIGHT_STATUS_BAD_ALLOC,
+    /// Something went wrong that is not described by any of the other statuses.
+    ULIGHT_STATUS_INTERNAL_ERROR,
 } ulight_status;
 
 typedef enum ulight_flag {
@@ -230,7 +234,7 @@ typedef struct ulight_string_view {
 
 /// Returns a textual representation made of ASCII characters and underscores of `type`.
 /// This is used as a value in `ulight_tokens_to_html`.
-ulight_string_view ulight_highlight_type_id(ulight_highlight_type type);
+ulight_string_view ulight_highlight_type_id(ulight_highlight_type type) ULIGHT_NOEXCEPT;
 
 typedef struct ulight_token {
     /// The index of the first code point within the source code that has the highlighting.
