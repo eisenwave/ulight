@@ -1,11 +1,12 @@
 #ifndef ULIGHT_DIFF_HPP
 #define ULIGHT_DIFF_HPP
 
-// NOLINTNEXTLINE
 #include "ulight/impl/platform.hpp"
 #if ULIGHT_CPP // suppress unused include warning
 #endif
-#ifndef ULIGHT_EMSCRIPTEN
+#ifdef ULIGHT_EMSCRIPTEN
+#error This header should not be included in Emscripten builds.
+#endif
 
 #include <algorithm>
 #include <cstddef>
@@ -162,5 +163,4 @@ inline void print_lines_diff(std::ostream& out, std::u8string_view from, std::u8
 
 } // namespace ulight
 
-#endif
 #endif
