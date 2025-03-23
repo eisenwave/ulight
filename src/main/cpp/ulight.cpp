@@ -146,7 +146,8 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     if (state->source == nullptr && state->source_length != 0) {
         return ULIGHT_STATUS_BAD_STATE;
     }
-    if (state->token_buffer == nullptr || state->token_buffer_length == 0
+    if (state->token_buffer == nullptr //
+        || state->token_buffer_length == 0 //
         || state->flush_tokens == nullptr) {
         return ULIGHT_STATUS_BAD_BUFFER;
     }
@@ -188,12 +189,15 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
     using namespace std::literals;
 
     if ((state->token_buffer == nullptr && state->token_buffer_length != 0) //
-        || state->text_buffer == nullptr || state->text_buffer_length == 0
+        || state->text_buffer == nullptr //
+        || state->text_buffer_length == 0 //
         || state->flush_text == nullptr) {
         return ULIGHT_STATUS_BAD_BUFFER;
     }
-    if (state->html_tag_name == nullptr || state->html_tag_name_length == 0
-        || state->html_attr_name == nullptr || state->html_attr_name_length == 0) {
+    if (state->html_tag_name == nullptr //
+        || state->html_tag_name_length == 0 //
+        || state->html_attr_name == nullptr //
+        || state->html_attr_name_length == 0) {
         return ULIGHT_STATUS_BAD_STATE;
     }
 
