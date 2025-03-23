@@ -65,7 +65,7 @@ TEST_F(Highlight_Test, file_tests)
     Token token_buffer[4096];
     char text_buffer[8192];
 
-    static const std::filesystem::path directory { "test" };
+    static const std::filesystem::path directory { "test/highlight" };
     ASSERT_TRUE(std::filesystem::is_directory(directory));
 
     std::vector<std::filesystem::path> paths = paths_in_directory(directory);
