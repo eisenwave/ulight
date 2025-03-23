@@ -301,13 +301,6 @@ struct [[nodiscard]] State {
         return Status(ulight_source_to_tokens(&impl));
     }
 
-    /// See `ulight_tokens_to_html`.
-    [[nodiscard]]
-    Status tokens_to_html() noexcept
-    {
-        return Status(ulight_tokens_to_html(&impl));
-    }
-
     /// See `ulight_source_to_html`.
     [[nodiscard]]
     Status source_to_html() noexcept

@@ -180,12 +180,6 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     }
 }
 
-ulight_status ulight_tokens_to_html(ulight_state* state) noexcept
-{
-
-    return ULIGHT_STATUS_OK;
-}
-
 // The NOLINT suppresses a bug: https://github.com/llvm/llvm-project/issues/132605
 ulight_status ulight_source_to_html(ulight_state* state) // NOLINT(bugprone-exception-escape)
     noexcept
@@ -244,7 +238,7 @@ ulight_status ulight_source_to_html(ulight_state* state) // NOLINT(bugprone-exce
         flush_text_ref(tokens, amount);
     };
 
-    return ulight_tokens_to_html(state);
+    return ulight_source_to_tokens(state);
 }
 
 } // extern "C"

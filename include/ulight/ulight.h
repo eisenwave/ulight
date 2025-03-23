@@ -327,11 +327,6 @@ void ulight_delete(ulight_state* state) ULIGHT_NOEXCEPT;
 /// allocated using `state->alloc_function`.
 ulight_status ulight_source_to_tokens(ulight_state* state) ULIGHT_NOEXCEPT;
 
-/// Converts the given tokens in `state->tokens` into UTF-8 encoded HTML,
-/// stored in `state->html_output`,
-/// allocated using `state->alloc_function`.
-ulight_status ulight_tokens_to_html(ulight_state* state) ULIGHT_NOEXCEPT;
-
 /// Convenience function which runs `ulight_source_to_tokens`,
 /// and upon success,
 /// immediately runs `ulight_tokens_to_html`.
