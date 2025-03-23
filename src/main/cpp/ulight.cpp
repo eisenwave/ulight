@@ -20,6 +20,33 @@ ulight::Highlight_Options to_options(ulight_flag flags) noexcept
     };
 }
 
+[[nodiscard]]
+std::string_view html_entity_of(char c)
+{
+    switch (c) {
+    case '&': return "&amp;";
+    case '<': return "&lt;";
+    case '>': return "&gt;";
+    case '\'': return "&apos;";
+    case '"': return "&quot;";
+    default: ULIGHT_DEBUG_ASSERT_UNREACHABLE(u8"We only support a handful of characters.");
+    }
+}
+
+void append_html_escaped(Non_Owning_Buffer<char>& out, std::string_view text)
+{
+    while (!text.empty()) {
+        const std::size_t bracket_pos = text.find_first_of("<>&");
+        const auto snippet = text.substr(0, std::min(text.length(), bracket_pos));
+        out.append_range(snippet);
+        if (bracket_pos == std::string_view::npos) {
+            break;
+        }
+        out.append_range(html_entity_of(text[bracket_pos]));
+        text = text.substr(bracket_pos + 1);
+    }
+}
+
 } // namespace
 } // namespace ulight
 
@@ -232,7 +259,7 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
             buffer.push_back('=');
             buffer.append_range(id);
             buffer.push_back('>');
-            buffer.append_range(source_part);
+            ulight::append_html_escaped(buffer, source_part);
             buffer.append_range("</"sv);
             buffer.append_range(html_tag_name);
             buffer.push_back('>');
@@ -257,7 +284,7 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
         // For example, there can be a trailing '\n' at the end of the file, without highlighting.
         ULIGHT_ASSERT(previous_end <= state->source_length);
         if (previous_end != state->source_length) {
-            buffer.append_range(source_string.substr(previous_end));
+            ulight::append_html_escaped(buffer, source_string.substr(previous_end));
         }
         buffer.flush();
         return ULIGHT_STATUS_OK;
