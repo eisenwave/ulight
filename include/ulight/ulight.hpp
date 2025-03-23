@@ -29,9 +29,13 @@ inline Lang get_lang(std::string_view name) noexcept
 /// See `ulight_status`.
 enum struct Status : Underlying {
     ok = ULIGHT_STATUS_OK,
-    bad_state = ULIGHT_STATUS_BAD_STATE,
+    bad_buffer = ULIGHT_STATUS_BAD_BUFFER,
+    bad_lang = ULIGHT_STATUS_BAD_LANG,
     bad_text = ULIGHT_STATUS_BAD_TEXT,
+    bad_state = ULIGHT_STATUS_BAD_STATE,
     bad_code = ULIGHT_STATUS_BAD_CODE,
+    bad_alloc = ULIGHT_STATUS_BAD_ALLOC,
+    internal_error = ULIGHT_STATUS_INTERNAL_ERROR,
 };
 
 /// See `ulight_flag`.
@@ -136,6 +140,13 @@ constexpr std::string_view ulight_highlight_type_id(Highlight_Type type) noexcep
     }
 }
 
+[[nodiscard]]
+inline std::string_view highlight_type_id(Highlight_Type type) noexcept
+{
+    const ulight_string_view result = ulight_highlight_type_id(ulight_highlight_type(type));
+    return { result.text, result.length };
+}
+
 /// See `ulight_token`.
 using Token = ulight_token;
 
@@ -169,6 +180,18 @@ struct [[nodiscard]] State {
     std::string_view get_source() const noexcept
     {
         return { impl.source, impl.source_length };
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_u8source() const noexcept
+    {
+        return { std::launder(reinterpret_cast<const char8_t*>(impl.source)), impl.source_length };
+    }
+
+    void set_source(std::u8string_view source) noexcept
+    {
+        impl.source = reinterpret_cast<const char*>(source.data());
+        impl.source_length = source.size();
     }
 
     void set_source(std::string_view source) noexcept
@@ -241,13 +264,34 @@ struct [[nodiscard]] State {
         impl.flush_text_data = action.get_entity();
     }
 
+    /// Returns the current contents of the text buffer as a `std::span<char>`.
     [[nodiscard]]
-    std::string_view get_html_output() const noexcept
+    std::span<char> get_text_buffer() const noexcept
     {
-        if (!impl.text_buffer) {
-            return {};
-        }
         return { impl.text_buffer, impl.text_buffer_length };
+    }
+
+    /// Returns the current contents of the text buffer as a `std::span<char8_t>`.
+    [[nodiscard]]
+    std::span<char8_t> get_text_u8buffer() const noexcept
+    {
+        return { std::launder(reinterpret_cast<char8_t*>(impl.text_buffer)),
+                 impl.text_buffer_length };
+    }
+
+    /// Returns the current contents of the text buffer as a `std::string_view`.
+    [[nodiscard]]
+    std::string_view get_text_buffer_string() const noexcept
+    {
+        return { impl.text_buffer, impl.text_buffer_length };
+    }
+
+    /// Returns the current contents of the text buffer as a `std::span<char8_t>`.
+    [[nodiscard]]
+    std::u8string_view get_text_buffer_u8string() const noexcept
+    {
+        return { std::launder(reinterpret_cast<const char8_t*>(impl.text_buffer)),
+                 impl.text_buffer_length };
     }
 
     /// See `ulight_source_to_tokens`.
