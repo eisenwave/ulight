@@ -102,11 +102,15 @@ enum struct Highlight_Type : Underlying {
 [[nodiscard]]
 constexpr std::string_view ulight_highlight_type_id(Highlight_Type type) noexcept
 {
+    // Design note:
+    // All names should be underscore-separated blocks of up to four characters.
+    // The abbreviations should always be distinct if they abbreviate different words.
+    // For example, "del" stands for "deletion", and "dlm" stands for "delimiter".
     switch (type) {
         using enum Highlight_Type;
     case error: return "err";
     case comment: return "cmt";
-    case comment_delimiter: return "cmt_delim";
+    case comment_delimiter: return "cmt_dlm";
     case value: return "val";
     case number: return "num";
     case string: return "str";
@@ -114,14 +118,14 @@ constexpr std::string_view ulight_highlight_type_id(Highlight_Type type) noexcep
     case null: return "null";
     case bool_: return "bool";
     case this_: return "this";
-    case macro: return "macro";
+    case macro: return "mac";
     case id: return "id";
     case id_decl: return "id_dcl";
     case id_use: return "id_use";
     case id_var_decl: return "id_var_dcl";
     case id_var_use: return "id_var_use";
-    case id_const_decl: return "id_const_dcl";
-    case id_const_use: return "id_const_use";
+    case id_const_decl: return "id_cons_dcl";
+    case id_const_use: return "id_cons_use";
     case id_type_decl: return "id_type_dcl";
     case id_type_use: return "id_type_use";
     case id_module_decl: return "id_mod_dcl";
@@ -129,18 +133,18 @@ constexpr std::string_view ulight_highlight_type_id(Highlight_Type type) noexcep
     case keyword: return "kw";
     case keyword_control: return "kw_ctrl";
     case keyword_type: return "kw_type";
-    case diff_heading: return "diff_h";
-    case diff_common: return "diff_common";
-    case diff_hunk: return "diff_hunk";
-    case diff_deletion: return "diff_del";
-    case diff_insertion: return "diff_ins";
-    case markup_tag: return "markup_tag";
-    case markup_attr: return "markup_attr";
+    case diff_heading: return "df_h";
+    case diff_common: return "df_eq";
+    case diff_hunk: return "df_hunk";
+    case diff_deletion: return "df_del";
+    case diff_insertion: return "df_ins";
+    case markup_tag: return "mk_tag";
+    case markup_attr: return "mk_attr";
     case sym: return "sym";
     case sym_punc: return "sym_punc";
-    case sym_parens: return "sym_parens";
-    case sym_square: return "sym_square";
-    case sym_brace: return "sym_brace";
+    case sym_parens: return "sym_par";
+    case sym_square: return "sym_sqr";
+    case sym_brace: return "sym_brac";
     case sym_op: return "sym_op";
     default: return "";
     }
