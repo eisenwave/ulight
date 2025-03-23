@@ -134,7 +134,7 @@ public:
             }
             const auto chunk_size = std::min(available(), std::size_t(end - begin));
             ULIGHT_DEBUG_ASSERT(chunk_size != 0);
-            std::ranges::copy(begin, begin + Diff(chunk_size), m_buffer);
+            std::ranges::copy(begin, begin + Diff(chunk_size), m_buffer + m_size);
             begin += Diff(chunk_size);
             m_size += chunk_size;
         }
