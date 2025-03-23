@@ -1,13 +1,23 @@
 #ifndef ULIGHT_PLATFORM_HPP
 #define ULIGHT_PLATFORM_HPP
 
-namespace ulight {
-
-/// @brief The default underlying type for scoped enumerations.
-using Underlying = unsigned char;
-
+#ifdef __cplusplus
 #if __cplusplus >= 202302L
-#define ULIGHT_CPP23 1
+#define ULIGHT_CPP 2023
+#endif
+#else
+#define ULIGHT_CPP 1998
+#endif
+
+#ifdef __EMSCRIPTEN__
+#define ULIGHT_EMSCRIPTEN 1
+#define ULIGHT_IF_EMSCRIPTEN(...) __VA_ARGS__
+#else
+#define ULIGHT_IF_EMSCRIPTEN(...)
+#endif
+
+#ifdef __clang__
+#define ULIGHT_CLANG 1
 #endif
 
 #if defined(ULIGHT_CPP23) && __has_cpp_attribute(assume)
@@ -17,6 +27,11 @@ using Underlying = unsigned char;
 #else
 #define ULIGHT_ASSUME(...)
 #endif
+
+namespace ulight {
+
+/// @brief The default underlying type for scoped enumerations.
+using Underlying = unsigned char;
 
 } // namespace ulight
 
