@@ -142,7 +142,7 @@ inline void print_diff(
             break;
         }
         case Edit_Type::ins: {
-            out << ansi::h_green << '+' << as_string_view(from_lines[to_index]) << '\n';
+            out << ansi::h_green << '+' << as_string_view(to_lines[to_index]) << '\n';
             ++to_index;
             break;
         }
