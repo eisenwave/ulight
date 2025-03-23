@@ -170,6 +170,7 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     try {
         const ulight::Status result
             = ulight::highlight(buffer, source, ulight::Lang(state->lang), &memory, options);
+        buffer.flush();
         return ulight_status(result);
     } catch (const ulight::utf8::Unicode_Error&) {
         return ULIGHT_STATUS_BAD_TEXT;
@@ -238,7 +239,16 @@ ulight_status ulight_source_to_html(ulight_state* state) // NOLINT(bugprone-exce
         flush_text_ref(tokens, amount);
     };
 
-    return ulight_source_to_tokens(state);
+    const ulight_status result = ulight_source_to_tokens(state);
+    if (result != ULIGHT_STATUS_OK) {
+        return result;
+    }
+    try {
+        buffer.flush();
+        return ULIGHT_STATUS_OK;
+    } catch (...) {
+        return ULIGHT_STATUS_INTERNAL_ERROR;
+    }
 }
 
 } // extern "C"
