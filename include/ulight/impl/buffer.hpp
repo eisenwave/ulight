@@ -165,8 +165,10 @@ public:
 
     constexpr void flush()
     {
-        m_flush(m_flush_data, m_buffer, m_size);
-        m_size = 0;
+        if (m_size != 0) {
+            m_flush(m_flush_data, m_buffer, m_size);
+            m_size = 0;
+        }
     }
 
 private:
