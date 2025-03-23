@@ -181,9 +181,9 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     }
 }
 
-// The NOLINT suppresses a bug: https://github.com/llvm/llvm-project/issues/132605
-ulight_status ulight_source_to_html(ulight_state* state) // NOLINT(bugprone-exception-escape)
-    noexcept
+// Suppress false positive: https://github.com/llvm/llvm-project/issues/132605
+// NOLINTNEXTLINE(bugprone-exception-escape)
+ulight_status ulight_source_to_html(ulight_state* state) noexcept
 {
     using namespace std::literals;
 
