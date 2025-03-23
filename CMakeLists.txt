@@ -27,6 +27,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 add_library(ulight STATIC
+    src/main/cpp/chars.cpp
     src/main/cpp/cpp.cpp
     src/main/cpp/mmml.cpp
     src/main/cpp/parse_utils.cpp
@@ -76,7 +77,11 @@ else(NOT DEFINED EMSCRIPTEN)
     )
 
     add_executable(ulight-test ${HEADERS}
+        src/test/cpp/io.cpp
         src/test/cpp/main.cpp
+        src/test/cpp/test_chars_strings.cpp
+        src/test/cpp/test_highlight.cpp
+        src/test/cpp/test_unicode.cpp
     )
 
     target_link_libraries(ulight-cli ulight)
