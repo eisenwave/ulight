@@ -262,11 +262,6 @@ void ulight_free(void* pointer, size_t size, size_t alignment) ULIGHT_NOEXCEPT;
 /// and destroyed using `ulight_destroy`.
 /// Otherwise, there is no guarantee that resources won't be leaked.
 typedef struct ulight_state {
-    /// An allocation function used to obtain memory during syntax highlighting.
-    void* (*alloc_function)(size_t, size_t)ULIGHT_NOEXCEPT;
-    /// A deallocation function used to free memory during syntax highlighting.
-    void (*free_function)(void*, size_t, size_t) ULIGHT_NOEXCEPT;
-
     /// A pointer to UTF-8 encoded source code to be highlighted.
     /// `source` does not need to be null-terminated.
     const char* source;
@@ -278,12 +273,15 @@ typedef struct ulight_state {
     /// Set of flags, obtained by combining named `ulight_flag` entries with `|`.
     ulight_flag flags;
 
-    /// Once highlighting is done,
-    /// a pointer to an array of tokens, allocated using `alloc_function`.
-    ulight_token* tokens;
-    /// Once highlighting is done,
-    /// the length of the tokens array.
-    size_t tokens_length;
+    /// A buffer of tokens provided by the user.
+    ulight_token* token_buffer;
+    /// The length of `token_buffer`.
+    size_t token_buffer_length;
+    /// Passed as the first argument into `flush_tokens`.
+    void* flush_tokens_data;
+    /// When `token_buffer` is full,
+    /// is invoked with `flush_tokens_data`, `token_buffer`, and `token_buffer_length`.
+    void (*flush_tokens)(void*, ulight_token*, size_t);
 
     /// For HTML generation, the UTF-8-encoded name of tags.
     const char* html_tag_name;
@@ -294,16 +292,20 @@ typedef struct ulight_state {
     /// For HTML generation, the length of attribute names, in code units.
     size_t html_attr_name_length;
 
-    /// After HTML generation, the UTF-8 encoded output.
-    char* html_output;
-    /// After HTML generation, the length of the encoded output, in code units.
-    size_t html_output_length;
+    /// A buffer for the UTF-8-encoded HTML output.
+    char* text_buffer;
+    /// The length of `text_buffer`.
+    size_t text_buffer_length;
+    /// Passed as the first argument into `flush_text`.
+    void* flush_text_data;
+    /// When `html_output`
+    void (*flush_text)(void*, char*, size_t);
 } ulight_state;
 
-/// "Default constructor" for ulight_state.
+/// "Default constructor" for `ulight_state`.
 ulight_state* ulight_init(ulight_state* state) ULIGHT_NOEXCEPT;
 
-/// "Destructor" for ulight_state.
+/// "Destructor" for `ulight_state`.
 void ulight_destroy(ulight_state* state) ULIGHT_NOEXCEPT;
 
 /// Allocates a `struct ulight` object using `ulight_alloc`,

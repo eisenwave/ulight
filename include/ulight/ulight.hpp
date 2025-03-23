@@ -3,8 +3,10 @@
 
 #include <span>
 #include <string_view>
+#include <type_traits>
 
 #include "ulight.h"
+#include "ulight/function_ref.hpp"
 
 namespace ulight {
 
@@ -163,51 +165,6 @@ struct [[nodiscard]] State {
         ulight_init(&impl);
     }
 
-    State(const State&) = delete;
-    State& operator=(const State&) = delete;
-
-    State(State&& other) noexcept
-        : impl { other.impl }
-    {
-        other.impl = {};
-    }
-
-    State& operator=(State&& other) noexcept
-    {
-        ulight_destroy(&impl);
-        impl = other.impl;
-        other.impl = {};
-        return *this;
-    }
-
-    /// See `ulight_destroy`.
-    ~State()
-    {
-        ulight_destroy(&impl);
-    }
-
-    [[nodiscard]]
-    Alloc_Function* get_alloc() const noexcept
-    {
-        return impl.alloc_function;
-    }
-
-    void set_alloc(Alloc_Function* alloc)
-    {
-        impl.alloc_function = alloc;
-    }
-
-    [[nodiscard]]
-    Free_Function* get_free() const noexcept
-    {
-        return impl.free_function;
-    }
-
-    void set_free(Free_Function* free)
-    {
-        impl.free_function = free;
-    }
-
     [[nodiscard]]
     std::string_view get_source() const noexcept
     {
@@ -242,6 +199,24 @@ struct [[nodiscard]] State {
         impl.flags = ulight_flag(flags);
     }
 
+    [[nodiscard]]
+    std::span<Token> get_token_buffer() const noexcept
+    {
+        return { impl.token_buffer, impl.token_buffer_length };
+    }
+
+    void set_token_buffer(std::span<Token> buffer)
+    {
+        impl.token_buffer = buffer.data();
+        impl.token_buffer_length = buffer.size();
+    }
+
+    void on_flush_tokens(Function_Ref<void(Token*, std::size_t)> action)
+    {
+        impl.flush_tokens = action.get_invoker();
+        impl.flush_tokens_data = action.get_entity();
+    }
+
     void set_html_tag_name(std::string_view name) noexcept
     {
         impl.html_tag_name = name.data();
@@ -254,22 +229,25 @@ struct [[nodiscard]] State {
         impl.html_tag_name_length = name.length();
     }
 
-    [[nodiscard]]
-    std::span<Token> get_tokens() const noexcept
+    void set_text_buffer(std::span<char> buffer)
     {
-        if (!impl.tokens) {
-            return {};
-        }
-        return { impl.tokens, impl.tokens_length };
+        impl.text_buffer = buffer.data();
+        impl.text_buffer_length = buffer.size();
+    }
+
+    void on_flush_text(Function_Ref<void(char*, std::size_t)> action)
+    {
+        impl.flush_text = action.get_invoker();
+        impl.flush_text_data = action.get_entity();
     }
 
     [[nodiscard]]
     std::string_view get_html_output() const noexcept
     {
-        if (!impl.html_output) {
+        if (!impl.text_buffer) {
             return {};
         }
-        return { impl.html_output, impl.html_output_length };
+        return { impl.text_buffer, impl.text_buffer_length };
     }
 
     /// See `ulight_source_to_tokens`.
@@ -293,6 +271,8 @@ struct [[nodiscard]] State {
         return Status(ulight_source_to_html(&impl));
     }
 };
+
+static_assert(std::is_trivially_copyable_v<State>);
 
 } // namespace ulight
 

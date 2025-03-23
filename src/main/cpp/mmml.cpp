@@ -7,12 +7,13 @@
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/assert.hpp"
+#include "ulight/impl/buffer.hpp"
 #include "ulight/impl/mmml.hpp"
 
 namespace ulight {
 
 bool highlight_mmml(
-    Releasable_Vector<Token>& out,
+    Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
     std::pmr::memory_resource* memory,
     const Highlight_Options& options
@@ -25,7 +26,7 @@ bool highlight_mmml(
 }
 
 void highlight_mmml( //
-    Releasable_Vector<Token>& out,
+    Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
     std::span<const AST_Instruction> instructions,
     const Highlight_Options& options
@@ -42,7 +43,7 @@ void highlight_mmml( //
             out.back().length += length;
         }
         else {
-            out.emplace_back(index, length, type);
+            out.emplace_back(index, length, Underlying(type));
         }
         index += length;
     };

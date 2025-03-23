@@ -6,9 +6,9 @@
 #include <string_view>
 #include <vector>
 
+#include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/parse_utils.hpp"
-#include "ulight/impl/releasable_vector.hpp"
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/assert.hpp"
@@ -595,7 +595,7 @@ std::size_t match_cpp_identifier_except_keywords(std::u8string_view str, bool st
 } // namespace cpp
 
 bool highlight_cpp( //
-    Releasable_Vector<Token>& out,
+    Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
     std::pmr::memory_resource*,
     const Highlight_Options& options
@@ -610,7 +610,7 @@ bool highlight_cpp( //
             out.back().length += length;
         }
         else {
-            out.emplace_back(begin, length, type);
+            out.emplace_back(begin, length, Underlying(type));
         }
     };
     // Approximately implements highlighting based on C++ tokenization,

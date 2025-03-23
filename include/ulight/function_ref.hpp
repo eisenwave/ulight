@@ -5,7 +5,9 @@
 #include <type_traits>
 #include <utility>
 
-#include "ulight/impl/meta.hpp"
+#include "ulight/const.hpp"
+
+#include "ulight/impl/assert.hpp"
 
 namespace ulight {
 
@@ -28,13 +30,15 @@ concept invocable_n_r
 
 template <bool constant, bool nothrow, typename R, typename... Args>
 struct Function_Ref_Base {
-private:
-    using Function_Pointer_Type = R (*)(Args...) noexcept(nothrow);
-    using Storage_Type = const_if_t<void, constant>*;
+public:
+    using Function = R(Args...) noexcept(nothrow);
+    using Storage = const_if_t<void, constant>;
+    using Invoker = R(Storage*, Args...) noexcept(nothrow);
 
+private:
     template <typename F>
         requires std::is_pointer_v<F>
-    static R call(Storage_Type entity, Args... args) noexcept(nothrow)
+    static R call(Storage* entity, Args... args) noexcept(nothrow)
     {
         if constexpr (std::is_function_v<std::remove_pointer_t<F>>) {
             // This 'const_cast' is needed because Clang does not support conversions from
@@ -42,7 +46,7 @@ private:
             // This could be considered a bug or a language defect
             // (see https://github.com/cplusplus/CWG/issues/657).
             // In any case, we need to remove 'const'.
-            void* entity_raw = const_cast<void*>(entity);
+            void* const entity_raw = const_cast<void*>(entity);
             return R((*reinterpret_cast<F>(entity_raw))(std::forward<Args>(args)...));
         }
         else {
@@ -50,8 +54,8 @@ private:
         }
     }
 
-    R (*m_invoker)(Storage_Type, Args...) noexcept(nothrow) = nullptr;
-    Storage_Type m_entity = nullptr;
+    Invoker* m_invoker = nullptr;
+    Storage* m_entity = nullptr;
 
 public:
     [[nodiscard]]
@@ -63,11 +67,11 @@ public:
     ///
     /// This will create a `Function_Ref` which is bound to nothing,
     /// and when called, simply forwards to `F`.
-    template <std::convertible_to<Function_Pointer_Type> auto F>
+    template <std::convertible_to<Function*> auto F>
         requires requires(Args&&... args) { F(std::forward<Args>(args)...); }
     [[nodiscard]]
     constexpr Function_Ref_Base(Constant<F>) noexcept
-        : m_invoker { [](Storage_Type, Args... args) noexcept(nothrow) { //
+        : m_invoker { [](Storage*, Args... args) noexcept(nothrow) { //
             return F(std::forward<Args>(args)...);
         } }
     {
@@ -78,13 +82,13 @@ public:
     ///
     /// This will create a `Function_Ref` which is bound to nothing,
     /// and when called, simply forwards to `F`.
-    template <std::convertible_to<Function_Pointer_Type> auto F, typename T>
+    template <std::convertible_to<Function*> auto F, typename T>
         requires requires(Args&&... args, const_if_t<T, constant>* e) {
             F(e, std::forward<Args>(args)...);
-        } && std::convertible_to<T*, Storage_Type>
+        } && std::convertible_to<T*, Storage*>
     [[nodiscard]]
     constexpr Function_Ref_Base(Constant<F>, T* entity) noexcept
-        : m_invoker { [](Storage_Type entity, Args... args) noexcept(nothrow) { //
+        : m_invoker { [](Storage* entity, Args... args) noexcept(nothrow) { //
             return F(static_cast<T*>(entity), std::forward<Args>(args)...);
         } }
         , m_entity { entity }
@@ -109,16 +113,16 @@ public:
 
         if constexpr (std::is_function_v<Entity>) {
             m_invoker = &call<Entity* const>;
-            m_entity = reinterpret_cast<Storage_Type>(&f);
+            m_entity = reinterpret_cast<Storage*>(&f);
         }
         else if constexpr (function_pointer<Entity>) {
             m_invoker = &call<const Entity>;
-            m_entity = reinterpret_cast<Storage_Type>(f);
+            m_entity = reinterpret_cast<Storage*>(f);
         }
-        else if constexpr (std::is_convertible_v<F&&, Function_Pointer_Type>) {
-            const Function_Pointer_Type pointer = f;
+        else if constexpr (std::is_convertible_v<F&&, Function*>) {
+            Function* const pointer = f;
             m_invoker = &call<decltype(pointer)>;
-            m_entity = reinterpret_cast<Storage_Type>(pointer);
+            m_entity = reinterpret_cast<Storage*>(pointer);
         }
         else if constexpr (requires {
                                { +f } -> function_pointer;
@@ -128,7 +132,7 @@ public:
             // Function_Pointer_Type; that case has already been handled above.
             auto pointer = +f;
             m_invoker = &call<decltype(pointer)>;
-            m_entity = reinterpret_cast<Storage_Type>(pointer);
+            m_entity = reinterpret_cast<Storage*>(pointer);
         }
         else {
             m_invoker = &call<const_if_t<Entity, constant>*>;
@@ -138,8 +142,7 @@ public:
 
     constexpr R operator()(Args... args) const noexcept(nothrow)
     {
-        MMML_ASSERT(m_entity);
-        MMML_ASSERT(m_invoker);
+        ULIGHT_ASSERT(m_invoker);
         return m_invoker(m_entity, std::forward<Args>(args)...);
     }
 
@@ -153,6 +156,18 @@ public:
     constexpr operator bool() const noexcept
     {
         return has_value();
+    }
+
+    [[nodiscard]]
+    Invoker* get_invoker() const noexcept
+    {
+        return m_invoker;
+    }
+
+    [[nodiscard]]
+    Storage* get_entity() const noexcept
+    {
+        return m_entity;
     }
 };
 

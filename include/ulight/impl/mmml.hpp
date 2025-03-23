@@ -7,7 +7,6 @@
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/highlight.hpp"
-#include "ulight/impl/releasable_vector.hpp"
 
 namespace ulight {
 
@@ -99,7 +98,7 @@ void parse(std::pmr::vector<AST_Instruction>& out, std::u8string_view source);
 /// A sequence of `Annotation_Span`s is appended to `out`,
 /// where gaps between spans represent non-highlighted content such as plaintext or whitespace.
 void highlight_mmml(
-    Releasable_Vector<Token>& out,
+    Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
     std::span<const AST_Instruction> instructions,
     const Highlight_Options& options = {}

@@ -6,7 +6,7 @@
 
 #include "ulight/ulight.hpp"
 
-#include "ulight/impl/releasable_vector.hpp"
+#include "ulight/impl/buffer.hpp"
 
 namespace ulight {
 
@@ -23,20 +23,20 @@ struct Highlight_Options {
 };
 
 bool highlight_mmml(
-    Releasable_Vector<Token>& out,
+    Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
     std::pmr::memory_resource* memory,
     const Highlight_Options& options = {}
 );
 bool highlight_cpp(
-    Releasable_Vector<Token>& out,
+    Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
     std::pmr::memory_resource* memory,
     const Highlight_Options& options = {}
 );
 
 inline Status highlight(
-    Releasable_Vector<Token>& out,
+    Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
     Lang language,
     std::pmr::memory_resource* memory,

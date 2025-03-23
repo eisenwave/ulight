@@ -4,7 +4,7 @@
 #include <source_location>
 #include <string_view>
 
-#include "ulight/ulight.hpp"
+#include "ulight/impl/platform.hpp"
 
 namespace ulight {
 
@@ -47,18 +47,6 @@ struct Assertion_Error {
 #else
 #define ULIGHT_DEBUG_ASSERT(...) ULIGHT_ASSERT(__VA_ARGS__)
 #define ULIGHT_DEBUG_ASSERT_UNREACHABLE(...) ULIGHT_ASSERT_UNREACHABLE(__VA_ARGS__)
-#endif
-
-#if __cplusplus >= 202302L
-#define ULIGHT_CPP23 1
-#endif
-
-#if defined(ULIGHT_CPP23) && __has_cpp_attribute(assume)
-#define ULIGHT_ASSUME(...) [[assume(__VA_ARGS__)]]
-#elif defined(__clang__)
-#define ULIGHT_ASSUME(...) __builtin_assume(__VA_ARGS__)
-#else
-#define ULIGHT_ASSUME(...)
 #endif
 
 } // namespace ulight

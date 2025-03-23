@@ -1,7 +1,6 @@
 #ifndef ULIGHT_META_HPP
 #define ULIGHT_META_HPP
 
-#include <concepts>
 #include <type_traits>
 
 namespace ulight {
@@ -36,31 +35,15 @@ using follow_ref_const_if_t = Follow_Ref_Const_If<T, C>::type;
 template <typename T, typename U>
 using const_like_t = const_if_t<T, std::is_const_v<U>>;
 
-template <typename>
-inline constexpr bool dependent_false = false;
-
+/// @brief A constant wrapper in the style of
+/// `std::integral_constant`, `std::nontype`, `std::constexpr_wrapper`, etc.
 template <auto X>
 struct Constant {
-    static constexpr decltype(X) value = X;
+    static constexpr auto value = X;
 };
 
 template <auto X>
-inline constexpr Constant<X> constant_v {};
-
-template <typename T>
-concept trivial = std::is_trivially_copyable_v<T> && std::is_trivially_default_constructible_v<T>;
-
-template <typename T>
-concept byte_sized = sizeof(T) == 1;
-
-template <typename T>
-concept byte_like = byte_sized<T> && trivial<T>;
-
-template <typename T, typename... Us>
-concept one_of = (std::same_as<T, Us> || ...);
-
-template <typename T>
-concept char_like = byte_like<T> && one_of<T, char, char8_t>;
+inline constexpr Constant<X> const_v {};
 
 } // namespace ulight
 

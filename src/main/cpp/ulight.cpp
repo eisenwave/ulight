@@ -86,33 +86,29 @@ void ulight_free(void* pointer, size_t size, size_t alignment) noexcept
 
 ulight_state* ulight_init(ulight_state* state) ULIGHT_NOEXCEPT
 {
-    state->alloc_function = ulight_alloc;
-    state->free_function = ulight_free;
     state->source = nullptr;
     state->source_length = 0;
     state->lang = ULIGHT_LANG_NONE;
     state->flags = ULIGHT_NO_FLAGS;
-    state->tokens = nullptr;
-    state->tokens_length = 0;
+
+    state->token_buffer = nullptr;
+    state->token_buffer_length = 0;
+    state->flush_tokens_data = nullptr;
+    state->flush_tokens = nullptr;
+
     state->html_tag_name = "span";
     state->html_tag_name_length = 4;
     state->html_attr_name = "data-hl";
     state->html_attr_name_length = 7;
-    state->html_output = nullptr;
-    state->html_output_length = 0;
+
+    state->text_buffer = nullptr;
+    state->text_buffer_length = 0;
+    state->flush_text_data = nullptr;
+    state->flush_text = nullptr;
     return state;
 }
 
-void ulight_destroy(ulight_state* state) noexcept
-{
-    if (state->tokens) {
-        const size_t bytes = state->tokens_length * sizeof(ulight_token);
-        state->free_function(state->tokens, bytes, alignof(ulight_token));
-    }
-    if (state->html_output) {
-        state->free_function(state->html_output, state->html_output_length, 1);
-    }
-}
+void ulight_destroy(ulight_state*) noexcept { }
 
 ulight_state* ulight_new() noexcept
 {
