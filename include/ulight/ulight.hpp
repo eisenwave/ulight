@@ -26,6 +26,12 @@ inline Lang get_lang(std::string_view name) noexcept
     return Lang(ulight_get_lang(name.data(), name.length()));
 }
 
+[[nodiscard]]
+inline Lang get_lang(std::u8string_view name) noexcept
+{
+    return get_lang({ reinterpret_cast<const char*>(name.data()), name.size() });
+}
+
 /// See `ulight_status`.
 enum struct Status : Underlying {
     ok = ULIGHT_STATUS_OK,
