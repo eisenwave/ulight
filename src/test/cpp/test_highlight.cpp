@@ -107,7 +107,7 @@ TEST_F(Highlight_Test, file_tests)
                       << ":\nActual (" << input_path << ") -> expected (" << expectations_path
                       << ") difference:\n";
             print_lines_diff(std::cout, as_string_view(actual), as_string_view(expected));
-            std::cout << '\n';
+            std::cout << ansi::reset << '\n';
         }
         EXPECT_TRUE(test_succeeded);
 
