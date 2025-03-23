@@ -106,7 +106,7 @@ constexpr std::string_view ulight_highlight_type_id(Highlight_Type type) noexcep
         using enum Highlight_Type;
     case error: return "err";
     case comment: return "cmt";
-    case comment_delimiter: return "cmt_del";
+    case comment_delimiter: return "cmt_delim";
     case value: return "val";
     case number: return "num";
     case string: return "str";
