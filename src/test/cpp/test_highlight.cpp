@@ -62,6 +62,9 @@ std::vector<std::filesystem::path> paths_in_directory(const std::filesystem::pat
 
 TEST_F(Highlight_Test, file_tests)
 {
+    Token token_buffer[4096];
+    char text_buffer[8192];
+
     static const std::filesystem::path directory { "test" };
     ASSERT_TRUE(std::filesystem::is_directory(directory));
 
@@ -94,14 +97,29 @@ TEST_F(Highlight_Test, file_tests)
 
         clear();
 
-        if (!load_code(expectations_path) || !load_expectations(expectations_path)) {
+        if (!load_code(input_path) || !load_expectations(expectations_path)) {
             continue;
         }
 
-        State state;
+        auto flush_buffer = [&](const char* text, size_t length) {
+            const std::u8string_view sv { reinterpret_cast<const char8_t*>(text), length };
+            actual.insert(actual.end(), sv.begin(), sv.end());
+        };
 
-        const bool test_succeeded = expected == actual;
-        if (!test_succeeded) {
+        State state;
+        state.set_source(as_string_view(source));
+        state.set_lang(lang);
+        state.set_token_buffer(token_buffer);
+        state.set_text_buffer(text_buffer);
+        state.on_flush_text(flush_buffer);
+        const Status status = state.source_to_html();
+        EXPECT_EQ(status, Status::ok);
+        if (status != Status::ok) {
+            continue;
+        }
+
+        const bool compare_succeeded = expected == actual;
+        if (!compare_succeeded) {
             std::cout << ansi::h_red << "FAIL: " //
                       << ansi::reset << input_path //
                       << ":\nActual (" << input_path << ") -> expected (" << expectations_path
@@ -109,7 +127,7 @@ TEST_F(Highlight_Test, file_tests)
             print_lines_diff(std::cout, as_string_view(actual), as_string_view(expected));
             std::cout << ansi::reset << '\n';
         }
-        EXPECT_TRUE(test_succeeded);
+        EXPECT_TRUE(compare_succeeded);
 
         std::cout << ansi::h_green << "OK: " //
                   << ansi::reset << input_path.generic_string() << '\n';
