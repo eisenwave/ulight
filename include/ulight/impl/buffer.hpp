@@ -1,6 +1,8 @@
 #ifndef ULIGHT_BUFFER_HPP
 #define ULIGHT_BUFFER_HPP
 
+#include <algorithm>
+#include <ranges>
 #include <span>
 
 #include "ulight/function_ref.hpp"
@@ -45,32 +47,46 @@ public:
     {
     }
 
-    /// Returns the amount of elements that can be appended to the buffer before flushing.
+    /// @brief Returns the amount of elements that can be appended to the buffer before flushing.
     [[nodiscard]]
-    std::size_t capacity() const noexcept
+    constexpr std::size_t capacity() const noexcept
     {
         return m_capacity;
     }
 
-    /// Returns the number of elements currently in the buffer.
+    /// @brief Returns the number of elements currently in the buffer.
     /// `size() <= capacity()` is always `true`.
     [[nodiscard]]
-    std::size_t size() const noexcept
+    constexpr std::size_t size() const noexcept
     {
         return m_size;
     }
 
-    /// Equivalent to `m_size == 0`.
+    /// @brief Equivalent to `capacity() - size()`.
     [[nodiscard]]
-    bool empty() const noexcept
+    constexpr std::size_t available() const noexcept
+    {
+        return m_capacity - m_size;
+    }
+
+    /// @brief Equivalent to `available() == 0`.
+    [[nodiscard]]
+    constexpr bool full() const noexcept
+    {
+        return m_size == m_capacity;
+    }
+
+    /// @brief Equivalent to `size() == 0`.
+    [[nodiscard]]
+    constexpr bool empty() const noexcept
     {
         return m_size == 0;
     }
 
-    /// Sets the size to zero.
+    /// @brief Sets the size to zero.
     /// Since the buffer is not responsible for the lifetimes of the elements in the buffer,
     /// none are destroyed.
-    void clear() noexcept
+    constexpr void clear() noexcept
     {
         m_size = 0;
     }
@@ -78,14 +94,14 @@ public:
     constexpr value_type& push_back(const value_type& e)
         requires std::is_copy_assignable_v<value_type>
     {
-        flush_if_lacks_space_for(1);
+        try_reserve(1);
         return m_buffer[m_size++] = e;
     }
 
     constexpr value_type& push_back(value_type&& e)
         requires std::is_move_assignable_v<value_type>
     {
-        flush_if_lacks_space_for(1);
+        try_reserve(1);
         return m_buffer[m_size++] = std::move(e);
     }
 
@@ -94,32 +110,67 @@ public:
         requires std::is_constructible_v<value_type, Args&&...>
         && std::is_move_assignable_v<value_type>
     {
-        flush_if_lacks_space_for(1);
+        try_reserve(1);
         return m_buffer[m_size++] = value_type(std::forward<Args>(args)...);
     }
 
+    template <std::input_iterator Iter, std::sentinel_for<Iter> Sentinel>
+        requires std::convertible_to<std::iter_reference_t<Iter>, value_type>
+    constexpr void append(Iter begin, Sentinel end)
+    {
+        for (; begin != end; ++begin) {
+            push_back(*begin);
+        }
+    }
+
+    template <std::random_access_iterator Iter>
+        requires std::convertible_to<std::iter_reference_t<Iter>, value_type>
+    constexpr void append(Iter begin, Iter end)
+    {
+        using Diff = std::iter_difference_t<Iter>;
+        while (begin != end) {
+            if (full()) {
+                flush();
+            }
+            const auto chunk_size = std::min(available(), std::size_t(end - begin));
+            ULIGHT_DEBUG_ASSERT(chunk_size != 0);
+            std::ranges::copy(begin, begin + Diff(chunk_size), m_buffer);
+            begin += Diff(chunk_size);
+            m_size += chunk_size;
+        }
+    }
+
+    template <std::ranges::input_range R>
+        requires std::convertible_to<std::ranges::range_reference_t<R>, value_type>
+    constexpr void append_range(R&& range)
+    {
+        append(
+            std::ranges::begin(std::forward<R>(range)), std::ranges::end(std::forward<R>(range))
+        );
+    }
+
     [[nodiscard]]
-    value_type& back()
+    constexpr value_type& back()
     {
         ULIGHT_DEBUG_ASSERT(!empty());
         return m_buffer[m_size - 1];
     }
 
     [[nodiscard]]
-    const value_type& back() const
+    constexpr const value_type& back() const
     {
         ULIGHT_DEBUG_ASSERT(!empty());
         return m_buffer[m_size - 1];
     }
 
-    void flush()
+    constexpr void flush()
     {
         m_flush(m_flush_data, m_buffer, m_size);
         m_size = 0;
     }
 
 private:
-    void flush_if_lacks_space_for(std::size_t amount)
+    constexpr void try_reserve(std::size_t amount)
     {
         ULIGHT_DEBUG_ASSERT(m_capacity != 0);
         if (m_size + amount > m_capacity) {
