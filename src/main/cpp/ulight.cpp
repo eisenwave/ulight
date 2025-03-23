@@ -104,6 +104,9 @@ void ulight_free(void* pointer, size_t size, size_t alignment) noexcept
 
 ulight_state* ulight_init(ulight_state* state) ULIGHT_NOEXCEPT
 {
+    constexpr std::string_view default_tag_name = "h-";
+    constexpr std::string_view default_attr_name = "data-h";
+
     state->source = nullptr;
     state->source_length = 0;
     state->lang = ULIGHT_LANG_NONE;
@@ -114,10 +117,10 @@ ulight_state* ulight_init(ulight_state* state) ULIGHT_NOEXCEPT
     state->flush_tokens_data = nullptr;
     state->flush_tokens = nullptr;
 
-    state->html_tag_name = "span";
-    state->html_tag_name_length = 4;
-    state->html_attr_name = "data-hl";
-    state->html_attr_name_length = 7;
+    state->html_tag_name = default_tag_name.data();
+    state->html_tag_name_length = default_tag_name.length();
+    state->html_attr_name = default_attr_name.data();
+    state->html_attr_name_length = default_attr_name.length();
 
     state->text_buffer = nullptr;
     state->text_buffer_length = 0;
@@ -201,36 +204,38 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
         return ULIGHT_STATUS_BAD_STATE;
     }
 
+    const std::string_view source_string { state->source, state->source_length };
     const std::string_view html_tag_name { state->html_tag_name, state->html_tag_name_length };
     const std::string_view html_attr_name { state->html_attr_name, state->html_attr_name_length };
 
     ulight::Non_Owning_Buffer<char> buffer { state->text_buffer, state->text_buffer_length,
                                              state->flush_text_data, state->flush_text };
 
+    std::size_t previous_end = 0;
     auto flush_text = // clang-format off
-    [&, previous_end = 0uz](const ulight_token* tokens, std::size_t amount) mutable  {
+    [&](const ulight_token* tokens, std::size_t amount) mutable  {
         for (std::size_t i = 0; i < amount; ++i) {
             const auto& t = tokens[i];
             if (t.begin > previous_end) {
-                const std::string_view source_gap { state->source + t.begin, t.length };
+                const std::string_view source_gap { state->source + previous_end, t.begin - previous_end };
                 buffer.append_range(source_gap);
             }
 
             const std::string_view id
                 = ulight::highlight_type_id(ulight::Highlight_Type(t.type));
-            const std::string_view source_part { state->source + t.begin, t.length };
+            const auto source_part = source_string.substr(t.begin, t.length);
 
             buffer.push_back('<');
             buffer.append_range(html_tag_name);
             buffer.push_back(' ');
             buffer.append_range(html_attr_name);
-            buffer.push_back(' ');
+            buffer.push_back('=');
             buffer.append_range(id);
             buffer.push_back('>');
             buffer.append_range(source_part);
-            buffer.push_back('<');
+            buffer.append_range("</"sv);
             buffer.append_range(html_tag_name);
-            buffer.append_range("/>"sv);
+            buffer.push_back('>');
 
             previous_end = t.begin + t.length;
         }
@@ -248,6 +253,12 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
         return result;
     }
     try {
+        // It is common that the final token doesn't encompass the last code unit in the source.
+        // For example, there can be a trailing '\n' at the end of the file, without highlighting.
+        ULIGHT_ASSERT(previous_end <= state->source_length);
+        if (previous_end != state->source_length) {
+            buffer.append_range(source_string.substr(previous_end));
+        }
         buffer.flush();
         return ULIGHT_STATUS_OK;
     } catch (...) {
