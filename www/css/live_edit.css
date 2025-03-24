@@ -1,0 +1,219 @@
+:root {
+    --separator-width: 0.5em;
+    --body-margin: 1rem;
+}
+
+html {
+    margin: 0;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+body {
+    margin: var(--body-margin);
+    width: calc(100% - var(--body-margin) * 2);
+    height: calc(100% - var(--body-margin) * 2);
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+    box-sizing: border-box;
+
+    display: grid;
+}
+
+header {
+    margin: 0;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    margin: 0;
+    font-family: 'JetBrains Mono', sans-serif;
+    font-weight: 900;
+    opacity: 0.5;
+    user-select: none;
+}
+
+body:not(.vertical) main {
+    grid-template-columns: 1fr var(--separator-width) 1fr;
+}
+
+body.vertical main {
+    grid-template-rows: 1fr var(--separator-width) 1fr;
+}
+
+textarea {
+    resize: none;
+    color: transparent;
+    caret-color: var(--text);
+}
+
+textarea,
+#code-input-layers,
+#code-highlight {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+#code-input-layers {
+    display: grid;
+    font-size: 11pt;
+}
+
+#code-input-layers>* {
+    grid-row: 1;
+    grid-column: 1;
+
+    border: none;
+    outline: none;
+    white-space: pre;
+    background: none;
+
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#code-highlight {
+    pointer-events: none;
+}
+
+#code-input-container,
+#output-container {
+    width: 100%;
+    height: 100%;
+
+    box-sizing: border-box;
+    margin: 0;
+
+    color: inherit;
+    font-size: 11pt;
+}
+
+#code-input-layers,
+#code-highlight {
+    box-sizing: border-box;
+}
+
+#code-input {
+    overflow: hidden;
+}
+
+#output-container {
+    overflow: hidden;
+
+    display: grid;
+    grid-template-rows: auto 1fr;
+}
+
+#code-input-container {
+    overflow: auto;
+}
+
+#output {
+    box-sizing: border-box;
+    overflow: auto;
+    overflow-x: auto;
+}
+
+#output-container,
+#code-input-container {
+    font-family: 'JetBrainsMono';
+    font-variant-ligatures: no-contextual;
+    font-weight: normal;
+}
+
+
+#code-input-container,
+#output {
+    background: var(--deep-background);
+    border: 0.75em solid var(--deep-background);
+    border-radius: 0.5em;
+}
+
+#output {
+    white-space: pre;
+}
+
+#code-input-container {
+    display: grid;
+    grid-template-columns: auto 1fr;
+}
+
+textarea,
+.line-numbers {
+    font: inherit;
+    font-size: inherit;
+}
+
+.line-numbers {
+    position: sticky;
+    left: 0;
+
+    margin: 0;
+    color: rgba(var(--text-rgb), 50%);
+    padding-right: 1em;
+    /* to fix syncing issues when scroll bars would make the textarea longer,
+       and the line numbers can't "keep up" */
+    padding-bottom: 2em;
+    min-width: 3ch;
+    overflow: hidden;
+
+    background: var(--deep-background);
+
+    user-select: none;
+    text-align: right;
+}
+
+body.while-dragging {
+    user-select: none;
+}
+
+body:not(.vertical) #separator,
+body:not(.vertical).while-dragging,
+body:not(.vertical).while-dragging * {
+    cursor: ew-resize !important;
+}
+
+body.vertical #separator,
+body.vertical.while-dragging,
+body.vertical.while-dragging * {
+    cursor: ns-resize !important;
+}
+
+#split-buttons {
+    position: absolute;
+    top: 1.5em;
+    right: 1.5em;
+}
+
+#split-buttons img {
+    width: 1.5em;
+    height: 1.5em;
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+#split-buttons img:hover {
+    opacity: 1;
+}
+
+#output-options {
+    display: flex;
+    justify-content: flex-end;
+
+    margin-right: 0.5em;
+    margin-bottom: 0.75em;
+}
+
+body:not(.vertical) #output-options {
+    justify-content: flex-start;
+}

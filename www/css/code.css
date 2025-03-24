@@ -1,0 +1,251 @@
+@media (prefers-color-scheme: light) {
+
+    c-bra,
+    c-pun {
+        /* bracket, punctuation */
+        color: #646464;
+    }
+
+    c-opr {
+        /* operation */
+        color: #000000;
+    }
+
+    c-idn {
+        /* identifier */
+        color: #000000;
+    }
+
+    c-iva {
+        /* variable name */
+        color: #5c477e;
+    }
+
+    c-ifn {
+        /* function name */
+        color: #853e7a;
+    }
+
+    c-ian {
+        /* annotation name */
+        color: #966c1c;
+    }
+
+    c-ity {
+        /* type name */
+        color: #0050c8;
+    }
+
+    c-key,
+    c-bol {
+        /* keyword, boolean literal */
+        color: #c80032;
+    }
+
+    c-num,
+    c-str {
+        /* number, string */
+        color: #367c2a;
+    }
+
+    c-com {
+        /* comment */
+        color: #777777;
+    }
+
+    c-dtx {
+        /* diagnostic text */
+        color: #000000;
+    }
+
+    c-det {
+        /* diagnostic error text */
+        color: #872727;
+    }
+
+    c-dcp {
+        /* diagnostic code position */
+        color: #303030;
+        font-weight: bold;
+    }
+
+    c-der {
+        /* diagnostic error */
+        color: #872727;
+        font-weight: bold;
+    }
+
+    c-dwr {
+        /* diagnostic warning */
+        color: #826a14;
+        font-weight: bold;
+    }
+
+    c-dnt {
+        /* diagnostic note */
+        color: #464646;
+        font-weight: bold;
+    }
+
+    c-dln {
+        /* diagnostic line number */
+        color: #646400;
+    }
+
+    c-dpc {
+        /* diagnostic punctuation */
+        color: #646464;
+    }
+
+    c-dpi {
+        /* diagnostic position indicator */
+        color: #367c2a;
+    }
+
+    c-dcc {
+        /* diagnostic code citation */
+        color: #000000;
+    }
+
+    c-die {
+        /* diagnostic internal error notice */
+        color: #3d003d;
+    }
+
+    c-dor {
+        /* diagnostic operand */
+        color: #3d003d;
+    }
+
+    c-dop {
+        /* diagnostic operator */
+        color: #000000;
+    }
+
+}
+
+@media not (prefers-color-scheme: light) {
+
+    c-bra,
+    c-pun {
+        /* bracket, punctuation */
+        color: #a0a0a0;
+    }
+
+    c-opr {
+        /* operation */
+        color: #ffffff;
+    }
+
+    c-idn {
+        /* identifier */
+        color: #cccccc;
+    }
+
+    c-iva {
+        /* variable name */
+        color: #a4c4de;
+    }
+
+    c-ifn {
+        /* function name */
+        color: #ffdc9c;
+    }
+
+    c-ian {
+        /* annotation name */
+        color: #ea91d4;
+    }
+
+    c-ity {
+        /* type name */
+        color: #4fb0ff;
+    }
+
+    c-key,
+    c-bol {
+        /* keyword, boolean literal */
+        color: #ff5a82;
+    }
+
+    c-num,
+    c-str {
+        /* number, string */
+        color: #98d48e;
+    }
+
+    c-com {
+        /* comment */
+        color: #777777;
+    }
+
+    c-dtx {
+        /* diagnostic text */
+        color: #d2d2d2;
+    }
+
+    c-det {
+        /* diagnostic error text */
+        color: #dc4848;
+    }
+
+    c-dcp {
+        /* diagnostic code position */
+        color: #7e7e7e;
+        font-weight: bold;
+    }
+
+    c-der {
+        /* diagnostic error */
+        color: #cb2929;
+        font-weight: bold;
+    }
+
+    c-dwr {
+        /* diagnostic warning */
+        color: #dbb83c;
+        font-weight: bold;
+    }
+
+    c-dnt {
+        /* diagnostic note */
+        color: #a1a1a1;
+        font-weight: bold;
+    }
+
+    c-dln {
+        /* diagnostic line number */
+        color: #d5d539;
+    }
+
+    c-dpc {
+        /* diagnostic punctuation */
+        color: #8b8b8b;
+    }
+
+    c-dpi {
+        /* diagnostic position indicator */
+        color: #69c459;
+    }
+
+    c-dcc {
+        /* diagnostic code citation */
+        color: #d2d2d2;
+    }
+
+    c-die {
+        /* diagnostic internal error notice */
+        color: #c381c3;
+    }
+
+    c-dor {
+        /* diagnostic operand */
+        color: #d178d1;
+    }
+
+    c-dop {
+        /* diagnostic operator */
+        color: #ffffff;
+    }
+
+}
