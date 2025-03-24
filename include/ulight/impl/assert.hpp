@@ -4,7 +4,7 @@
 #include <source_location>
 #include <string_view>
 
-#include "ulight/impl/platform.hpp"
+#include "ulight/impl/platform.h"
 
 namespace ulight {
 

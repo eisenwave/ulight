@@ -1,7 +1,7 @@
 #ifndef ULIGHT_DIFF_HPP
 #define ULIGHT_DIFF_HPP
 
-#include "ulight/impl/platform.hpp"
+#include "ulight/impl/platform.h"
 #if ULIGHT_CPP // suppress unused include warning
 #endif
 #ifdef ULIGHT_EMSCRIPTEN

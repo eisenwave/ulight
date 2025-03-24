@@ -2,11 +2,12 @@
 #include <new>
 #include <string_view>
 
-#include "ulight/impl/memory.hpp"
 #include "ulight/ulight.h"
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/highlight.hpp"
+#include "ulight/impl/memory.hpp"
+#include "ulight/impl/platform.h"
 #include "ulight/impl/unicode.hpp"
 
 namespace ulight {
@@ -62,6 +63,7 @@ consteval ulight_lang_entry make_lang_entry(std::string_view name, ulight_lang l
 } // namespace
 
 // clang-format off
+ULIGHT_EXPORT
 constexpr ulight_lang_entry ulight_lang_list[] {
     //make_lang_entry( u8"c", ULIGHT_LANG_c ),
     make_lang_entry("c++", ULIGHT_LANG_CPP),
@@ -89,6 +91,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
 };
 // clang-format on
 
+ULIGHT_EXPORT
 constexpr size_t ulight_lang_list_length = sizeof(ulight_lang_list_length);
 
 namespace {
@@ -102,6 +105,7 @@ constexpr auto ulight_lang_entry_to_sv
 
 static_assert(std::ranges::is_sorted(ulight_lang_list, {}, ulight_lang_entry_to_sv));
 
+ULIGHT_EXPORT
 ulight_lang ulight_get_lang(const char* name, size_t name_length) noexcept
 {
     const std::string_view search_value { name, name_length };
@@ -113,22 +117,26 @@ ulight_lang ulight_get_lang(const char* name, size_t name_length) noexcept
         : ULIGHT_LANG_NONE;
 }
 
+ULIGHT_EXPORT
 ulight_string_view ulight_highlight_type_id(ulight_highlight_type type) noexcept
 {
     const std::string_view result = ulight::ulight_highlight_type_id(ulight::Highlight_Type(type));
     return { result.data(), result.size() };
 }
 
+ULIGHT_EXPORT
 void* ulight_alloc(size_t size, size_t alignment) noexcept
 {
     return operator new(size, std::align_val_t(alignment), std::nothrow);
 }
 
+ULIGHT_EXPORT
 void ulight_free(void* pointer, size_t size, size_t alignment) noexcept
 {
     operator delete(pointer, size, std::align_val_t(alignment));
 }
 
+ULIGHT_EXPORT
 ulight_state* ulight_init(ulight_state* state) ULIGHT_NOEXCEPT
 {
     constexpr std::string_view default_tag_name = "h-";
@@ -156,8 +164,10 @@ ulight_state* ulight_init(ulight_state* state) ULIGHT_NOEXCEPT
     return state;
 }
 
+ULIGHT_EXPORT
 void ulight_destroy(ulight_state*) noexcept { }
 
+ULIGHT_EXPORT
 ulight_state* ulight_new() noexcept
 {
     void* result = ulight_alloc(sizeof(ulight_state), alignof(ulight_state));
@@ -165,12 +175,14 @@ ulight_state* ulight_new() noexcept
 }
 
 /// Frees a `struct ulight` object previously returned from `ulight_new`.
+ULIGHT_EXPORT
 void ulight_delete(ulight_state* state) noexcept
 {
     ulight_destroy(state);
     ulight_free(state, sizeof(ulight_state), alignof(ulight_state));
 }
 
+ULIGHT_EXPORT
 ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
 {
     if (state->source == nullptr && state->source_length != 0) {
@@ -212,6 +224,7 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     }
 }
 
+ULIGHT_EXPORT
 // Suppress false positive: https://github.com/llvm/llvm-project/issues/132605
 // NOLINTNEXTLINE(bugprone-exception-escape)
 ulight_status ulight_source_to_html(ulight_state* state) noexcept

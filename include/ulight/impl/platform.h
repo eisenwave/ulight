@@ -30,11 +30,20 @@
 
 #define ULIGHT_UNREACHABLE() __builtin_unreachable()
 
+#ifdef __cplusplus
 namespace ulight {
 
 /// @brief The default underlying type for scoped enumerations.
 using Underlying = unsigned char;
 
 } // namespace ulight
+#endif
+
+#ifdef ULIGHT_EMSCRIPTEN
+#include <emscripten.h>
+#define ULIGHT_EXPORT EMSCRIPTEN_KEEPALIVE
+#else
+#define ULIGHT_EXPORT
+#endif
 
 #endif

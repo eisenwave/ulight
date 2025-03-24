@@ -13,7 +13,7 @@
 #include "ulight/function_ref.hpp"
 
 #include "ulight/impl/ansi.hpp"
-#include "ulight/impl/platform.hpp"
+#include "ulight/impl/platform.h"
 
 #ifdef ULIGHT_EMSCRIPTEN
 #error I/O functionality should not be included when compiling with Emscripten.
