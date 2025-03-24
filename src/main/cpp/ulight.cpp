@@ -92,7 +92,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
 // clang-format on
 
 ULIGHT_EXPORT
-constexpr size_t ulight_lang_list_length = sizeof(ulight_lang_list_length);
+constexpr size_t ulight_lang_list_length = std::size(ulight_lang_list);
 
 namespace {
 
