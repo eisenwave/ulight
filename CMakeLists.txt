@@ -1,6 +1,20 @@
 cmake_minimum_required(VERSION 3.22)
 project(ulight)
 
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+    set(HOMEBREW_PREFIX "/opt/homebrew") # Silicon
+else()
+    set(HOMEBREW_PREFIX "/usr/local") # Intel
+endif()
+
+if(APPLE)
+    set(CMAKE_EXE_LINKER_FLAGS "-L${HOMEBREW_PREFIX}/opt/llvm/lib")
+    set(CMAKE_MODULE_LINKER_FLAGS "-L${HOMEBREW_PREFIX}/opt/llvm/lib")
+    set(CMAKE_SHARED_LINKER_FLAGS "-L${HOMEBREW_PREFIX}/opt/llvm/lib")
+    set(CMAKE_AR "${HOMEBREW_PREFIX}/opt/llvm/bin/llvm-ar")
+    set(CMAKE_RANLIB "${HOMEBREW_PREFIX}/opt/llvm/bin/llvm-ranlib")
+endif()
+
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
