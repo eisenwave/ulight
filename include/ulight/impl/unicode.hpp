@@ -59,6 +59,12 @@ public:
         : Unicode_Error { error, error_code_message(error) }
     {
     }
+
+    [[nodiscard]]
+    Error_Code get_error() const
+    {
+        return m_error;
+    }
 };
 
 /// @brief Returns the length of the UTF-8 unit sequence (including `c`)
