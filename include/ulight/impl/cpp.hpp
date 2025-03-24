@@ -1,3 +1,6 @@
+#ifndef ULIGHT_CPP_HPP
+#define ULIGHT_CPP_HPP
+
 #include <cstddef>
 #include <optional>
 #include <string_view>
@@ -403,3 +406,5 @@ String_Literal_Result match_string_literal(std::u8string_view str);
 std::optional<Cpp_Token_Type> match_preprocessing_op_or_punc(std::u8string_view str);
 
 } // namespace ulight::cpp
+
+#endif
