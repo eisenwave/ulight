@@ -42,8 +42,11 @@ struct Assertion_Error {
 
 #ifdef NDEBUG
 #define ULIGHT_DEBUG_ASSERT(...) static_assert(ULIGHT_IS_CONTEXTUALLY_BOOL_CONVERTIBLE(__VA_ARGS__))
-#define ULIGHT_DEBUG_UNREACHABLE(...)                                                              \
-    static_assert(ULIGHT_IS_CONTEXTUALLY_BOOL_CONVERTIBLE(__VA_ARGS__))
+#define ULIGHT_DEBUG_ASSERT_UNREACHABLE(...)                                                       \
+    do {                                                                                           \
+        static_assert(ULIGHT_IS_CONTEXTUALLY_BOOL_CONVERTIBLE(__VA_ARGS__));                       \
+        ULIGHT_UNREACHABLE();                                                                      \
+    } while (0)
 #else
 #define ULIGHT_DEBUG_ASSERT(...) ULIGHT_ASSERT(__VA_ARGS__)
 #define ULIGHT_DEBUG_ASSERT_UNREACHABLE(...) ULIGHT_ASSERT_UNREACHABLE(__VA_ARGS__)

@@ -28,6 +28,8 @@
 #define ULIGHT_ASSUME(...)
 #endif
 
+#define ULIGHT_UNREACHABLE() __builtin_unreachable()
+
 namespace ulight {
 
 /// @brief The default underlying type for scoped enumerations.
