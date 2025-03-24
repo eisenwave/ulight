@@ -52,6 +52,7 @@ if(DEFINED EMSCRIPTEN)
         "-stdlib=libc++"
         "SHELL:-s WASM=1"
         "SHELL:-s ENVIRONMENT=web"
+        "SHELL:-s ALLOW_MEMORY_GROWTH=1"
         "SHELL:-s AUTO_JS_LIBRARIES=0"
         "SHELL:-s SIDE_MODULE=0"
         "SHELL:-s STANDALONE_WASM=1"
