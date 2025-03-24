@@ -67,7 +67,7 @@ TEST(Unicode, encode_decode_reversible_fuzzing)
     std::uniform_int_distribution<std::uint32_t> distr { 0, code_point_max };
 
     for (int i = 0; i < iterations; ++i) {
-        const char32_t code_point = distr(rng);
+        const auto  code_point = static_cast<char32_t>(distr(rng));
         if (!is_scalar_value(code_point)) {
             continue;
         }
