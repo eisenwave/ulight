@@ -23,8 +23,18 @@
 extern "C" {
 #endif
 
+typedef struct ulight_string_view {
+    const char* text;
+    size_t length;
+} ulight_string_view;
+
 // LANGUAGES
 // =================================================================================================
+
+enum {
+    /// @brief The amount of unique languages supported.
+    ULIGHT_LANG_COUNT = 3
+};
 
 /// @brief A language supported by ulight for syntax highlighting.
 typedef enum ulight_lang {
@@ -56,6 +66,13 @@ extern const ulight_lang_entry ulight_lang_list[];
 /// @brief The size of `ulight_lang_list`, in elements.
 extern const size_t ulight_lang_list_length;
 
+/// @brief An array of "display names" of languages,
+/// indexed by the values of `ulight_lang`.
+///
+/// For example, `ulight_lang_display_names[ULIGHT_LANG_CPP]` is `"C++"`.
+/// Each `ulight_string_view` in this array is null-terminated.
+extern const ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT];
+
 // STATUS AND FLAGS
 // =================================================================================================
 
@@ -70,7 +87,8 @@ typedef enum ulight_status {
     ULIGHT_STATUS_BAD_LANG,
     /// @brief The given source code is not correctly UTF-8 encoded.
     ULIGHT_STATUS_BAD_TEXT,
-    /// @brief Something else is wrong with the `ulight_state` that isn't described by one of the
+    /// @brief Something else is wrong with the `ulight_state` that isn't described by one of
+    /// the
     /// above.
     ULIGHT_STATUS_BAD_STATE,
     /// @brief Syntax highlighting was not possible because the code is malformed.
@@ -246,11 +264,6 @@ typedef enum ulight_highlight_type {
     ULIGHT_HL_SYM_OP = 0xc7,
 
 } ulight_highlight_type;
-
-typedef struct ulight_string_view {
-    const char* text;
-    size_t length;
-} ulight_string_view;
 
 /// @brief Returns a textual representation made of ASCII characters and underscores of `type`.
 /// This is used as a value in `ulight_tokens_to_html`.

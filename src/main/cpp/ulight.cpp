@@ -55,9 +55,16 @@ extern "C" {
 
 namespace {
 
+[[nodiscard]]
 consteval ulight_lang_entry make_lang_entry(std::string_view name, ulight_lang lang)
 {
     return { .name = name.data(), .name_length = name.size(), .lang = lang };
+}
+
+[[nodiscard]]
+consteval ulight_string_view make_sv(std::string_view name)
+{
+    return { .text = name.data(), .length = name.length() };
 }
 
 } // namespace
@@ -93,6 +100,13 @@ constexpr ulight_lang_entry ulight_lang_list[] {
 
 ULIGHT_EXPORT
 constexpr size_t ulight_lang_list_length = std::size(ulight_lang_list);
+
+ULIGHT_EXPORT
+constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
+    make_sv("N/A"),
+    make_sv("MMML"),
+    make_sv("C++"),
+};
 
 namespace {
 
