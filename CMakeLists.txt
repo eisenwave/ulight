@@ -4,11 +4,6 @@ project(ulight)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(NOT DEFINED EMSCRIPTEN)
-    find_package(GTest REQUIRED)
-    enable_testing()
-endif()
-
 set(LLVM_WARNING_OPTIONS -Wall -Wimplicit-fallthrough -Wpedantic -Wextra -Wconversion -Wmissing-declarations -Wno-bit-int-extension)
 
 if(DEFINED EMSCRIPTEN)
@@ -26,24 +21,18 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 #    set(SANITIZER_OPTIONS -fsanitize:address)
 endif()
 
-add_library(ulight STATIC
+set(LIBRARY_SOURCES
     src/main/cpp/chars.cpp
     src/main/cpp/cpp.cpp
     src/main/cpp/mmml.cpp
     src/main/cpp/parse_utils.cpp
     src/main/cpp/ulight.cpp
 )
-target_include_directories(ulight PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
-
-target_compile_options(ulight PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
-target_link_options(ulight PUBLIC ${SANITIZER_OPTIONS})
 
 if(DEFINED EMSCRIPTEN)
     # https://stunlock.gg/posts/emscripten_with_cmake/
-    add_executable(ulight-wasm ${HEADERS}
-        src/main/cpp/wasm.cpp
-    )
-    target_link_libraries(ulight-wasm ulight)
+    add_executable(ulight-wasm ${LIBRARY_SOURCES})
+    target_include_directories(ulight-wasm PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include")
     set_target_properties(ulight-wasm PROPERTIES
         OUTPUT_NAME "ulight"
         SUFFIX ".wasm"
@@ -66,12 +55,20 @@ if(DEFINED EMSCRIPTEN)
         "SHELL:-s AUTO_JS_LIBRARIES=0"
         "SHELL:-s SIDE_MODULE=0"
         "SHELL:-s STANDALONE_WASM=1"
-        "SHELL:-s \"EXPORTED_FUNCTIONS=['_bm_foreign_alloc','_bm_foreign_free','_bm_plus','_bm_length_as_string','_bm_length_as_string_result','_bm_translate_code','_bm_translate_code_result','_bm_syntax_highlight','_bm_syntax_highlight_result']\""
+#       "SHELL:-s \"EXPORTED_FUNCTIONS=['_bm_foreign_alloc','_bm_foreign_free','_bm_plus','_bm_length_as_string','_bm_length_as_string_result','_bm_translate_code','_bm_translate_code_result','_bm_syntax_highlight','_bm_syntax_highlight_result']\""
         "SHELL:-s \"EXPORTED_RUNTIME_METHODS=[]\""
         "--no-entry"
     )
-
 else(NOT DEFINED EMSCRIPTEN)
+    find_package(GTest REQUIRED)
+    enable_testing()
+
+    add_library(ulight STATIC ${LIBRARY_SOURCES})
+    target_include_directories(ulight PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
+
+    target_compile_options(ulight PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
+    target_link_options(ulight PUBLIC ${SANITIZER_OPTIONS})
+
     add_executable(ulight-cli ${HEADERS}
         src/main/cpp/main.cpp
     )
