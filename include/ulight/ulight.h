@@ -40,6 +40,8 @@ enum {
 typedef enum ulight_lang {
     /// @brief C++.
     ULIGHT_LANG_CPP = 2,
+    /// @brief Lua.
+    ULIGHT_LANG_LUA = 3,
     /// @brief MMML (Missing Middle Markup Language).
     ULIGHT_LANG_MMML = 1,
     /// @brief No langage (null result).
