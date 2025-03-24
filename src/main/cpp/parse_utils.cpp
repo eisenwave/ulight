@@ -75,7 +75,8 @@ std::optional<unsigned long long> parse_uinteger_digits(std::u8string_view text,
 {
     const auto sv = as_string_view(text);
     unsigned long long value;
-    const std::from_chars_result result = std::from_chars(sv.begin(), sv.end(), value, base);
+    const std::from_chars_result result
+        = std::from_chars(sv.data(), sv.data() + sv.size(), value, base);
     if (result.ec != std::errc {}) {
         return {};
     }
