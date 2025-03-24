@@ -24,6 +24,7 @@ endif()
 set(LIBRARY_SOURCES
     src/main/cpp/chars.cpp
     src/main/cpp/cpp.cpp
+    src/main/cpp/lua.cpp
     src/main/cpp/mmml.cpp
     src/main/cpp/parse_utils.cpp
     src/main/cpp/ulight.cpp
