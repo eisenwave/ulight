@@ -1,3 +1,6 @@
+#ifndef ULIGHT_LUA_HPP
+#define ULIGHT_LUA_HPP
+
 #pragma once
 
 #include <cstddef>
@@ -149,3 +152,5 @@ std::size_t match_identifier(std::u8string_view str);
 std::optional<Lua_Token_Type> match_operator_or_punctuation(std::u8string_view str);
 
 } // namespace ulight::lua
+
+#endif
