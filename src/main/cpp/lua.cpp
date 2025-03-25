@@ -43,39 +43,6 @@ inline constexpr std::bitset<lua_token_type_count> token_type_strictness {
     ULIGHT_LUA_TOKEN_ENUM_DATA(ULIGHT_LUA_TOKEN_TYPE_STRICT_STRING), lua_token_type_count
 };
 
-[[nodiscard]]
-bool is_lua_whitespace(char8_t c) noexcept
-{
-    // In Lua, whitespace is any character with a Unicode class of "space separator",
-    // plus the control characters \t, \n, \v, \f, \r
-    // See: https://www.lua.org/manual/5.4/manual.html at section 3.1
-    return c == u8' ' || c == u8'\t' || c == u8'\n' || c == u8'\v' || c == u8'\f' || c == u8'\r';
-}
-
-// Check if character is valid for first character of Lua identifier
-[[nodiscard]]
-bool is_lua_identifier_start(char32_t c) noexcept
-{
-    // Lua identifiers start with a letter or underscore
-    // See: https://www.lua.org/pil/1.3.html
-    return (c >= U'a' && c <= U'z') || (c >= U'A' && c <= U'Z') || c == U'_';
-}
-
-// Check if character is valid for non-first character of Lua identifier
-[[nodiscard]]
-bool is_lua_identifier_continue(char32_t c) noexcept
-{
-    // Lua identifiers contain letters, digits, or underscores after the first char
-    return is_lua_identifier_start(c) || (c >= U'0' && c <= U'9');
-}
-
-// Check if character is valid for Lua hexadecimal digit
-[[nodiscard]]
-bool is_lua_hex_digit(char8_t c) noexcept
-{
-    return (c >= u8'0' && c <= u8'9') || (c >= u8'a' && c <= u8'f') || (c >= u8'A' && c <= u8'F');
-}
-
 } // namespace
 
 /// @brief Returns the in-code representation of `type`.
@@ -149,7 +116,7 @@ std::size_t match_line_comment(std::u8string_view s) noexcept
             idx++;
         }
 
-        // If we have a well-formed opening [, it's a block comment, not a line comment
+        // If we have a well-formed opening [, it's a block comment, not a line comment.
         if (idx < s.length() && s[idx] == u8'[') {
             return 0;
         }
@@ -458,68 +425,93 @@ std::optional<Lua_Token_Type> match_operator_or_punctuation(std::u8string_view s
         return {};
     }
 
-    // Try to match multi-character operators first (greedy matching).
-    if (str.starts_with(u8"...")) {
-        return dot_dot_dot;
-    }
-    if (str.starts_with(u8"..")) {
-        return dot_dot;
-    }
-    if (str.starts_with(u8"::")) {
-        return colon_colon;
-    }
-    if (str.starts_with(u8"<=")) {
-        return less_eq;
-    }
-    if (str.starts_with(u8">=")) {
-        return greater_eq;
-    }
-    if (str.starts_with(u8"~=")) {
-        return tilde_eq;
-    }
-
-    // Then single-character operators.
     switch (str[0]) {
-    case u8'+': //
-        return plus;
-    case u8'-': //
-        return minus;
-    case u8'*': //
-        return asterisk;
-    case u8'/': //
+    case u8'+': return plus;
+    case u8'-': return minus;
+    case u8'*': return asterisk;
+
+    case u8'/':
+        if (str.length() > 1 && str[1] == u8'/') {
+            return floor_div;
+        }
         return slash;
-    case u8'%': //
-        return percent;
-    case u8'^': //
-        return caret;
-    case u8'#': //
-        return hash;
-    case u8'=': //
+
+    case u8'%': return percent;
+
+    case u8'^': return caret;
+
+    case u8'#': return hash;
+
+    case u8'=':
+        if (str.length() > 1 && str[1] == u8'=') {
+            return eq_eq;
+        }
         return eq;
-    case u8'<': //
+
+    case u8'<':
+        if (str.length() > 1) {
+            if (str[1] == u8'=') {
+                return less_eq;
+            }
+            if (str[1] == u8'<') {
+                return left_shift;
+            }
+            // <const> is handled separately in the `highlight_lua` function.
+        }
         return less;
-    case u8'>': //
+
+    case u8'>':
+        if (str.length() > 1) {
+            if (str[1] == u8'=') {
+                return greater_eq;
+            }
+            if (str[1] == u8'>') {
+                return right_shift;
+            }
+        }
         return greater;
-    case u8'.': //
+
+    case u8'~':
+        if (str.length() > 1 && str[1] == u8'=') {
+            return tilde_eq;
+        }
+        return tilde;
+
+    case u8'&': return amp;
+
+    case u8'|': return pipe;
+
+    case u8'.':
+        if (str.length() > 2 && str[1] == u8'.' && str[2] == u8'.') {
+            return dot_dot_dot;
+        }
+        if (str.length() > 1 && str[1] == u8'.') {
+            return dot_dot;
+        }
         return dot;
-    case u8':': //
+
+    case u8':':
+        if (str.length() > 1 && str[1] == u8':') {
+            return colon_colon;
+        }
         return colon;
-    case u8';': //
-        return semicolon;
-    case u8',': //
-        return comma;
-    case u8'(': //
-        return left_parens;
-    case u8')': //
-        return right_parens;
-    case u8'{': //
-        return left_brace;
-    case u8'}': //
-        return right_brace;
-    case u8'[': //
-        return left_square;
-    case u8']': //
-        return right_square;
+
+    case u8';': return semicolon;
+
+    case u8',': return comma;
+
+    case u8'(': return left_parens;
+
+    case u8')': return right_parens;
+
+    case u8'{': return left_brace;
+
+    case u8'}': return right_brace;
+
+    case u8'[': return left_square;
+
+    case u8']': return right_square;
+
     default: return {};
     }
 }
@@ -550,6 +542,19 @@ bool highlight_lua(
 
     while (index < source.size()) {
         const std::u8string_view remainder = source.substr(index);
+
+        // Special case (s).
+        if (remainder.length() >= 7 && remainder.substr(0, 7) == u8"<const>") {
+            // Emit '<' with attr_delim highlight.
+            emit(index, 1, Highlight_Type::attr_delim);
+            // Emit 'const' with attr highlight.
+            emit(index + 1, 5, Highlight_Type::attr);
+            // Emit '>' with attr_delim highlight.
+            emit(index + 6, 1, Highlight_Type::attr_delim);
+
+            index += 7;
+            continue;
+        }
 
         // Whitespace.
         if (const std::size_t white_length = lua::match_whitespace(remainder)) {

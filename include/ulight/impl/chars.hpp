@@ -540,6 +540,39 @@ constexpr bool is_cpp_whitespace(char32_t c)
     return is_ascii_blank(c);
 }
 
+[[nodiscard]]
+constexpr bool is_lua_whitespace(char8_t c) noexcept
+{
+    // In Lua, whitespace is any character with a Unicode class of "space separator",
+    // plus the control characters \t, \n, \v, \f, \r
+    // See: https://www.lua.org/manual/5.4/manual.html at section 3.1
+    return c == u8' ' || c == u8'\t' || c == u8'\n' || c == u8'\v' || c == u8'\f' || c == u8'\r';
+}
+
+// Check if character is valid for first character of Lua identifier
+[[nodiscard]]
+constexpr bool is_lua_identifier_start(char32_t c) noexcept
+{
+    // Lua identifiers start with a letter or underscore
+    // See: https://www.lua.org/pil/1.3.html
+    return (c >= U'a' && c <= U'z') || (c >= U'A' && c <= U'Z') || c == U'_';
+}
+
+// Check if character is valid for non-first character of Lua identifier
+[[nodiscard]]
+constexpr bool is_lua_identifier_continue(char32_t c) noexcept
+{
+    // Lua identifiers contain letters, digits, or underscores after the first char
+    return is_lua_identifier_start(c) || (c >= U'0' && c <= U'9');
+}
+
+// Check if character is valid for Lua hexadecimal digit
+[[nodiscard]]
+constexpr bool is_lua_hex_digit(char8_t c) noexcept
+{
+    return (c >= u8'0' && c <= u8'9') || (c >= u8'a' && c <= u8'f') || (c >= u8'A' && c <= u8'F');
+}
+
 } // namespace ulight
 
 #endif

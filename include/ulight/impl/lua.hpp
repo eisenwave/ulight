@@ -11,6 +11,7 @@ namespace ulight::lua {
 #define ULIGHT_LUA_TOKEN_ENUM_DATA(F)                                                              \
     F(hash, "#", sym_op, 1)                                                                        \
     F(percent, "%", sym_op, 1)                                                                     \
+    F(amp, "&", sym_op, 1)                                                                         \
     F(left_parens, "(", sym_parens, 1)                                                             \
     F(right_parens, ")", sym_parens, 1)                                                            \
     F(asterisk, "*", sym_op, 1)                                                                    \
@@ -21,14 +22,18 @@ namespace ulight::lua {
     F(dot_dot, "..", sym_op, 1)                                                                    \
     F(dot_dot_dot, "...", sym_op, 1)                                                               \
     F(slash, "/", sym_op, 1)                                                                       \
+    F(floor_div, "//", sym_op, 1)                                                                  \
     F(colon, ":", sym_op, 1)                                                                       \
     F(colon_colon, "::", sym_op, 1)                                                                \
     F(semicolon, ";", sym_punc, 1)                                                                 \
     F(less, "<", sym_op, 1)                                                                        \
+    F(left_shift, "<<", sym_op, 1)                                                                 \
     F(less_eq, "<=", sym_op, 1)                                                                    \
     F(eq, "=", sym_op, 1)                                                                          \
+    F(eq_eq, "==", sym_op, 1)                                                                      \
     F(greater, ">", sym_op, 1)                                                                     \
     F(greater_eq, ">=", sym_op, 1)                                                                 \
+    F(right_shift, ">>", sym_op, 1)                                                                \
     F(left_square, "[", sym_square, 1)                                                             \
     F(right_square, "]", sym_square, 1)                                                            \
     F(caret, "^", sym_op, 1)                                                                       \
@@ -55,7 +60,9 @@ namespace ulight::lua {
     F(kw_until, "until", keyword_control, 1)                                                       \
     F(kw_while, "while", keyword_control, 1)                                                       \
     F(left_brace, "{", sym_brace, 1)                                                               \
+    F(pipe, "|", sym_op, 1)                                                                        \
     F(right_brace, "}", sym_brace, 1)                                                              \
+    F(tilde, "~", sym_op, 1)                                                                       \
     F(tilde_eq, "~=", sym_op, 1)
 
 #define ULIGHT_LUA_TOKEN_ENUM_ENUMERATOR(id, code, highlight, strict) id,
