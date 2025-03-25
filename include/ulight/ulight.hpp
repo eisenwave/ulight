@@ -85,6 +85,8 @@ enum struct Highlight_Type : Underlying {
     keyword = ULIGHT_HL_KEYWORD,
     keyword_control = ULIGHT_HL_KEYWORD_CONTROL,
     keyword_type = ULIGHT_HL_KEYWORD_TYPE,
+    attr = ULIGHT_HL_ATTR,
+    attr_delim = ULIGHT_HL_ATTR_DELIM,
     diff_heading = ULIGHT_HL_DIFF_HEADING,
     diff_common = ULIGHT_HL_DIFF_COMMON,
     diff_hunk = ULIGHT_HL_DIFF_HUNK,

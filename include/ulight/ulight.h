@@ -221,6 +221,11 @@ typedef enum ulight_highlight_type {
     /// @brief In coding languages, a keyword that specifies a type, like `int`.
     ULIGHT_HL_KEYWORD_TYPE = 0x52,
 
+    /// @brief In languages with attribute syntax, the attribute content
+    ULIGHT_HL_ATTR = 0x60,
+    /// @brief In languages with attribute syntax, the attribute delimiters
+    ULIGHT_HL_ATTR_DELIM = 0x61,
+
     // 0x80..0x8f Unidiff highlighting
     // -------------------------------------------------------------------------
 

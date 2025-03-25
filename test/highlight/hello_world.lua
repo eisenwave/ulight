@@ -8,4 +8,5 @@ function main(arg)
     return 0
 end
 
+local x <const> = 5
 main(_G.message)
