@@ -136,6 +136,8 @@ constexpr std::string_view ulight_highlight_type_id(Highlight_Type type) noexcep
     case keyword: return "kw";
     case keyword_control: return "kw_ctrl";
     case keyword_type: return "kw_type";
+    case attr: return "attr";
+    case attr_delim: return "attr_dlim";
     case diff_heading: return "df_h";
     case diff_common: return "df_eq";
     case diff_hunk: return "df_hunk";
