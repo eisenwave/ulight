@@ -24,5 +24,3 @@ comment
 ]]
 
 --[==[ block comment with equals ]==]
-
---[[ Unterminated block comment
