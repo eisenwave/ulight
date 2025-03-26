@@ -94,7 +94,7 @@ std::size_t match_whitespace(std::u8string_view str)
 std::size_t match_non_whitespace(std::u8string_view str)
 {
     constexpr auto predicate = [](char8_t c) { return is_cpp_whitespace(c); };
-    return std::size_t(std::ranges::find_if_not(str, predicate) - str.begin());
+    return std::size_t(std::ranges::find_if(str, predicate) - str.begin());
 }
 
 namespace {
