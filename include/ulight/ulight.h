@@ -32,8 +32,9 @@ typedef struct ulight_string_view {
 // =================================================================================================
 
 enum {
-    /// @brief The amount of unique languages supported.
-    ULIGHT_LANG_COUNT = 3
+    /// @brief The amount of unique languages supported,
+    /// including `ULIGHT_LANG_NONE`.
+    ULIGHT_LANG_COUNT = 4
 };
 
 /// @brief A language supported by ulight for syntax highlighting.
@@ -345,6 +346,11 @@ typedef struct ulight_state {
     /// @brief When `text_buffer` is full,
     /// is invoked with `flush_text_data`, `text_buffer`, and `text_buffer_length`.
     void (*flush_text)(void*, char*, size_t);
+
+    /// @brief A brief UTF-8-encoded error text.
+    const char* error;
+    /// @brief The length of `error`, in code units.
+    size_t error_length;
 } ulight_state;
 
 ///  @brief "Default constructor" for `ulight_state`.
