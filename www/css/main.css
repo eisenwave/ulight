@@ -147,7 +147,7 @@ body {
     color: var(--text);
     background: var(--background);
 
-    font-family: 'Roboto', sans-serif;
+    font-family: sans-serif;
     font-size: 12pt;
 }
 
