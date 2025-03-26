@@ -175,6 +175,10 @@ ulight_state* ulight_init(ulight_state* state) ULIGHT_NOEXCEPT
     state->text_buffer_length = 0;
     state->flush_text_data = nullptr;
     state->flush_text = nullptr;
+
+    state->error = nullptr;
+    state->error_length = 0;
+
     return state;
 }
 
@@ -196,21 +200,43 @@ void ulight_delete(ulight_state* state) noexcept
     ulight_free(state, sizeof(ulight_state), alignof(ulight_state));
 }
 
+namespace {
+
+ulight_status error(ulight_state* state, ulight_status status, std::u8string_view text) noexcept
+{
+    state->error = reinterpret_cast<const char*>(text.data());
+    state->error_length = text.length();
+    return status;
+}
+
+} // namespace
+
 ULIGHT_EXPORT
 ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
 {
     if (state->source == nullptr && state->source_length != 0) {
+        return error(
+            state, ULIGHT_STATUS_BAD_STATE, u8"source is null, but source_length is nonzero."
+        );
         return ULIGHT_STATUS_BAD_STATE;
     }
-    if (state->token_buffer == nullptr //
-        || state->token_buffer_length == 0 //
-        || state->flush_tokens == nullptr) {
-        return ULIGHT_STATUS_BAD_BUFFER;
+    if (state->token_buffer == nullptr) {
+        return error(state, ULIGHT_STATUS_BAD_BUFFER, u8"token_buffer must not be null.");
+    }
+    if (state->token_buffer_length == 0) {
+        return error(state, ULIGHT_STATUS_BAD_BUFFER, u8"token_buffer_length must be nonzero.");
+    }
+    if (state->flush_tokens == nullptr) {
+        return error(state, ULIGHT_STATUS_BAD_BUFFER, u8"flush_tokens must not be null.");
     }
     switch (state->lang) {
     case ULIGHT_LANG_CPP:
     case ULIGHT_LANG_MMML: break;
-    case ULIGHT_LANG_NONE: return ULIGHT_STATUS_BAD_LANG;
+    case ULIGHT_LANG_NONE: {
+        return error(
+            state, ULIGHT_STATUS_BAD_LANG, u8"The given language (numeric value) is invalid."
+        );
+    }
     }
 
     ulight::Non_Owning_Buffer<ulight_token> buffer { state->token_buffer,
@@ -230,11 +256,16 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
         buffer.flush();
         return ulight_status(result);
     } catch (const ulight::utf8::Unicode_Error&) {
-        return ULIGHT_STATUS_BAD_TEXT;
+        return error(
+            state, ULIGHT_STATUS_BAD_TEXT, u8"The given source code is not correctly UTF-8-encoded."
+        );
     } catch (const std::bad_alloc&) {
-        return ULIGHT_STATUS_BAD_ALLOC;
+        return error(
+            state, ULIGHT_STATUS_BAD_ALLOC,
+            u8"An attempt to allocate memory during highlighting failed."
+        );
     } catch (...) {
-        return ULIGHT_STATUS_INTERNAL_ERROR;
+        return error(state, ULIGHT_STATUS_INTERNAL_ERROR, u8"An internal error occurred.");
     }
 }
 
@@ -245,17 +276,32 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
 {
     using namespace std::literals;
 
-    if ((state->token_buffer == nullptr && state->token_buffer_length != 0) //
-        || state->text_buffer == nullptr //
-        || state->text_buffer_length == 0 //
-        || state->flush_text == nullptr) {
-        return ULIGHT_STATUS_BAD_BUFFER;
+    if (state->token_buffer == nullptr && state->token_buffer_length != 0) {
+        return error(
+            state, ULIGHT_STATUS_BAD_BUFFER,
+            u8"token_buffer is null, but token_buffer_length is nonzero."
+        );
     }
-    if (state->html_tag_name == nullptr //
-        || state->html_tag_name_length == 0 //
-        || state->html_attr_name == nullptr //
-        || state->html_attr_name_length == 0) {
-        return ULIGHT_STATUS_BAD_STATE;
+    if (state->text_buffer == nullptr) {
+        return error(state, ULIGHT_STATUS_BAD_BUFFER, u8"text_buffer must not be null.");
+    }
+    if (state->text_buffer_length == 0) {
+        return error(state, ULIGHT_STATUS_BAD_BUFFER, u8"text_buffer_length must be nonzero.");
+    }
+    if (state->flush_text == nullptr) {
+        return error(state, ULIGHT_STATUS_BAD_BUFFER, u8"flush_text must not be null.");
+    }
+    if (state->html_tag_name == nullptr) {
+        return error(state, ULIGHT_STATUS_BAD_STATE, u8"html_tag_name must not be null.");
+    }
+    if (state->html_tag_name_length == 0) {
+        return error(state, ULIGHT_STATUS_BAD_STATE, u8"html_tag_name_length must be nonzero.");
+    }
+    if (state->html_attr_name == nullptr) {
+        return error(state, ULIGHT_STATUS_BAD_STATE, u8"html_attr_name must not be null.");
+    }
+    if (state->html_attr_name_length == 0) {
+        return error(state, ULIGHT_STATUS_BAD_STATE, u8"html_attr_name_length must be nonzero.");
     }
 
     const std::string_view source_string { state->source, state->source_length };
@@ -316,7 +362,7 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
         buffer.flush();
         return ULIGHT_STATUS_OK;
     } catch (...) {
-        return ULIGHT_STATUS_INTERNAL_ERROR;
+        return error(state, ULIGHT_STATUS_INTERNAL_ERROR, u8"An internal error occurred.");
     }
 }
 

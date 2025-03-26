@@ -317,6 +317,18 @@ struct [[nodiscard]] State {
     {
         return Status(ulight_source_to_html(&impl));
     }
+
+    [[nodiscard]]
+    std::string_view get_error_string() const noexcept
+    {
+        return { impl.error, impl.error_length };
+    }
+
+    [[nodiscard]]
+    std::u8string_view get_error_u8string() const noexcept
+    {
+        return { reinterpret_cast<const char8_t*>(impl.error), impl.error_length };
+    }
 };
 
 static_assert(std::is_trivially_copyable_v<State>);
