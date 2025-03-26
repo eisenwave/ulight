@@ -3,10 +3,11 @@
 
 <head>
     <meta charset="utf-8">
-    <title>BMS Live Edit</title>
-    <link rel=stylesheet href="/css/code.css" />
-    <link rel=stylesheet href="/css/main.css" />
-    <link rel=stylesheet href="/css/live_edit.css" />
+    <title>µlight Live Editor</title>
+    <link rel=stylesheet href="/css/code.css"/>
+    <link rel=stylesheet href="/css/main.css"/>
+    <link rel=stylesheet href="/css/live_edit.css"/>
+    <link rel=icon type=image/png href="/img/favicon.png"/>
 </head>
 
 <body>
@@ -18,6 +19,7 @@
 
     <header>
         <h1>&micro;light</h1>
+        <select id="language-id"></select>
         <div id="split-buttons">
             <picture>
                 <source srcset="/img/split_horizontal_light.svg" media="(prefers-color-scheme: light)">
@@ -41,16 +43,8 @@
         </div>
         <div id="separator"></div>
         <div id="output-container">
-            <div id="output-options">
-                <select id="codegen-preset">
-                    <option value="bms">BMS</option>
-                    <option value="c99">C99</option>
-                    <option value="c23">C23</option>
-                    <option value="cpp">C++</option>
-                    <option value="bms_vm">BMS VM</option>
-                </select>
-            </div>
-            <div id="output"></div>
+            <pre id="output-line-numbers" class="line-numbers">1</pre>
+            <div id="output">awoo</div>
         </div>
     </main>
 </body>

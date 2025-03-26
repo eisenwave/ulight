@@ -29,14 +29,38 @@ main {
 header {
     margin: 0;
     margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
 }
 
 h1 {
+    display: inline;
     margin: 0;
     font-family: 'JetBrains Mono', sans-serif;
     font-weight: 900;
     opacity: 0.5;
     user-select: none;
+}
+
+#language-id {
+    margin-left: auto;
+    margin-right: 2em;
+}
+
+#language-id,
+#split-buttons {
+    height: 2em;
+}
+
+#split-buttons img {
+    width: 1.5em;
+    height: 1.5em;
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+#split-buttons img:hover {
+    opacity: 1;
 }
 
 body:not(.vertical) main {
@@ -99,7 +123,9 @@ textarea,
 }
 
 #code-input-layers,
-#code-highlight {
+#code-highlight,
+#output-container,
+#output {
     box-sizing: border-box;
 }
 
@@ -107,33 +133,20 @@ textarea,
     overflow: hidden;
 }
 
+#code-input-container,
 #output-container {
-    overflow: hidden;
-
-    display: grid;
-    grid-template-rows: auto 1fr;
-}
-
-#code-input-container {
     overflow: auto;
-}
-
-#output {
-    box-sizing: border-box;
-    overflow: auto;
-    overflow-x: auto;
 }
 
 #output-container,
 #code-input-container {
-    font-family: 'JetBrainsMono';
+    font-family: 'JetBrains Mono';
     font-variant-ligatures: no-contextual;
     font-weight: normal;
 }
 
-
 #code-input-container,
-#output {
+#output-container {
     background: var(--deep-background);
     border: 0.75em solid var(--deep-background);
     border-radius: 0.5em;
@@ -143,7 +156,8 @@ textarea,
     white-space: pre;
 }
 
-#code-input-container {
+#code-input-container,
+#output-container {
     display: grid;
     grid-template-columns: auto 1fr;
 }
@@ -187,33 +201,4 @@ body.vertical #separator,
 body.vertical.while-dragging,
 body.vertical.while-dragging * {
     cursor: ns-resize !important;
-}
-
-#split-buttons {
-    position: absolute;
-    top: 1.5em;
-    right: 1.5em;
-}
-
-#split-buttons img {
-    width: 1.5em;
-    height: 1.5em;
-    opacity: 0.5;
-    cursor: pointer;
-}
-
-#split-buttons img:hover {
-    opacity: 1;
-}
-
-#output-options {
-    display: flex;
-    justify-content: flex-end;
-
-    margin-right: 0.5em;
-    margin-bottom: 0.75em;
-}
-
-body:not(.vertical) #output-options {
-    justify-content: flex-start;
 }

@@ -1,13 +1,13 @@
 export const container = document.getElementById('container');
 export const codeInput = document.getElementById('code-input');
 export const codeInputLayers = document.getElementById('code-input-layers');
-export const codegenPreset = document.getElementById('codegen-preset');
+export const languageIdSelect = document.getElementById('language-id');
 
 export const editorFractionLimit = 0.1;
 export const editorFractionItem = 'editorFraction';
 export const editorIsVerticalItem = 'editorIsVertical';
 export const editorContentsItem = 'editorContents';
-export const codegenPresetIndexItem = 'codegenPresetIndexItem';
+export const languageIdIndexItem = 'languageId';
 
 let isVertical = false;
 
@@ -63,21 +63,28 @@ export function setEditorContents(value, persist = false, dispatch = false) {
     }
 }
 
-export function setCodegenPresetIndex(index, persist = false) {
-    codegenPreset.selectedIndex = index;
+let languageId = 1;
+
+export function getLanguageId() {
+    return languageId;
+}
+
+export function setLanguageId(id, persist = false) {
+    languageId = id;
+    languageIdSelect.value = id;
     if (persist) {
-        localStorage.setItem(codegenPresetIndexItem, index);
+        localStorage.setItem(languageIdIndexItem, id);
     }
 }
 
 const initialFraction = localStorage.getItem(editorFractionItem);
 if (initialFraction !== null) {
-    resizeContainerToFraction(Number(initialFraction));
+    resizeContainerToFraction(Number(initialFraction), false);
 }
 
 const initialIsVertical = localStorage.getItem(editorIsVerticalItem);
 if (initialIsVertical !== null) {
-    setEditorVertical(initialIsVertical === 'true');
+    setEditorVertical(initialIsVertical === 'true', false);
 }
 
 const initialContents = localStorage.getItem(editorContentsItem);
@@ -85,7 +92,7 @@ if (initialContents !== null) {
     setEditorContents(initialContents, false, true);
 }
 
-const initialPresetIndex = localStorage.getItem(codegenPresetIndexItem);
-if (initialPresetIndex !== null) {
-    setCodegenPresetIndex(Number(initialPresetIndex));
+const initialLanguageId = localStorage.getItem(languageIdIndexItem);
+if (initialLanguageId !== null) {
+    setLanguageId(Number(initialLanguageId), false);
 }
