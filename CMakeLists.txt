@@ -54,12 +54,20 @@ if(DEFINED EMSCRIPTEN)
         "SHELL:-s WASM=1"
         "SHELL:-s ENVIRONMENT=web"
         "SHELL:-s ALLOW_MEMORY_GROWTH=1"
+        "SHELL:-s ALLOW_TABLE_GROWTH=1"
         "SHELL:-s AUTO_JS_LIBRARIES=0"
         "SHELL:-s SIDE_MODULE=0"
         "SHELL:-s STANDALONE_WASM=1"
 #       "SHELL:-s \"EXPORTED_FUNCTIONS=['_bm_foreign_alloc','_bm_foreign_free','_bm_plus','_bm_length_as_string','_bm_length_as_string_result','_bm_translate_code','_bm_translate_code_result','_bm_syntax_highlight','_bm_syntax_highlight_result']\""
         "SHELL:-s \"EXPORTED_RUNTIME_METHODS=[]\""
         "--no-entry"
+    )
+    set(COPY_DESTINATION "${CMAKE_SOURCE_DIR}/www")
+    add_custom_command(
+        TARGET ulight-wasm POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:ulight-wasm>" "${COPY_DESTINATION}/"
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/src/main/wasm/f_i32_i32_i32_to_void.wasm" "${COPY_DESTINATION}/"
+        COMMENT "Copying ulight.wasm and function.wasm to ${COPY_DESTINATION}"
     )
 else(NOT DEFINED EMSCRIPTEN)
     find_package(GTest REQUIRED)
