@@ -27,6 +27,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/lua.cpp
     src/main/cpp/mmml.cpp
     src/main/cpp/parse_utils.cpp
+    src/main/cpp/ulight.cpp
 )
 
 if(DEFINED EMSCRIPTEN)
