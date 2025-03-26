@@ -71,7 +71,7 @@ enum struct Lua_Token_Type : Underlying { //
     ULIGHT_LUA_TOKEN_ENUM_DATA(ULIGHT_LUA_TOKEN_ENUM_ENUMERATOR)
 };
 
-inline constexpr auto lua_token_type_count = std::size_t(Lua_Token_Type::kw_while) + 1;
+inline constexpr auto lua_token_type_count = std::size_t(Lua_Token_Type::tilde_eq) + 1;
 
 /// @brief Returns the in-code representation of `type`.
 /// For example, if `type` is `plus`, returns `"+"`.
