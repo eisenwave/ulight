@@ -345,6 +345,11 @@ typedef struct ulight_state {
     /// @brief When `text_buffer` is full,
     /// is invoked with `flush_text_data`, `text_buffer`, and `text_buffer_length`.
     void (*flush_text)(void*, char*, size_t);
+
+    /// @brief A brief UTF-8-encoded error text.
+    const char* error;
+    /// @brief The length of `error`, in code units.
+    size_t error_length;
 } ulight_state;
 
 ///  @brief "Default constructor" for `ulight_state`.
