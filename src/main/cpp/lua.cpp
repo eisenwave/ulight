@@ -458,7 +458,7 @@ std::optional<Lua_Token_Type> match_operator_or_punctuation(std::u8string_view s
             }
             // <const> is handled separately in the `highlight_lua` function.
             if (str.length() >= 6 && str.substr(1, 5) == u8"const>") {
-                return {};  // Return empty for <const> so it's handled by the special case
+                return {}; // Return empty for <const> so it's handled by the special case
             }
         }
         return less;

@@ -17,7 +17,11 @@
 #endif
 
 #ifdef __clang__
-#define ULIGHT_CLANG 1
+#define ULIGHT_CLANG __clang__
+#endif
+
+#ifdef _MSC_VER
+#define ULIGHT_MSVC _MSC_VER
 #endif
 
 #if defined(ULIGHT_CPP23) && __has_cpp_attribute(assume)
@@ -28,7 +32,11 @@
 #define ULIGHT_ASSUME(...)
 #endif
 
+#ifdef _MSC_VER
+#define ULIGHT_UNREACHABLE() __assume(false)
+#else
 #define ULIGHT_UNREACHABLE() __builtin_unreachable()
+#endif
 
 #ifdef __cplusplus
 namespace ulight {
