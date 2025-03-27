@@ -1,0 +1,20 @@
+name: Clang-format check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  clang-format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: sudo apt-get install -y clang-format-19
+
+      - name: Run clang-format check
+        run: find -name '*.cpp' -o -name '*.h' include src | xargs clang-format --dry-run --Werror
