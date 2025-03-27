@@ -68,7 +68,7 @@ jobs:
 
     - name: Configure CMake (Linux/macOS)
       if: runner.os != 'Windows'
-      run: |
+      run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
@@ -77,7 +77,7 @@ jobs:
 
     - name: Configure CMake (Windows)
       if: runner.os == 'Windows'
-      run: |
+      run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
