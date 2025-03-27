@@ -53,6 +53,11 @@ jobs:
         ${{ github.workspace }}/vcpkg/bootstrap-vcpkg.bat
         ${{ github.workspace }}/vcpkg/vcpkg install gtest
 
+
+    - name: Verify vcpkg installation (Windows)
+      if: runner.os == 'Windows'
+      run: ls -R ${{ github.workspace }}/vcpkg/scripts/buildsystems/
+
     - name: Print compiler version (Linux/macOS)
       if: runner.os != 'Windows'
       run: |
