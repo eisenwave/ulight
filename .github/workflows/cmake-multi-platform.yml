@@ -36,7 +36,20 @@ jobs:
     steps:
     - name: Dump info
       run: |
-        printf "Running on %s" "${{ runner.os }}"
+        printf "Running on ${{ runner.os }}"
+
+    - name: Print Compiler Version (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        echo "Using compiler: ${{ matrix.c_compiler }}"
+        ${{ matrix.c_compiler }} --version
+
+    - name: Print Compiler Version (Windows)
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        echo Using compiler: ${{ matrix.c_compiler }}
+        cl
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
