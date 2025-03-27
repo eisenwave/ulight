@@ -14,55 +14,41 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
-        c_compiler: [gcc, clang, cl]
+        compiler: [gcc, clang, cl]
         include:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
           - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
+            c_compiler: gcc-13
+            cpp_compiler: g++-13
           - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
+            c_compiler: clang-19
+            cpp_compiler: clang++-19
         exclude:
           - os: windows-latest
-            c_compiler: gcc
+            compiler: gcc
           - os: windows-latest
-            c_compiler: clang
+            compiler: clang
           - os: ubuntu-latest
-            c_compiler: cl
+            compiler: cl
 
     steps:
     - name: Dump info
       run: |
         printf "Running on ${{ runner.os }}"
 
-    - name: Print Compiler Version (Linux/macOS)
-      if: runner.os != 'Windows'
-      run: |
-        echo "Using compiler: ${{ matrix.c_compiler }}"
-        ${{ matrix.c_compiler }} --version
-
-    - name: Print Compiler Version (Windows)
-      if: runner.os == 'Windows'
-      shell: cmd
-      run: |
-        echo Using compiler: ${{ matrix.c_compiler }}
-        cl
-
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
       run: |
         sudo apt update
-        sudo apt install -y libgtest-dev
+        sudo apt install -y gcc-13 llvm-19 libgtest-dev
 
-    - name: Install dependencies (Windows)
-      if: runner.os == 'Windows'
+    - name: Print Compiler Version (Linux/macOS)
+      if: runner.os != 'Windows'
       run: |
-        git clone https://github.com/microsoft/vcpkg.git
-        ./vcpkg/bootstrap-vcpkg.bat
-        ./vcpkg/vcpkg install gtest
+        echo "Using compiler: ${{ matrix.compiler }}"
+        ${{ matrix.cpp_compiler }} --version
 
     - uses: actions/checkout@v4
 
