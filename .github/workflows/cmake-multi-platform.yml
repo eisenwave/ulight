@@ -36,8 +36,9 @@ jobs:
     steps:
     - name: Dump info
       run: |
-        printf "Running on ${{ runner.os }}"
-        printf "Compilers: ${{ matrix.compiler }} / ${{ matrix.c_compiler }} / ${{ matrix.cpp_compiler }}"
+        printf "Workspace: ${{ github.workspace }}\n"
+        printf "Running on ${{ runner.os }}\n"
+        printf "Compilers: ${{ matrix.compiler }} / ${{ matrix.c_compiler }} / ${{ matrix.cpp_compiler }}\n"
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
@@ -82,7 +83,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+        -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
         -S ${{ github.workspace }}
 
     - name: Build
