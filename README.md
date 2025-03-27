@@ -1,4 +1,7 @@
-# ulight
+![CMake build status](https://github.com/eisenwave/ulight/actions/workflows/cmake-multi-platform.yml/badge.svg)
+![clang-format build status](https://github.com/eisenwave/ulight/actions/workflows/clang-format.yml/badge.svg)
+
+# µlight
 µlight or "u-light" is a zero-dependency, lightweight, and portable syntax highlighter.
 
 ## Language support
