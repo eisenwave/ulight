@@ -71,6 +71,7 @@ if(DEFINED EMSCRIPTEN)
     )
 else(NOT DEFINED EMSCRIPTEN)
     find_package(GTest REQUIRED)
+    include(GoogleTest)
     enable_testing()
 
     add_library(ulight STATIC ${LIBRARY_SOURCES})
@@ -94,4 +95,9 @@ else(NOT DEFINED EMSCRIPTEN)
 
     target_link_libraries(ulight-cli ulight)
     target_link_libraries(ulight-test ulight GTest::GTest GTest::Main)
+
+    gtest_discover_tests(ulight-test
+        WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
+        DISCOVERY_TIMEOUT 30
+    )
 endif()
