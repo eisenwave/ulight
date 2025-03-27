@@ -1,5 +1,5 @@
-#ifndef MMML_FUNCTION_REF_HPP
-#define MMML_FUNCTION_REF_HPP
+#ifndef ULIGHT_FUNCTION_REF_HPP
+#define ULIGHT_FUNCTION_REF_HPP
 
 #include <concepts>
 #include <type_traits>
