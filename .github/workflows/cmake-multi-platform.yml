@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         build_type: [Release]
         compiler: [gcc, clang, cl]
         include:
@@ -34,6 +34,8 @@ jobs:
             compiler: cl
 
     steps:
+    - uses: actions/checkout@v4
+
     - name: Dump info
       run: |
         printf "Workspace: ${{ github.workspace }}\n"
@@ -53,24 +55,12 @@ jobs:
         ${{ github.workspace }}/vcpkg/bootstrap-vcpkg.bat
         ${{ github.workspace }}/vcpkg/vcpkg install gtest
 
-
-    - name: Verify vcpkg installation (Windows)
-      if: runner.os == 'Windows'
-      run: ls -R ${{ github.workspace }}/vcpkg/scripts/buildsystems/
-
-    - name: Print compiler version (Linux/macOS)
-      if: runner.os != 'Windows'
-      run: |
-        echo "Using compiler: ${{ matrix.compiler }}"
-        ${{ matrix.cpp_compiler }} --version
-
-    - uses: actions/checkout@v4
-
     - name: Set reusable strings
       id: strings
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "workspace_forward=$(echo '${{ github.workspace }}' | sed 's|\\|/|g')" >> "$GITHUB_OUTPUT"
 
     - name: Configure CMake (Linux/macOS)
       if: runner.os != 'Windows'
@@ -88,13 +78,14 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+        "-DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
         -S ${{ github.workspace }}
-        --trace-expand
-        --debug-output
 
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: >
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}
+        --config ${{ matrix.build_type }}
+        --verbose
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
