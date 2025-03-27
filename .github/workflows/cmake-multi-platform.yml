@@ -19,10 +19,10 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-          - os: ubuntu-latest
+          - compiler: gcc
             c_compiler: gcc-13
             cpp_compiler: g++-13
-          - os: ubuntu-latest
+          - compiler: clang
             c_compiler: clang-19
             cpp_compiler: clang++-19
         exclude:
@@ -37,14 +37,22 @@ jobs:
     - name: Dump info
       run: |
         printf "Running on ${{ runner.os }}"
+        printf "Compilers: ${{ matrix.compiler }} / ${{ matrix.c_compiler }} / ${{ matrix.cpp_compiler }}"
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
       run: |
         sudo apt update
-        sudo apt install -y gcc-13 llvm-19 libgtest-dev
+        sudo apt install -y ${{ matrix.c_compiler }} libgtest-dev
 
-    - name: Print Compiler Version (Linux/macOS)
+    - name: Install dependencies (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        git clone https://github.com/microsoft/vcpkg.git
+        ./vcpkg/bootstrap-vcpkg.bat
+        ./vcpkg/vcpkg install gtest
+
+    - name: Print compiler version (Linux/macOS)
       if: runner.os != 'Windows'
       run: |
         echo "Using compiler: ${{ matrix.compiler }}"
@@ -58,12 +66,23 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    - name: Configure CMake
-      run: >
+    - name: Configure CMake (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -S ${{ github.workspace }}
+
+    - name: Configure CMake (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
         -S ${{ github.workspace }}
 
     - name: Build
