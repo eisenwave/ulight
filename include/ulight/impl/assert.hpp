@@ -8,7 +8,10 @@
 
 namespace ulight {
 
-enum struct Assertion_Error_Type : Underlying { expression, unreachable };
+enum struct Assertion_Error_Type : Underlying {
+    expression,
+    unreachable
+};
 
 struct Assertion_Error {
     Assertion_Error_Type type;
