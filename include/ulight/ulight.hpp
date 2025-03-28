@@ -1,6 +1,8 @@
 #ifndef ULIGHT_ULIGHT_HPP
 #define ULIGHT_ULIGHT_HPP
 
+#include <cstddef>
+#include <new>
 #include <span>
 #include <string_view>
 #include <type_traits>

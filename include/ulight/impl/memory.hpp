@@ -1,6 +1,7 @@
 #ifndef ULIGHT_MEMORY_HPP
 #define ULIGHT_MEMORY_HPP
 
+#include <cstddef>
 #include <memory_resource>
 
 #include "ulight/ulight.hpp"
@@ -14,7 +15,7 @@ struct Global_Memory_Resource final : std::pmr::memory_resource {
     [[nodiscard]]
     void* do_allocate(std::size_t bytes, std::size_t alignment) final
     {
-        void* result = ulight::alloc(bytes, alignment);
+        void* const result = ulight::alloc(bytes, alignment);
         if (!result) {
             throw std::bad_alloc();
         }

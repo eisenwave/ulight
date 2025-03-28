@@ -1,23 +1,29 @@
 #include <cstddef>
 #include <expected>
 #include <memory_resource>
+#include <optional>
 #include <span>
 #include <string_view>
 #include <vector>
 
-#include "ulight/impl/chars.hpp"
-#include "ulight/impl/unicode.hpp"
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/assert.hpp"
 #include "ulight/impl/buffer.hpp"
+#include "ulight/impl/chars.hpp"
+#include "ulight/impl/highlight.hpp"
 #include "ulight/impl/mmml.hpp"
+#include "ulight/impl/unicode.hpp"
 
 namespace ulight {
 
 namespace {
 
-enum struct Content_Context : Underlying { document, argument_value, block };
+enum struct Content_Context : Underlying {
+    document,
+    argument_value,
+    block
+};
 
 [[nodiscard]]
 constexpr bool is_terminated_by(Content_Context context, char8_t c)
@@ -282,7 +288,7 @@ private:
 
     std::size_t match_whitespace()
     {
-        constexpr bool (*predicate)(char8_t) = is_ascii_whitespace;
+        constexpr bool (*predicate)(char8_t) = is_html_whitespace;
         return match_char_sequence(predicate);
     }
 
