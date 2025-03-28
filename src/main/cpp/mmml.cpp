@@ -288,7 +288,7 @@ private:
 
     std::size_t match_whitespace()
     {
-        constexpr bool (*predicate)(char8_t) = is_ascii_whitespace;
+        constexpr bool (*predicate)(char8_t) = is_html_whitespace;
         return match_char_sequence(predicate);
     }
 

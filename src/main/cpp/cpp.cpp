@@ -378,7 +378,7 @@ namespace {
 [[nodiscard]]
 constexpr bool is_d_char(char8_t c)
 {
-    return is_ascii(c) && !is_ascii_blank(c) && c != u8'(' && c != u8')' && c != '\\';
+    return is_ascii(c) && !is_cpp_whitespace(c) && c != u8'(' && c != u8')' && c != '\\';
 }
 
 [[nodiscard]]

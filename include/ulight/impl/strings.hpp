@@ -37,9 +37,9 @@ inline constexpr std::u8string_view all_ascii_alphanumeric8
 inline constexpr std::u32string_view all_ascii_whitespace = U"\t\n\f\r ";
 inline constexpr std::u8string_view all_ascii_whitespace8 = u8"\t\n\f\r ";
 
-// see is_ascii_blank
-inline constexpr std::u32string_view all_ascii_blank = U"\t\n\f\r\v ";
-inline constexpr std::u8string_view all_ascii_blank8 = u8"\t\n\f\r\v ";
+// see is_cpp_whitespace
+inline constexpr std::u32string_view all_cpp_whitespace = U"\t\n\f\r\v ";
+inline constexpr std::u8string_view all_cpp_whitespace8 = u8"\t\n\f\r\v ";
 
 // see is_mmml_escapeable
 inline constexpr std::u32string_view all_mmml_escapeable = U"\\{}";
@@ -92,20 +92,18 @@ constexpr bool is_ascii(std::u8string_view str)
     return detail::all_of(str, predicate);
 }
 
-/// @brief Returns `true` if `str` is a possibly empty ASCII string comprised
-/// entirely of blank ASCII characters (`is_ascii_blank`).
 [[nodiscard]]
-constexpr bool is_ascii_blank(std::u8string_view str)
+constexpr bool is_cpp_whitespace(std::u8string_view str)
 {
-    constexpr auto predicate = [](char8_t x) { return is_ascii_blank(x); };
+    constexpr auto predicate = [](char8_t x) { return is_cpp_whitespace(x); };
     return detail::all_of(str, predicate);
 }
 
 [[nodiscard]]
-constexpr std::u8string_view trim_ascii_blank_left(std::u8string_view str)
+constexpr std::u8string_view trim_cpp_whitespace_left(std::u8string_view str)
 {
     for (std::size_t i = 0; i < str.size(); ++i) {
-        if (!is_ascii_blank(str[i])) {
+        if (!is_cpp_whitespace(str[i])) {
             return str.substr(i);
         }
     }
@@ -113,21 +111,20 @@ constexpr std::u8string_view trim_ascii_blank_left(std::u8string_view str)
 }
 
 [[nodiscard]]
-constexpr std::u8string_view trim_ascii_blank_right(std::u8string_view str)
+constexpr std::u8string_view trim_cpp_whitespace_right(std::u8string_view str)
 {
     for (std::size_t length = str.size(); length > 0; --length) {
-        if (!is_ascii_blank(str[length - 1])) {
+        if (!is_cpp_whitespace(str[length - 1])) {
             return str.substr(0, length);
         }
     }
     return {};
 }
 
-/// @brief Equivalent to `trim_ascii_blank_right(trim_ascii_blank_left(str))`.
 [[nodiscard]]
-constexpr std::u8string_view trim_ascii_blank(std::u8string_view str)
+constexpr std::u8string_view trim_cpp_whitespace(std::u8string_view str)
 {
-    return trim_ascii_blank_right(trim_ascii_blank_left(str));
+    return trim_cpp_whitespace_right(trim_cpp_whitespace_left(str));
 }
 
 /// @brief Returns `true` if `str` is a valid HTML tag identifier.

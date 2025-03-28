@@ -37,7 +37,7 @@ Blank_Line find_blank_line_sequence // NOLINT(bugprone-exception-escape)
                 state = State::blank;
                 blank_end = i + 1;
             }
-            else if (!is_ascii_whitespace(str[i])) {
+            else if (!is_html_whitespace(str[i])) {
                 state = State::not_blank;
             }
             continue;
@@ -53,7 +53,7 @@ Blank_Line find_blank_line_sequence // NOLINT(bugprone-exception-escape)
             if (str[i] == u8'\n') {
                 blank_end = i + 1;
             }
-            else if (!is_ascii_whitespace(str[i])) {
+            else if (!is_html_whitespace(str[i])) {
                 return { .begin = blank_begin, .length = blank_end - blank_begin };
             }
             continue;
