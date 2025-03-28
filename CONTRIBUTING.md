@@ -29,11 +29,22 @@ The bare minimum set of changes for any new language includes:
 
 Furthermore, follow these guidelines:
 
-1. All source files should be auto-formatted with clang-format based on the project's `.clang-format` configuration.
-2. No clang-tidy checks (see `.clang-tidy`) or compiler warnings should be triggered.
-3. Try to follow the project code style in general.
-4. Do not use any temporary data structures or memory allocation in general, unless necessary.
-   If you do need allocations, use polymorphic containers using the given `std::pmr::memory_resource*` in your highlighter.
+1.  All source files should be auto-formatted with clang-format
+    based on the project's `.clang-format` configuration.
+    You can use `scripts/check-format.sh` to check whether the source files are correctly formatted,
+    assuming `clang-format-19` is in your path.
+    GitHub actions will also verify this.
+
+2.  No clang-tidy checks (see `.clang-tidy`) or compiler warnings should be triggered.
+    We only check clang-tidy warnings before releases.
+    However, ideally, you should use `scripts/check-tidy.sh` to check for warnings,
+    assuming that `clang-tidy-19` is in your path
+    and that CMake produces `build/compile_commands.json`.
+
+3.  Try to follow the project code style in general.
+
+4.  Do not use any temporary data structures or memory allocation in general, unless necessary.
+    If you do need allocations, use polymorphic containers using the given `std::pmr::memory_resource*` in your highlighter.
 
 ### Variable style
 
