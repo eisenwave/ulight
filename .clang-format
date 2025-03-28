@@ -1,17 +1,29 @@
 AlignAfterOpenBracket: BlockIndent
 AlignConsecutiveAssignments: None
 AllowAllParametersOfDeclarationOnNextLine: No
+
+AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: Yes
+AllowShortCompoundRequirementOnASingleLine: Yes
+AllowShortEnumsOnASingleLine: No
 AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: Yes
+
 AlwaysBreakTemplateDeclarations: Yes
 BasedOnStyle: WebKit
 BinPackParameters: No
+
 BreakAfterAttributes: Always
 BreakBeforeBraces: Custom
 BraceWrapping:
   AfterFunction: Yes
   BeforeElse: Yes
+
 ColumnLimit: 100
 FixNamespaceComments: Yes
 IndentWidth: 4
+InsertNewlineAtEOF: Yes
+LineEnding: LF
 NamespaceIndentation: None
