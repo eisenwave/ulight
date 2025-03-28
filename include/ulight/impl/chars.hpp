@@ -3,10 +3,7 @@
 
 namespace ulight {
 
-/// @brief The greatest value for which `is_ascii` is `true`.
-inline constexpr char32_t code_point_max_ascii = U'\u007f';
-/// @brief The greatest value for which `is_code_point` is `true`.
-inline constexpr char32_t code_point_max = U'\U0010FFFF';
+// PURE ASCII ======================================================================================
 
 /// @brief Returns `true` if the `c` is a decimal digit (`0` through `9`).
 [[nodiscard]]
@@ -20,48 +17,6 @@ constexpr bool is_ascii_digit(char8_t c)
 constexpr bool is_ascii_digit(char32_t c)
 {
     return c >= U'0' && c <= U'9';
-}
-
-/// @brief Returns `true` if `c` is whitespace.
-/// Note that "whitespace" matches the HTML standard definition here,
-/// and unlike the C locale,
-/// vertical tabs are not included.
-[[nodiscard]]
-constexpr bool is_ascii_whitespace(char8_t c)
-{
-    // https://infra.spec.whatwg.org/#ascii-whitespace
-    return c == u8'\t' || c == u8'\n' || c == u8'\f' || c == u8'\r' || c == u8' ';
-}
-
-/// @brief Returns `true` if `c` is whitespace.
-/// Note that "whitespace" matches the HTML standard definition here,
-/// and unlike the C locale,
-/// vertical tabs are not included.
-[[nodiscard]]
-constexpr bool is_ascii_whitespace(char32_t c)
-{
-    // https://infra.spec.whatwg.org/#ascii-whitespace
-    return c == U'\t' || c == U'\n' || c == U'\f' || c == U'\r' || c == U' ';
-}
-
-/// @brief Returns true if `c` is a blank character.
-/// This matches the C locale definition,
-/// and includes vertical tabs,
-/// unlike `is_ascii_whitespace`.
-[[nodiscard]]
-constexpr bool is_ascii_blank(char8_t c)
-{
-    return is_ascii_whitespace(c) || c == u8'\v';
-}
-
-/// @brief Returns true if `c` is a blank character.
-/// This matches the C locale definition,
-/// and includes vertical tabs,
-/// unlike `is_ascii_whitespace`.
-[[nodiscard]]
-constexpr bool is_ascii_blank(char32_t c)
-{
-    return is_ascii_whitespace(c) || c == U'\v';
 }
 
 [[nodiscard]]
@@ -133,6 +88,13 @@ constexpr bool is_ascii(char32_t c)
 {
     return c <= U'\u007f';
 }
+
+// UNICODE STUFF ===================================================================================
+
+/// @brief The greatest value for which `is_ascii` is `true`.
+inline constexpr char32_t code_point_max_ascii = U'\u007f';
+/// @brief The greatest value for which `is_code_point` is `true`.
+inline constexpr char32_t code_point_max = U'\U0010FFFF';
 
 constexpr bool is_code_point(char8_t c) = delete;
 
@@ -224,12 +186,74 @@ constexpr bool is_private_use_area_character(char32_t c)
         || (c >= supplementary_pua_b_min && c <= supplementary_pua_b_max);
 }
 
+/// @brief Equivalent to `is_ascii_alpha(c)`.
+[[nodiscard]]
+constexpr bool is_ascii_xid_start(char8_t c) noexcept
+{
+    return is_ascii_alpha(c);
+}
+
+/// @brief Equivalent to `is_ascii_alpha(c)`.
+[[nodiscard]]
+constexpr bool is_ascii_xid_start(char32_t c) noexcept
+{
+    return is_ascii_alpha(c);
+}
+
+bool is_xid_start(char8_t c) = delete;
+
+/// @brief Returns `true` iff `c` has the XID_Start Unicode property.
+/// This property indicates whether the character can appear at the beginning
+/// of a Unicode identifier, such as a C++ *identifier*.
+[[nodiscard]]
+bool is_xid_start(char32_t c) noexcept;
+
+/// @brief Returns `true` iff `c` is in the set `[a-zA-Z0-9_]`.
+[[nodiscard]]
+constexpr bool is_ascii_xid_continue(char8_t c) noexcept
+{
+    return is_ascii_alphanumeric(c) || c == u8'_';
+}
+
+/// @brief Returns `true` iff `c` is in the set `[a-zA-Z0-9_]`.
+[[nodiscard]]
+constexpr bool is_ascii_xid_continue(char32_t c) noexcept
+{
+    return is_ascii_alphanumeric(c) || c == u8'_';
+}
+
+bool is_xid_continue(char8_t c) = delete;
+
+/// @brief Returns `true` iff `c` has the XID_Continue Unicode property.
+/// This property indicates whether the character can appear
+/// in a Unicode identifier, such as a C++ *identifier*.
+[[nodiscard]]
+bool is_xid_continue(char32_t c) noexcept;
+
+// HTML ============================================================================================
+
 /// @brief Returns `true` if `c` is an ASCII character
 /// that can legally appear in the name of an HTML tag.
 [[nodiscard]]
 constexpr bool is_html_ascii_tag_name_character(char8_t c)
 {
     return c == u8'-' || c == u8'.' || c == u8'_' || is_ascii_alphanumeric(c);
+}
+
+[[nodiscard]]
+constexpr bool is_html_ascii_control(char8_t c)
+{
+    // https://infra.spec.whatwg.org/#control
+    return (c >= u8'\u0000' && c <= u8'\u001F') || c == u8'\u007F';
+}
+
+constexpr bool is_html_control(char8_t c) = delete;
+
+[[nodiscard]]
+constexpr bool is_html_control(char32_t c)
+{
+    // https://infra.spec.whatwg.org/#control
+    return (c >= U'\u0000' && c <= U'\u001F') || (c >= U'\u007F' && c <= U'\u009F');
 }
 
 constexpr bool is_html_tag_name_character(char8_t c) = delete;
@@ -265,20 +289,26 @@ constexpr bool is_html_tag_name_character(char32_t c)
     // clang-format on
 }
 
+/// @brief Returns `true` if `c` is whitespace.
+/// Note that "whitespace" matches the HTML standard definition here,
+/// and unlike the C locale,
+/// vertical tabs are not included.
 [[nodiscard]]
-constexpr bool is_ascii_control(char8_t c)
+constexpr bool is_html_whitespace(char8_t c)
 {
-    // https://infra.spec.whatwg.org/#control
-    return (c >= u8'\u0000' && c <= u8'\u001F') || c == u8'\u007F';
+    // https://infra.spec.whatwg.org/#ascii-whitespace
+    return c == u8'\t' || c == u8'\n' || c == u8'\f' || c == u8'\r' || c == u8' ';
 }
 
-constexpr bool is_control(char8_t c) = delete;
-
+/// @brief Returns `true` if `c` is whitespace.
+/// Note that "whitespace" matches the HTML standard definition here,
+/// and unlike the C locale,
+/// vertical tabs are not included.
 [[nodiscard]]
-constexpr bool is_control(char32_t c)
+constexpr bool is_html_whitespace(char32_t c)
 {
-    // https://infra.spec.whatwg.org/#control
-    return (c >= U'\u0000' && c <= U'\u001F') || (c >= U'\u007F' && c <= U'\u009F');
+    // https://infra.spec.whatwg.org/#ascii-whitespace
+    return c == U'\t' || c == U'\n' || c == U'\f' || c == U'\r' || c == U' ';
 }
 
 [[nodiscard]]
@@ -286,7 +316,7 @@ constexpr bool is_html_ascii_attribute_name_character(char8_t c)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#syntax-attribute-name
     // clang-format off
-    return !is_ascii_control(c)
+    return !is_html_ascii_control(c)
         && c != u8' '
         && c != u8'"'
         && c != u8'\''
@@ -303,7 +333,7 @@ constexpr bool is_html_attribute_name_character(char32_t c)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#syntax-attribute-name
     // clang-format off
-    return !is_control(c)
+    return !is_html_control(c)
         && c != U' '
         && c != U'"'
         && c != U'\''
@@ -325,7 +355,7 @@ constexpr bool is_html_ascii_unquoted_attribute_value_character(char8_t c)
     // https://html.spec.whatwg.org/dev/syntax.html#unquoted
     // clang-format off
     return is_ascii(c)
-        && !is_ascii_whitespace(c)
+        && !is_html_whitespace(c)
         && c != u8'"'
         && c != u8'\''
         && c != u8'='
@@ -383,6 +413,8 @@ constexpr bool is_html_min_raw_passthrough_character(char32_t c)
     return c != U'<' && c != U'&';
 }
 
+// MMML ============================================================================================
+
 /// @brief Returns `true` if `c` is an escapable MMML character.
 /// That is, if `\\c` would corresponds to the literal character `c`,
 /// rather than starting a directive or being treated as literal text.
@@ -438,49 +470,7 @@ constexpr bool is_mmml_directive_name_character(char32_t c)
     return is_html_tag_name_character(c);
 }
 
-/// @brief Equivalent to `is_ascii_alpha(c)`.
-[[nodiscard]]
-constexpr bool is_ascii_xid_start(char8_t c) noexcept
-{
-    return is_ascii_alpha(c);
-}
-
-/// @brief Equivalent to `is_ascii_alpha(c)`.
-[[nodiscard]]
-constexpr bool is_ascii_xid_start(char32_t c) noexcept
-{
-    return is_ascii_alpha(c);
-}
-
-bool is_xid_start(char8_t c) = delete;
-
-/// @brief Returns `true` iff `c` has the XID_Start Unicode property.
-/// This property indicates whether the character can appear at the beginning
-/// of a Unicode identifier, such as a C++ *identifier*.
-[[nodiscard]]
-bool is_xid_start(char32_t c) noexcept;
-
-/// @brief Returns `true` iff `c` is in the set `[a-zA-Z0-9_]`.
-[[nodiscard]]
-constexpr bool is_ascii_xid_continue(char8_t c) noexcept
-{
-    return is_ascii_alphanumeric(c) || c == u8'_';
-}
-
-/// @brief Returns `true` iff `c` is in the set `[a-zA-Z0-9_]`.
-[[nodiscard]]
-constexpr bool is_ascii_xid_continue(char32_t c) noexcept
-{
-    return is_ascii_alphanumeric(c) || c == u8'_';
-}
-
-bool is_xid_continue(char8_t c) = delete;
-
-/// @brief Returns `true` iff `c` has the XID_Continue Unicode property.
-/// This property indicates whether the character can appear
-/// in a Unicode identifier, such as a C++ *identifier*.
-[[nodiscard]]
-bool is_xid_continue(char32_t c) noexcept;
+// C & C++ =========================================================================================
 
 /// @brief Returns `true` iff `c` is in the set `[A-Za-z_]`.
 [[nodiscard]]
@@ -528,49 +518,74 @@ constexpr bool is_cpp_identifier_continue(char32_t c)
     return c == U'_' || is_xid_continue(c);
 }
 
+/// @brief consistent with `isspace` in the C locale.
 [[nodiscard]]
 constexpr bool is_cpp_whitespace(char8_t c)
 {
-    return is_ascii_blank(c);
+    return c == u8'\t' || c == u8'\n' || c == u8'\f' || c == u8'\r' || c == u8' ' || c == u8'\v';
 }
 
+/// @brief Consistent with `isspace` in the C locale.
 [[nodiscard]]
 constexpr bool is_cpp_whitespace(char32_t c)
 {
-    return is_ascii_blank(c);
+    return c == u8'\t' || c == u8'\n' || c == u8'\f' || c == u8'\r' || c == u8' ' || c == U'\v';
 }
+
+// LUA =============================================================================================
 
 [[nodiscard]]
 constexpr bool is_lua_whitespace(char8_t c) noexcept
 {
-    // In Lua, whitespace is any character with a Unicode class of "space separator",
-    // plus the control characters \t, \n, \v, \f, \r
-    // See: https://www.lua.org/manual/5.4/manual.html at section 3.1
-    return c == u8' ' || c == u8'\t' || c == u8'\n' || c == u8'\v' || c == u8'\f' || c == u8'\r';
+    // > In source code, Lua recognizes as spaces the standard ASCII whitespace characters space,
+    // > form feed, newline, carriage return, horizontal tab, and vertical tab.
+    // https://www.lua.org/manual/5.4/manual.html,section 3.1
+    return is_cpp_whitespace(c);
 }
 
-// Check if character is valid for first character of Lua identifier
+[[nodiscard]]
+constexpr bool is_lua_whitespace(char32_t c) noexcept
+{
+    return is_cpp_whitespace(c);
+}
+
+[[nodiscard]]
+constexpr bool is_lua_identifier_start(char8_t c) noexcept
+{
+    return is_cpp_ascii_identifier_start(c);
+}
+
 [[nodiscard]]
 constexpr bool is_lua_identifier_start(char32_t c) noexcept
 {
     // Lua identifiers start with a letter or underscore
-    // See: https://www.lua.org/pil/1.3.html
-    return (c >= U'a' && c <= U'z') || (c >= U'A' && c <= U'Z') || c == U'_';
+    // See: https://www.lua.org/manual/5.4/manual.html
+    return is_cpp_ascii_identifier_start(c);
 }
 
-// Check if character is valid for non-first character of Lua identifier
+[[nodiscard]]
+constexpr bool is_lua_identifier_continue(char8_t c) noexcept
+{
+    return is_cpp_ascii_identifier_continue(c);
+}
+
 [[nodiscard]]
 constexpr bool is_lua_identifier_continue(char32_t c) noexcept
 {
     // Lua identifiers contain letters, digits, or underscores after the first char
-    return is_lua_identifier_start(c) || (c >= U'0' && c <= U'9');
+    return is_cpp_ascii_identifier_continue(c);
 }
 
-// Check if character is valid for Lua hexadecimal digit
 [[nodiscard]]
 constexpr bool is_lua_hex_digit(char8_t c) noexcept
 {
-    return (c >= u8'0' && c <= u8'9') || (c >= u8'a' && c <= u8'f') || (c >= u8'A' && c <= u8'F');
+    return is_ascii_digit(c) || (c >= u8'a' && c <= u8'f') || (c >= u8'A' && c <= u8'F');
+}
+
+[[nodiscard]]
+constexpr bool is_lua_hex_digit(char32_t c) noexcept
+{
+    return is_ascii_digit(c) || (c >= U'a' && c <= U'f') || (c >= U'A' && c <= U'F');
 }
 
 } // namespace ulight

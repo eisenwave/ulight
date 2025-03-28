@@ -180,28 +180,28 @@ TEST(Charsets, all_ascii_alphanumeric)
 TEST(Charsets, all_ascii_whitespace8)
 {
     for (char8_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_whitespace8, c), is_ascii_whitespace(c));
+        EXPECT_EQ(contains(all_ascii_whitespace8, c), is_html_whitespace(c));
     }
 }
 
 TEST(Charsets, all_ascii_whitespace)
 {
     for (char32_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_whitespace, c), is_ascii_whitespace(c));
+        EXPECT_EQ(contains(all_ascii_whitespace, c), is_html_whitespace(c));
     }
 }
 
-TEST(Charsets, all_ascii_blank8)
+TEST(Charsets, all_cpp_whitespace8)
 {
     for (char8_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_blank8, c), is_ascii_blank(c));
+        EXPECT_EQ(contains(all_cpp_whitespace8, c), is_cpp_whitespace(c));
     }
 }
 
-TEST(Charsets, all_ascii_blank)
+TEST(Charsets, all_cpp_whitespace)
 {
     for (char32_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_blank, c), is_ascii_blank(c));
+        EXPECT_EQ(contains(all_cpp_whitespace, c), is_cpp_whitespace(c));
     }
 }
 
@@ -219,28 +219,28 @@ TEST(Charsets, all_mmml_escapeable)
     }
 }
 
-TEST(Strings, trim_ascii_blank_left)
+TEST(Strings, trim_cpp_whitespace_left)
 {
-    EXPECT_EQ(u8"awoo"sv, trim_ascii_blank_left(u8"awoo"));
-    EXPECT_EQ(u8"awoo"sv, trim_ascii_blank_left(u8"\n\t\v\f\r awoo"));
-    EXPECT_EQ(u8"awoo\n\t\v\f\r "sv, trim_ascii_blank_left(u8"awoo\n\t\v\f\r "));
-    EXPECT_EQ(u8"awoo\n\t\v\f\r "sv, trim_ascii_blank_left(u8"\n\t\v\f\r awoo\n\t\v\f\r "));
+    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace_left(u8"awoo"));
+    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace_left(u8"\n\t\v\f\r awoo"));
+    EXPECT_EQ(u8"awoo\n\t\v\f\r "sv, trim_cpp_whitespace_left(u8"awoo\n\t\v\f\r "));
+    EXPECT_EQ(u8"awoo\n\t\v\f\r "sv, trim_cpp_whitespace_left(u8"\n\t\v\f\r awoo\n\t\v\f\r "));
 }
 
-TEST(Strings, trim_ascii_blank_right)
+TEST(Strings, trim_cpp_whitespace_right)
 {
-    EXPECT_EQ(u8"awoo"sv, trim_ascii_blank_right(u8"awoo"));
-    EXPECT_EQ(u8"awoo"sv, trim_ascii_blank_right(u8"awoo\n\t\v\f\r "));
-    EXPECT_EQ(u8"\n\t\v\f\r awoo"sv, trim_ascii_blank_right(u8"\n\t\v\f\r awoo"));
-    EXPECT_EQ(u8"\n\t\v\f\r awoo"sv, trim_ascii_blank_right(u8"\n\t\v\f\r awoo\n\t\v\f\r "));
+    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace_right(u8"awoo"));
+    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace_right(u8"awoo\n\t\v\f\r "));
+    EXPECT_EQ(u8"\n\t\v\f\r awoo"sv, trim_cpp_whitespace_right(u8"\n\t\v\f\r awoo"));
+    EXPECT_EQ(u8"\n\t\v\f\r awoo"sv, trim_cpp_whitespace_right(u8"\n\t\v\f\r awoo\n\t\v\f\r "));
 }
 
-TEST(Strings, trim_ascii_blank)
+TEST(Strings, trim_cpp_whitespace)
 {
-    EXPECT_EQ(u8"awoo"sv, trim_ascii_blank(u8"awoo"));
-    EXPECT_EQ(u8"awoo"sv, trim_ascii_blank(u8"awoo\n\t\v\f\r "));
-    EXPECT_EQ(u8"awoo"sv, trim_ascii_blank(u8"\n\t\v\f\r awoo"));
-    EXPECT_EQ(u8"awoo"sv, trim_ascii_blank(u8"\n\t\v\f\r awoo\n\t\v\f\r "));
+    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace(u8"awoo"));
+    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace(u8"awoo\n\t\v\f\r "));
+    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace(u8"\n\t\v\f\r awoo"));
+    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace(u8"\n\t\v\f\r awoo\n\t\v\f\r "));
 }
 
 TEST(Strings, is_html_tag_name)
