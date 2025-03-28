@@ -17,4 +17,4 @@ jobs:
         run: sudo apt-get install -y clang-format-19
 
       - name: Run clang-format check
-        run: find -name '*.cpp' -o -name '*.h' include src | xargs clang-format --dry-run --Werror
+        run: find include src -name '*.cpp' -o -name '*.c' -o -name '*.hpp' -o -name '*.h' | xargs clang-format-19 --dry-run --Werror
