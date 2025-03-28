@@ -17,7 +17,11 @@ namespace ulight {
 
 namespace {
 
-enum struct Content_Context : Underlying { document, argument_value, block };
+enum struct Content_Context : Underlying {
+    document,
+    argument_value,
+    block
+};
 
 [[nodiscard]]
 constexpr bool is_terminated_by(Content_Context context, char8_t c)
