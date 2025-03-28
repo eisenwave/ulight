@@ -1,17 +1,19 @@
 #include <cstddef>
 #include <expected>
 #include <memory_resource>
+#include <optional>
 #include <span>
 #include <string_view>
 #include <vector>
 
-#include "ulight/impl/chars.hpp"
-#include "ulight/impl/unicode.hpp"
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/assert.hpp"
 #include "ulight/impl/buffer.hpp"
+#include "ulight/impl/chars.hpp"
+#include "ulight/impl/highlight.hpp"
 #include "ulight/impl/mmml.hpp"
+#include "ulight/impl/unicode.hpp"
 
 namespace ulight {
 

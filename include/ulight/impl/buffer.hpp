@@ -2,6 +2,9 @@
 #define ULIGHT_BUFFER_HPP
 
 #include <algorithm>
+#include <concepts>
+#include <cstddef>
+#include <iterator>
 #include <ranges>
 #include <span>
 

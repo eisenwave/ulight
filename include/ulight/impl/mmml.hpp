@@ -1,11 +1,15 @@
 #ifndef ULIGHT_MMML_HPP
 #define ULIGHT_MMML_HPP
 
+#include <compare>
+#include <cstddef>
 #include <span>
 #include <string_view>
+#include <vector>
 
 #include "ulight/ulight.hpp"
 
+#include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
 
 namespace ulight {
