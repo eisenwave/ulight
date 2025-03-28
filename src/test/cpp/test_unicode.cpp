@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <cstdint>
+#include <expected>
 #include <iterator>
 #include <memory_resource>
 #include <random>

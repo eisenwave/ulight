@@ -1,6 +1,8 @@
 #ifndef ULIGHT_IO_HPP
 #define ULIGHT_IO_HPP
 
+#include <concepts>
+#include <cstddef>
 #include <cstdio>
 #include <cstring>
 #include <expected>
@@ -13,6 +15,7 @@
 #include "ulight/function_ref.hpp"
 
 #include "ulight/impl/ansi.hpp"
+#include "ulight/impl/assert.hpp"
 #include "ulight/impl/platform.h"
 
 #ifdef ULIGHT_EMSCRIPTEN

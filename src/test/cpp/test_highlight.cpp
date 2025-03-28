@@ -1,4 +1,8 @@
+#include <algorithm>
+#include <cstddef>
 #include <filesystem>
+#include <iostream>
+#include <iterator>
 #include <span>
 #include <string>
 #include <string_view>
@@ -6,8 +10,10 @@
 
 #include <gtest/gtest.h>
 
+#include "ulight/impl/ansi.hpp"
 #include "ulight/impl/io.hpp"
 #include "ulight/impl/string_diff.hpp"
+#include "ulight/impl/strings.hpp"
 #include "ulight/ulight.hpp"
 
 namespace ulight {
@@ -101,7 +107,7 @@ TEST_F(Highlight_Test, file_tests)
             continue;
         }
 
-        auto flush_buffer = [&](const char* text, size_t length) {
+        auto flush_buffer = [&](const char* text, std::size_t length) {
             const std::u8string_view sv { reinterpret_cast<const char8_t*>(text), length };
             actual.insert(actual.end(), sv.begin(), sv.end());
         };

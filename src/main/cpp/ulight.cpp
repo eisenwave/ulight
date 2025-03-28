@@ -1,10 +1,13 @@
 #include <algorithm>
+#include <cstddef>
 #include <new>
 #include <string_view>
 
 #include "ulight/ulight.h"
 #include "ulight/ulight.hpp"
 
+#include "ulight/impl/assert.hpp"
+#include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/memory.hpp"
 #include "ulight/impl/platform.h"
@@ -100,7 +103,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
 // clang-format on
 
 ULIGHT_EXPORT
-constexpr size_t ulight_lang_list_length = std::size(ulight_lang_list);
+constexpr std::size_t ulight_lang_list_length = std::size(ulight_lang_list);
 
 ULIGHT_EXPORT
 constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
@@ -190,7 +193,7 @@ void ulight_destroy(ulight_state*) noexcept { }
 ULIGHT_EXPORT
 ulight_state* ulight_new() noexcept
 {
-    void* result = ulight_alloc(sizeof(ulight_state), alignof(ulight_state));
+    void* const result = ulight_alloc(sizeof(ulight_state), alignof(ulight_state));
     return ulight_init(static_cast<ulight_state*>(result));
 }
 

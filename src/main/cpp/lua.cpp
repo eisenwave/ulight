@@ -367,7 +367,7 @@ std::size_t match_number(std::u8string_view str)
 
     // Exponent (1e10, 1.5e-10).
     if (length < str.length() && (str[length] == u8'e' || str[length] == u8'E')) {
-        std::size_t exp_start = length;
+        const std::size_t exp_start = length;
         length++;
 
         // Optional sign.
