@@ -252,14 +252,14 @@ namespace {
 
 struct Highlighter {
 private:
-    Non_Owning_Buffer<Token> out;
+    Non_Owning_Buffer<Token>& out;
     std::u8string_view remainder;
     Highlight_Options options;
     std::size_t index = 0;
 
 public:
     Highlighter(
-        Non_Owning_Buffer<Token> out,
+        Non_Owning_Buffer<Token>& out,
         std::u8string_view source,
         const Highlight_Options& options
     )
