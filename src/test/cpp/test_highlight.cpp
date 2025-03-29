@@ -121,6 +121,9 @@ TEST_F(Highlight_Test, file_tests)
         const Status status = state.source_to_html();
         EXPECT_EQ(status, Status::ok);
         if (status != Status::ok) {
+            std::cout << ansi::h_red << "ERROR: " //
+                      << ansi::reset << input_path //
+                      << ansi::h_black << " (" << state.get_error_string() << ")\n";
             continue;
         }
 
