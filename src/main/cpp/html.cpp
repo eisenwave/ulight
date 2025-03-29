@@ -396,8 +396,8 @@ public:
         if (name_length == 0) {
             return true;
         }
+        const std::u8string_view name = remainder.substr(0, name_length);
         emit_and_advance(index, name_length, Highlight_Type::markup_tag);
-        const std::u8string_view name = remainder.substr(name_length);
 
         while (!remainder.empty()) {
             expect_whitespace();
