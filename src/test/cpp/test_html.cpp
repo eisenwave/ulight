@@ -74,14 +74,16 @@ TEST(HTML, match_cdata)
 {
     EXPECT_EQ(match_cdata(u8""), Match_Result());
     EXPECT_EQ(match_cdata(u8"<!"), Match_Result());
+    EXPECT_EQ(match_cdata(u8"<!["), Match_Result());
+    EXPECT_EQ(match_cdata(u8"<![CDATA"), Match_Result());
 
-    EXPECT_EQ(match_cdata(u8"<!CDATA["), Match_Result(8, false));
-    EXPECT_EQ(match_cdata(u8"<!CDATA[>"), Match_Result(9, false));
-    EXPECT_EQ(match_cdata(u8"<!CDATA[]>"), Match_Result(10, false));
+    EXPECT_EQ(match_cdata(u8"<![CDATA["), Match_Result(9, false));
+    EXPECT_EQ(match_cdata(u8"<![CDATA[>"), Match_Result(10, false));
+    EXPECT_EQ(match_cdata(u8"<![CDATA[]>"), Match_Result(11, false));
 
-    EXPECT_EQ(match_cdata(u8"<!CDATA[]]>"), Match_Result(11, true));
-    EXPECT_EQ(match_cdata(u8"<!CDATA[]]>abc"), Match_Result(11, true));
-    EXPECT_EQ(match_cdata(u8"<!CDATA[raw data]]>"), Match_Result(19, true));
+    EXPECT_EQ(match_cdata(u8"<![CDATA[]]>"), Match_Result(12, true));
+    EXPECT_EQ(match_cdata(u8"<![CDATA[]]>abc"), Match_Result(12, true));
+    EXPECT_EQ(match_cdata(u8"<![CDATA[raw data]]>"), Match_Result(20, true));
 }
 
 TEST(HTML, match_raw_text)

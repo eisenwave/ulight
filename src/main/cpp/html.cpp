@@ -14,7 +14,7 @@ constexpr std::u8string_view comment_prefix = u8"<!--";
 constexpr std::u8string_view comment_suffix = u8"-->";
 constexpr std::u8string_view comment_suffix_degenerate = u8"<!-->";
 
-constexpr std::u8string_view cdata_prefix = u8"<!CDATA[";
+constexpr std::u8string_view cdata_prefix = u8"<![CDATA[";
 constexpr std::u8string_view cdata_suffix = u8"]]>";
 
 constexpr std::u8string_view doctype_prefix = u8"<!DOCTYPE";
