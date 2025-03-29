@@ -261,6 +261,9 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     try {
         const ulight::Status result
             = ulight::highlight(buffer, source, ulight::Lang(state->lang), &memory, options);
+        // We've already checked for language validity.
+        // bad_lang at this point can only be developer error.
+        ULIGHT_ASSERT(result != ulight::Status::bad_lang);
         buffer.flush();
         return ulight_status(result);
     } catch (const ulight::utf8::Unicode_Error&) {
