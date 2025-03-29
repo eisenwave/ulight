@@ -86,8 +86,8 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     // make_lang_entry( u8"h", ULIGHT_LANG_c ),
     make_lang_entry("h++", ULIGHT_LANG_CPP),
     make_lang_entry("hpp", ULIGHT_LANG_CPP),
-    // make_lang_entry( u8"htm", ULIGHT_LANG_html ),
-    // make_lang_entry( u8"html", ULIGHT_LANG_html ),
+    make_lang_entry("htm", ULIGHT_LANG_HTML),
+    make_lang_entry("html", ULIGHT_LANG_HTML),
     make_lang_entry("hxx", ULIGHT_LANG_CPP),
     // make_lang_entry( u8"java", ULIGHT_LANG_java ),
     // make_lang_entry( u8"javascript", ULIGHT_LANG_javascript ),
@@ -100,7 +100,6 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     // make_lang_entry( u8"tsx", ULIGHT_LANG_typescript ),
     // make_lang_entry( u8"typescript", ULIGHT_LANG_typescript ),
 };
-// clang-format on
 
 ULIGHT_EXPORT
 constexpr std::size_t ulight_lang_list_length = std::size(ulight_lang_list);
@@ -111,7 +110,9 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("MMML"),
     make_sv("C++"),
     make_sv("Lua"),
+    make_sv("HTML"),
 };
+// clang-format on
 
 namespace {
 
@@ -236,6 +237,7 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     }
     switch (state->lang) {
     case ULIGHT_LANG_CPP:
+    case ULIGHT_LANG_HTML:
     case ULIGHT_LANG_LUA:
     case ULIGHT_LANG_MMML: break;
     case ULIGHT_LANG_NONE: {
