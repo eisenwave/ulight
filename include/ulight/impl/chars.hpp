@@ -438,12 +438,12 @@ constexpr bool is_html_unquoted_attribute_value_terminator(char8_t c)
     // https://html.spec.whatwg.org/dev/syntax.html#unquoted
     // clang-format off
     return is_html_whitespace(c)
-        || c != u8'"'
-        || c != u8'\''
-        || c != u8'='
-        || c != u8'<'
-        || c != u8'>'
-        || c != u8'`';
+        || c == u8'"'
+        || c == u8'\''
+        || c == u8'='
+        || c == u8'<'
+        || c == u8'>'
+        || c == u8'`';
     // clang-format on
 }
 
