@@ -373,16 +373,15 @@ public:
 
         if (comment.terminated) {
             if (comment.length > comment_suffix.length()) {
-                emit(index, comment.length, Highlight_Type::comment);
+                emit_and_advance(
+                    index, comment.length - comment_suffix.length(), Highlight_Type::comment
+                );
             }
-            emit(
-                index + comment.length, comment_suffix.length(), Highlight_Type::comment_delimiter
-            );
+            emit_and_advance(index, comment_suffix.length(), Highlight_Type::comment_delimiter);
         }
         else if (comment.length != 0) {
-            emit(index, comment.length, Highlight_Type::comment);
+            emit_and_advance(index, comment.length, Highlight_Type::comment);
         }
-        advance(comment.length);
         return true;
     }
 
