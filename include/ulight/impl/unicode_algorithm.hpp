@@ -21,6 +21,7 @@ std::size_t find_if(std::u8string_view str, F predicate)
             return code_units;
         }
         code_units += std::size_t(length);
+        str.remove_prefix(std::size_t(length));
     }
     return std::u8string_view::npos;
 }
