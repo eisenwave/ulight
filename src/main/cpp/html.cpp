@@ -255,6 +255,8 @@ private:
     Non_Owning_Buffer<Token>& out;
     std::u8string_view remainder;
     Highlight_Options options;
+
+    const std::size_t source_length = remainder.length();
     std::size_t index = 0;
 
 public:
@@ -272,6 +274,9 @@ public:
 private:
     void emit(std::size_t begin, std::size_t length, Highlight_Type type)
     {
+        ULIGHT_DEBUG_ASSERT(begin < source_length);
+        ULIGHT_DEBUG_ASSERT(begin + length <= source_length);
+
         const bool coalesce = options.coalescing //
             && !out.empty() //
             && Highlight_Type(out.back().type) == type //
