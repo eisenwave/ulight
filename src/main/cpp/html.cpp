@@ -473,20 +473,19 @@ public:
             || expect_unquoted_attribute_value();
     }
 
-    template <typename F>
-        requires std::is_invocable_r_v<bool, F, char8_t>
-    bool expect_attribute_value(F stop_condition, bool check_first)
+    bool expect_unquoted_attribute_value()
     {
-        auto piece_length = std::size_t(check_first);
+        std::size_t piece_length = 0;
         const auto flush = [&] {
             if (piece_length != 0) {
                 emit_and_advance(index, piece_length, Highlight_Type::string);
+                piece_length = 0;
             }
         };
 
         for (; piece_length < remainder.length(); ++piece_length) {
             const char8_t c = remainder[piece_length];
-            if (stop_condition(c)) {
+            if (is_html_unquoted_attribute_value_terminator(c)) {
                 flush();
                 return true;
             }
@@ -500,17 +499,34 @@ public:
         return true;
     }
 
-    bool expect_unquoted_attribute_value()
-    {
-        return expect_attribute_value(
-            [](char8_t c) { return is_html_unquoted_attribute_value_terminator(c); }, true
-        );
-    }
-
     bool expect_quoted_attribute_value(char8_t quote_char)
     {
-        return remainder.starts_with(quote_char)
-            && expect_attribute_value([quote_char](char8_t c) { return c == quote_char; }, false);
+        if (!remainder.starts_with(quote_char)) {
+            return false;
+        }
+        std::size_t piece_length = 1;
+        const auto flush = [&] {
+            if (piece_length != 0) {
+                emit_and_advance(index, piece_length, Highlight_Type::string);
+                piece_length = 0;
+            }
+        };
+
+        for (; piece_length < remainder.length(); ++piece_length) {
+            const char8_t c = remainder[piece_length];
+            if (c == quote_char) {
+                ++piece_length;
+                flush();
+                return true;
+            }
+            if (const std::size_t ref_length
+                = match_character_reference(remainder.substr(piece_length))) {
+                flush();
+                emit_and_advance(index, ref_length, Highlight_Type::escape);
+            }
+        }
+        flush();
+        return true;
     }
 
     bool expect_end_tag()
