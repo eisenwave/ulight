@@ -69,6 +69,8 @@ inline Status highlight(
         return to_result(highlight_mmml(out, source, memory, options));
     case Lang::lua: //
         return to_result(highlight_lua(out, source, memory, options));
+    case Lang::html: //
+        return to_result(highlight_html(out, source, memory, options));
     default: //
         return Status::bad_lang;
     }
