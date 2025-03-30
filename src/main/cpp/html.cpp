@@ -54,12 +54,18 @@ std::size_t match_character_reference(std::u8string_view str)
 
 std::size_t match_tag_name(std::u8string_view str)
 {
-    return utf8::find_if_not(str, [](char32_t c) { return is_html_tag_name_character(c); });
+    const std::size_t result = utf8::find_if_not(str, [](char32_t c) { //
+        return is_html_tag_name_character(c);
+    });
+    return result == std::u8string_view::npos ? str.length() : result;
 }
 
 std::size_t match_attribute_name(std::u8string_view str)
 {
-    return utf8::find_if_not(str, [](char32_t c) { return is_html_attribute_name_character(c); });
+    const std::size_t result = utf8::find_if_not(str, [](char32_t c) { //
+        return is_html_attribute_name_character(c);
+    });
+    return result == std::u8string_view::npos ? str.length() : result;
 }
 
 std::size_t match_raw_text(std::u8string_view str, std::u8string_view closing_name)

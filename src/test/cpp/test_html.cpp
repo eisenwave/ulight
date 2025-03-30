@@ -149,5 +149,29 @@ TEST(HTML, match_end_tag_permissive)
     EXPECT_EQ(match_end_tag_permissive(u8"</script>"), End_Tag_Result(9, 6));
 }
 
+TEST(HTML, match_tag_name)
+{
+    EXPECT_EQ(match_tag_name(u8""), 0);
+    EXPECT_EQ(match_tag_name(u8"<"), 0);
+    EXPECT_EQ(match_tag_name(u8"<abc"), 0);
+
+    EXPECT_EQ(match_tag_name(u8"a"), 1);
+    EXPECT_EQ(match_tag_name(u8"abc"), 3);
+    EXPECT_EQ(match_tag_name(u8"abc>"), 3);
+}
+
+TEST(HTML, match_attribute_name)
+{
+    EXPECT_EQ(match_attribute_name(u8""), 0);
+    EXPECT_EQ(match_attribute_name(u8">"), 0);
+    EXPECT_EQ(match_attribute_name(u8">abc"), 0);
+
+    EXPECT_EQ(match_attribute_name(u8"a"), 1);
+    EXPECT_EQ(match_attribute_name(u8"abc"), 3);
+    EXPECT_EQ(match_attribute_name(u8"abc>"), 3);
+    EXPECT_EQ(match_attribute_name(u8"<"), 1);
+    EXPECT_EQ(match_attribute_name(u8"<abc"), 4);
+}
+
 } // namespace
 } // namespace ulight::html
