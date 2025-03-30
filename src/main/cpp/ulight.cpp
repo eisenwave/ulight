@@ -80,7 +80,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("cc", ULIGHT_LANG_CPP),
     make_lang_entry("cplusplus", ULIGHT_LANG_CPP),
     make_lang_entry("cpp", ULIGHT_LANG_CPP),
-    // make_lang_entry( "css", ULIGHT_LANG_css ),
+    make_lang_entry("css", ULIGHT_LANG_CSS),
     // make_lang_entry( "cts", ULIGHT_LANG_typescript ),
     make_lang_entry("cxx", ULIGHT_LANG_CPP),
     // make_lang_entry( u8"h", ULIGHT_LANG_c ),
@@ -237,6 +237,7 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     }
     switch (state->lang) {
     case ULIGHT_LANG_CPP:
+    case ULIGHT_LANG_CSS:
     case ULIGHT_LANG_HTML:
     case ULIGHT_LANG_LUA:
     case ULIGHT_LANG_MMML: break;
