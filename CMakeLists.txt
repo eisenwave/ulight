@@ -24,6 +24,7 @@ endif()
 set(LIBRARY_SOURCES
     src/main/cpp/chars.cpp
     src/main/cpp/cpp.cpp
+    src/main/cpp/html.cpp
     src/main/cpp/lua.cpp
     src/main/cpp/mmml.cpp
     src/main/cpp/parse_utils.cpp
@@ -90,6 +91,7 @@ else(NOT DEFINED EMSCRIPTEN)
         src/test/cpp/test_buffer.cpp
         src/test/cpp/test_chars_strings.cpp
         src/test/cpp/test_highlight.cpp
+        src/test/cpp/test_html.cpp
         src/test/cpp/test_unicode.cpp
     )
 

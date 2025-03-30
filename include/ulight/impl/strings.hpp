@@ -49,6 +49,9 @@ inline constexpr std::u8string_view all_mmml_escapeable8 = u8"\\{}";
 inline constexpr std::u32string_view all_mmml_special = U"\\{}[],";
 inline constexpr std::u8string_view all_mmml_special8 = u8"\\{}[],";
 
+/// @brief UTF-8-encoded byte order mark.
+inline constexpr std::u8string_view byte_order_mark8 = u8"\uFEFF";
+
 [[nodiscard]]
 inline std::string_view as_string_view(std::u8string_view str)
 {
@@ -65,6 +68,38 @@ constexpr bool contains(std::u8string_view str, char8_t c)
 constexpr bool contains(std::u32string_view str, char32_t c)
 {
     return str.find(c) != std::u32string_view::npos;
+}
+
+/// @brief Returns `true` iff `x` and `y` are equal,
+/// ignoring any case differences between ASCII alphabetic characters.
+[[nodiscard]]
+constexpr bool equals_ascii_ignore_case(std::u8string_view x, std::u8string_view y)
+{
+    if (x.length() != y.length()) {
+        return false;
+    }
+    for (std::size_t i = 0; i < x.length(); ++i) {
+        if (to_ascii_upper(x[i]) != to_ascii_upper(y[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/// @brief Returns `true` iff `str` starts with `prefix`,
+/// ignoring any case differences between ASCII alphabetic characters.
+[[nodiscard]]
+constexpr bool starts_with_ascii_ignore_case(std::u8string_view str, std::u8string_view prefix)
+{
+    if (prefix.length() > str.length()) {
+        return false;
+    }
+    for (std::size_t i = 0; i < prefix.length(); ++i) {
+        if (to_ascii_upper(prefix[i]) != to_ascii_upper(str[i])) {
+            return false;
+        }
+    }
+    return true;
 }
 
 namespace detail {

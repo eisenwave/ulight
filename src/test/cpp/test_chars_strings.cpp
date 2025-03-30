@@ -279,6 +279,35 @@ TEST(Strings, is_html_unquoted_attribute_value)
     EXPECT_FALSE(is_html_unquoted_attribute_value(u8"\"val\""));
 }
 
+TEST(Strings, equals_ascii_ignore_case)
+{
+    EXPECT_TRUE(equals_ascii_ignore_case(u8"", u8""));
+    EXPECT_TRUE(equals_ascii_ignore_case(u8"abc", u8"abc"));
+    EXPECT_TRUE(equals_ascii_ignore_case(u8"abc", u8"ABC"));
+    EXPECT_TRUE(equals_ascii_ignore_case(u8"aBc", u8"AbC"));
+
+    EXPECT_FALSE(equals_ascii_ignore_case(u8"abc", u8"abcd"));
+}
+
+TEST(Strings, starts_with_ascii_ignore_case)
+{
+    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"", u8""));
+    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"abc", u8""));
+
+    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"abcd", u8"abc"));
+
+    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"abc", u8"ABC"));
+    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"abcd", u8"ABC"));
+    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"aBc", u8"AbC"));
+    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"aBcD", u8"AbC"));
+
+    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"aBc", u8"AbC"));
+
+    EXPECT_FALSE(starts_with_ascii_ignore_case(u8"abc", u8"abcd"));
+    EXPECT_FALSE(starts_with_ascii_ignore_case(u8"abc", u8"ABCD"));
+    EXPECT_FALSE(starts_with_ascii_ignore_case(u8"abc", u8"aBcD"));
+}
+
 TEST(Parse_Utils, find_blank_line_sequence)
 {
     EXPECT_EQ(find_blank_line_sequence(u8""), (Blank_Line { 0, 0 }));

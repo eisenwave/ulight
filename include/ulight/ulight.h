@@ -34,13 +34,15 @@ typedef struct ulight_string_view {
 enum {
     /// @brief The amount of unique languages supported,
     /// including `ULIGHT_LANG_NONE`.
-    ULIGHT_LANG_COUNT = 4
+    ULIGHT_LANG_COUNT = 5
 };
 
 /// @brief A language supported by ulight for syntax highlighting.
 typedef enum ulight_lang {
     /// @brief C++.
     ULIGHT_LANG_CPP = 2,
+    /// @brief HTML.
+    ULIGHT_LANG_HTML = 4,
     /// @brief Lua.
     ULIGHT_LANG_LUA = 3,
     /// @brief MMML (Missing Middle Markup Language).
