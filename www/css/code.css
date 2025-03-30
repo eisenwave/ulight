@@ -35,6 +35,7 @@
     }
 
     h-[data-h^=id_var],
+    h-[data-h^=id_attr],
     h-[data-h^=mk_attr] {
         color: #5c477e;
     }
@@ -98,7 +99,8 @@
     }
 
     h-[data-h^=id_var],
-    h-[data-h^=id_attr] {
+    h-[data-h^=id_attr],
+    h-[data-h^=mk_attr] {
         color: #a4c4de;
     }
 
