@@ -1,6 +1,7 @@
 #ifndef ULIGHT_HTML_HPP
 #define ULIGHT_HTML_HPP
 
+#include <cstddef>
 #include <string_view>
 
 namespace ulight::html {

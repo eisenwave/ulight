@@ -1,6 +1,7 @@
 #ifndef ULIGHT_UNICODE_ALGORITHM_HPP
 #define ULIGHT_UNICODE_ALGORITHM_HPP
 
+#include <cstddef>
 #include <string_view>
 #include <type_traits>
 
