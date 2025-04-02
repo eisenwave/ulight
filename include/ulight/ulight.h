@@ -153,22 +153,33 @@ typedef enum ulight_highlight_type {
     ULIGHT_HL_COMMENT = 0x10,
     /// @brief In all languages, the delimiting characters of a comment.
     /// For example, `//` for line comments in C++.
-    ULIGHT_HL_COMMENT_DELIMITER = 0x11,
+    ULIGHT_HL_COMMENT_DELIM = 0x11,
     /// @brief In all languages, a builtin constant, value, literal, etc. in general.
     ULIGHT_HL_VALUE = 0x12,
     /// @brief In all languages, a numeric literal, like `123`.
     ULIGHT_HL_NUMBER = 0x16,
+    /// @brief In all languages, delimiters or digit separators for numbers,
+    /// like `'` within `1'000'000` in C++, or `_` within `1_000_000` in Java.
+    ULIGHT_HL_NUMBER_DELIM = 0x17,
+    /// @brief In all language, prefixes, suffixes, units, etc. for numbers,
+    /// like `10em` or `10%` in CSS.
+    ULIGHT_HL_NUMBER_DECOR = 0x18,
     /// @brief In all languages, a string or character literal, like `"etc"`.
     ULIGHT_HL_STRING = 0x1a,
+    /// @brief In all languages, delimiters for strings, such as single or double quotes.
+    ULIGHT_HL_STRING_DELIM = 0x1b,
+    /// @brief In all language, string prefixes, suffixes, etc.,
+    /// like `u8"abc"` or `"123"sv` in C++.
+    ULIGHT_HL_STRING_DECOR = 0x1c,
     /// @brief In all languages, "escape sequences",
     /// possibly within a string literal, like `"\n"`.
-    ULIGHT_HL_ESCAPE = 0x1b,
+    ULIGHT_HL_ESCAPE = 0x20,
     /// @brief In all languages, a `null`, `nullptr`, `undefined`, etc. keyword.
-    ULIGHT_HL_NULL = 0x1c,
+    ULIGHT_HL_NULL = 0x21,
     /// @brief In all languages, a `true`, `false`, `yes`, `no`, etc. keyword.
-    ULIGHT_HL_BOOL = 0x1d,
+    ULIGHT_HL_BOOL = 0x22,
     /// @brief In all languages, a self-referential keyword, like `this` or `self`.
-    ULIGHT_HL_THIS = 0x1e,
+    ULIGHT_HL_THIS = 0x23,
 
     // 0x30..0x3f Preprocessing, macros, etc.
     // -------------------------------------------------------------------------
