@@ -80,7 +80,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("cc", ULIGHT_LANG_CPP),
     make_lang_entry("cplusplus", ULIGHT_LANG_CPP),
     make_lang_entry("cpp", ULIGHT_LANG_CPP),
-    // make_lang_entry( "css", ULIGHT_LANG_css ),
+    make_lang_entry("css", ULIGHT_LANG_CSS),
     // make_lang_entry( "cts", ULIGHT_LANG_typescript ),
     make_lang_entry("cxx", ULIGHT_LANG_CPP),
     // make_lang_entry( u8"h", ULIGHT_LANG_c ),
@@ -111,8 +111,13 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("C++"),
     make_sv("Lua"),
     make_sv("HTML"),
+    make_sv("CSS"),
 };
 // clang-format on
+
+static_assert(std::ranges::none_of(ulight_lang_display_names, [](ulight_string_view str) {
+    return str.length == 0;
+}));
 
 namespace {
 
@@ -237,6 +242,7 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     }
     switch (state->lang) {
     case ULIGHT_LANG_CPP:
+    case ULIGHT_LANG_CSS:
     case ULIGHT_LANG_HTML:
     case ULIGHT_LANG_LUA:
     case ULIGHT_LANG_MMML: break;

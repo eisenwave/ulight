@@ -22,7 +22,8 @@
     }
 
     h-[data-h^=str],
-    h-[data-h^=num] {
+    h-[data-h^=num],
+    h-[data-h^=val] {
         color: #367c2a;
     }
 
@@ -86,7 +87,8 @@
     }
 
     h-[data-h^=str],
-    h-[data-h^=num] {
+    h-[data-h^=num],
+    h-[data-h^=val] {
         color: #98d48e;
     }
 
