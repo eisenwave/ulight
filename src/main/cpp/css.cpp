@@ -459,6 +459,7 @@ public:
 
     void consume_comments()
     {
+        // https://www.w3.org/TR/css-syntax-3/#consume-comment
         while (const cpp::Comment_Result block_comment = cpp::match_block_comment(remainder)) {
             const std::size_t terminator_length = 2 * std::size_t(block_comment.is_terminated);
             emit(index, 2, Highlight_Type::comment_delimiter); // /*
@@ -472,8 +473,14 @@ public:
 
     void consume_numeric_token()
     {
-        // TODO: consume suffix
+        // https://www.w3.org/TR/css-syntax-3/#consume-numeric-token
         consume_number();
+        if (starts_with_ident_sequence(remainder)) {
+            consume_ident_like_token(Highlight_Type::number_decor);
+        }
+        else if (remainder.starts_with(u8'%')) {
+            emit_and_advance(1, Highlight_Type::number_decor);
+        }
     }
 
     void consume_string_token(char8_t quote_char)
