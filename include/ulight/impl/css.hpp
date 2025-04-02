@@ -1,6 +1,7 @@
 #ifndef ULIGHT_CSS_HPP
 #define ULIGHT_CSS_HPP
 
+#include <cstddef>
 #include <string_view>
 
 #include "ulight/impl/platform.h"
