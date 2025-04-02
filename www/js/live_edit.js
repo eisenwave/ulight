@@ -57,15 +57,17 @@ function onCodeInput(persist) {
         localStorage.setItem(editorContentsItem, codeInput.value);
     }
 
-    setVisibleLineNumbers(inputLineNumbers, codeInput.value.count('\n') + 1);
-
     try {
         const languageId = Number(languageIdSelect.value);
-        const highlighted = wasm.toHtml(codeInput.value, languageId);
-        setVisibleLineNumbers(outputLineNumbers, highlighted.count('\n') + 1);
-        codeHighlight.innerHTML = highlighted;
-        output.textContent = highlighted;
+        const highlightedInput = wasm.toHtml(codeInput.value, languageId);
+        setVisibleLineNumbers(inputLineNumbers, highlightedInput.count('\n') + 1);
+        codeHighlight.innerHTML = highlightedInput;
+
+        const highlightedOutput = wasm.toHtml(highlightedInput, "html");
+        output.innerHTML = highlightedOutput;
+        setVisibleLineNumbers(outputLineNumbers, highlightedOutput.count('\n') + 1);
     } catch (e) {
+        setVisibleLineNumbers(inputLineNumbers, codeInput.value.count('\n') + 1);
         codeHighlight.textContent = codeInput.value;
         output.textContent = `Error: ${e.message}\n\n${e.stack}`;
         return;
@@ -96,10 +98,20 @@ let isDragging = false;
 
 // =================================================================================================
 
+/**
+ * @param {number} min the lower bound
+ * @param {number} max the upper bound
+ * @returns {number}
+ */
 Number.prototype.clamp = function (min, max) {
     return Math.min(Math.max(this, min), max);
 };
 
+/**
+ * Returns the number of occurrences of `x` within this string.
+ * @param {string} x the character to count
+ * @returns {number}
+ */
 String.prototype.count = function (x) {
     let n = 0;
     for (const c of this) {
