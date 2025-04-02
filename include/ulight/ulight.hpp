@@ -111,12 +111,12 @@ constexpr std::string_view ulight_highlight_type_id(Highlight_Type type) noexcep
     // Design note:
     // All names should be underscore-separated blocks of up to four characters.
     // The abbreviations should always be distinct if they abbreviate different words.
-    // For example, "del" stands for "deletion", and "dlm" stands for "delimiter".
+    // For example, "del" stands for "deletion", and "dlim" stands for "delimiter".
     switch (type) {
         using enum Highlight_Type;
     case error: return "err";
     case comment: return "cmt";
-    case comment_delimiter: return "cmt_dlm";
+    case comment_delimiter: return "cmt_dlim";
     case value: return "val";
     case number: return "num";
     case string: return "str";
