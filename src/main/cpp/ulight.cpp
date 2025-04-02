@@ -111,8 +111,13 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("C++"),
     make_sv("Lua"),
     make_sv("HTML"),
+    make_sv("CSS"),
 };
 // clang-format on
+
+static_assert(std::ranges::none_of(ulight_lang_display_names, [](ulight_string_view str) {
+    return str.length == 0;
+}));
 
 namespace {
 
