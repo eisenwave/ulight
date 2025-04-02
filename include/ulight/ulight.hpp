@@ -126,10 +126,10 @@ constexpr std::string_view ulight_highlight_type_id(Highlight_Type type) noexcep
     case comment_delimiter: return "cmt_dlim";
     case value: return "val";
     case number: return "num";
-    case number_delim: return "num_dlm";
+    case number_delim: return "num_dlim";
     case number_decor: return "num_deco";
     case string: return "str";
-    case string_delim: return "str_dlm";
+    case string_delim: return "str_dlim";
     case string_decor: return "str_deco";
     case escape: return "esc";
     case null: return "null";
