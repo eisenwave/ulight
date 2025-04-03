@@ -270,16 +270,20 @@ std::size_t match_pp_number(const std::u8string_view str)
             }
             break;
         }
-        // pp-number "e" sign
         case u8'e':
-        // pp-number "E" sign
         case u8'E':
-        // pp-number "p" sign
         case u8'p':
-        // pp-number "P" sign
         case u8'P': {
+            // pp-number "e" sign
+            // pp-number "E" sign
+            // pp-number "p" sign
+            // pp-number "P" sign
             if (length + 1 < str.size() && (str[length + 1] == u8'-' || str[length + 1] == u8'+')) {
                 length += 2;
+            }
+            // pp-number identifier-continue
+            else {
+                ++length;
             }
             break;
         }
