@@ -105,4 +105,6 @@ else(NOT DEFINED EMSCRIPTEN)
         WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
         DISCOVERY_TIMEOUT 30
     )
+
+    add_subdirectory(examples)
 endif()
