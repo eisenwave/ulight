@@ -6,6 +6,7 @@
 #include "ulight/impl/strings.hpp"
 
 namespace ulight::css {
+namespace {
 
 [[maybe_unused]]
 std::ostream& operator<<(std::ostream& out, Ident_Result result) // NOLINT
@@ -13,8 +14,6 @@ std::ostream& operator<<(std::ostream& out, Ident_Result result) // NOLINT
     return out << "{ .length = " << result.length
                << ", .type = " << as_string_view(enumerator_of(result.type)) << " }";
 }
-
-namespace {
 
 TEST(CSS, starts_with_number)
 {

@@ -330,7 +330,7 @@ constexpr bool is_html_ascii_tag_name_character(char8_t c)
 constexpr bool is_html_ascii_control(char8_t c)
 {
     // https://infra.spec.whatwg.org/#control
-    return (c >= u8'\u0000' && c <= u8'\u001F') || c == u8'\u007F';
+    return c <= u8'\u001F' || c == u8'\u007F';
 }
 
 constexpr bool is_html_control(char8_t c) = delete;
@@ -339,7 +339,7 @@ constexpr bool is_html_control(char8_t c) = delete;
 constexpr bool is_html_control(char32_t c)
 {
     // https://infra.spec.whatwg.org/#control
-    return (c >= U'\u0000' && c <= U'\u001F') || (c >= U'\u007F' && c <= U'\u009F');
+    return c <= U'\u001F' || (c >= U'\u007F' && c <= U'\u009F');
 }
 
 constexpr bool is_html_tag_name_character(char8_t c) = delete;
