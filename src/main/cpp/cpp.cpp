@@ -149,9 +149,11 @@ std::size_t match_line_comment(std::u8string_view s) noexcept
     return length;
 }
 
-std::size_t match_preprocessing_directive(std::u8string_view s) noexcept
+std::size_t match_preprocessing_directive(std::u8string_view s, Lang c_or_cpp)
 {
-    const std::optional<Token_Type> first_token = match_preprocessing_op_or_punc(s);
+    ULIGHT_ASSERT(c_or_cpp == Lang::c || c_or_cpp == Lang::cpp);
+
+    const std::optional<Token_Type> first_token = match_preprocessing_op_or_punc(s, c_or_cpp);
     if (first_token != Token_Type::pound && first_token != Token_Type::pound_alt) {
         return {};
     }
@@ -468,8 +470,11 @@ String_Literal_Result match_string_literal(std::u8string_view str)
              .terminated = false };
 }
 
-std::optional<Token_Type> match_preprocessing_op_or_punc(std::u8string_view str)
+std::optional<Token_Type> match_preprocessing_op_or_punc(std::u8string_view str, Lang c_or_cpp)
 {
+    ULIGHT_ASSERT(c_or_cpp == Lang::c || c_or_cpp == Lang::cpp);
+    const bool is_cpp = c_or_cpp == Lang::cpp;
+
     using enum Token_Type;
     if (str.empty()) {
         return {};
@@ -493,30 +498,30 @@ std::optional<Token_Type> match_preprocessing_op_or_punc(std::u8string_view str)
         if (str.starts_with(u8"<::") && !str.starts_with(u8"<:::") && !str.starts_with(u8"<::>")) {
             return less;
         }
-        return str.starts_with(u8"<=>") ? three_way
-            : str.starts_with(u8"<<=")  ? less_less_eq
-            : str.starts_with(u8"<=")   ? less_eq
-            : str.starts_with(u8"<<")   ? less_less
-            : str.starts_with(u8"<%")   ? left_brace_alt
-            : str.starts_with(u8"<:")   ? left_square_alt
-                                        : less;
+        return is_cpp && str.starts_with(u8"<=>") ? three_way
+            : str.starts_with(u8"<<=")            ? less_less_eq
+            : str.starts_with(u8"<=")             ? less_eq
+            : str.starts_with(u8"<<")             ? less_less
+            : str.starts_with(u8"<%")             ? left_brace_alt
+            : str.starts_with(u8"<:")             ? left_square_alt
+                                                  : less;
     }
     case u8';': return semicolon;
     case u8':':
-        return str.starts_with(u8":>") ? right_square_alt //
-            : str.starts_with(u8"::")  ? scope
-                                       : colon;
+        return str.starts_with(u8":>")          ? right_square_alt //
+            : is_cpp && str.starts_with(u8"::") ? scope
+                                                : colon;
     case u8'.':
-        return str.starts_with(u8"...") ? ellipsis
-            : str.starts_with(u8".*")   ? member_pointer_access
-                                        : dot;
+        return str.starts_with(u8"...")         ? ellipsis
+            : is_cpp && str.starts_with(u8".*") ? member_pointer_access
+                                                : dot;
     case u8'?': return question;
     case u8'-': {
-        return str.starts_with(u8"->*") ? member_arrow_access
-            : str.starts_with(u8"-=")   ? minus_eq
-            : str.starts_with(u8"->")   ? arrow
-            : str.starts_with(u8"--")   ? minus_minus
-                                        : minus;
+        return is_cpp && str.starts_with(u8"->*") ? member_arrow_access
+            : str.starts_with(u8"-=")             ? minus_eq
+            : str.starts_with(u8"->")             ? arrow
+            : str.starts_with(u8"--")             ? minus_minus
+                                                  : minus;
     }
     case u8'>':
         return str.starts_with(u8">>=") ? greater_greater_eq
@@ -533,9 +538,9 @@ std::optional<Token_Type> match_preprocessing_op_or_punc(std::u8string_view str)
     case u8'*': return str.starts_with(u8"*=") ? asterisk_eq : asterisk;
     case u8'/': return str.starts_with(u8"/=") ? slash_eq : slash;
     case u8'^':
-        return str.starts_with(u8"^^") ? caret_caret //
-            : str.starts_with(u8"^=")  ? caret_eq
-                                       : caret;
+        return is_cpp && str.starts_with(u8"^^") ? caret_caret //
+            : str.starts_with(u8"^=")            ? caret_eq
+                                                 : caret;
     case u8'&':
         return str.starts_with(u8"&=") ? amp_eq //
             : str.starts_with(u8"&&")  ? amp_amp
@@ -547,29 +552,6 @@ std::optional<Token_Type> match_preprocessing_op_or_punc(std::u8string_view str)
                                        : pipe;
     case u8'=': return str.starts_with(u8"==") ? eq_eq : eq;
     case u8',': return comma;
-    case u8'a':
-        return str.starts_with(u8"and_eq") ? kw_and_eq
-            : str.starts_with(u8"and")     ? kw_and
-                                           : std::optional<Token_Type> {};
-    case u8'o':
-        return str.starts_with(u8"or_eq") ? kw_or_eq
-            : str.starts_with(u8"or")     ? kw_or
-                                          : std::optional<Token_Type> {};
-    case u8'x':
-        return str.starts_with(u8"xor_eq") ? kw_xor_eq
-            : str.starts_with(u8"xor")     ? kw_xor
-                                           : std::optional<Token_Type> {};
-    case u8'n':
-        return str.starts_with(u8"not_eq") ? kw_not_eq
-            : str.starts_with(u8"not")     ? kw_not
-                                           : std::optional<Token_Type> {};
-    case u8'b':
-        return str.starts_with(u8"bitand") ? kw_bitand
-            : str.starts_with(u8"bitor")   ? kw_bitor
-                                           : std::optional<Token_Type> {};
-    case u8'c':
-        return str.starts_with(u8"compl") ? kw_compl //
-                                          : std::optional<Token_Type> {};
     default: return {};
     }
 }
@@ -592,11 +574,11 @@ std::size_t match_cpp_identifier_except_keywords(std::u8string_view str, bool st
 void highlight_c_cpp( //
     Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
-    Lang lang,
+    Lang c_or_cpp,
     const Highlight_Options& options
 )
 {
-    ULIGHT_ASSERT(lang == Lang::c || lang == Lang::cpp);
+    ULIGHT_ASSERT(c_or_cpp == Lang::c || c_or_cpp == Lang::cpp);
 
     const auto emit = [&](std::size_t begin, std::size_t length, Highlight_Type type) {
         const bool coalesce = options.coalescing //
@@ -685,10 +667,12 @@ void highlight_c_cpp( //
             index += id_length;
             continue;
         }
-        if (const std::optional<Token_Type> op = match_preprocessing_op_or_punc(remainder)) {
+        if (const std::optional<Token_Type> op
+            = match_preprocessing_op_or_punc(remainder, c_or_cpp)) {
             const bool possible_directive = op == Token_Type::pound || op == Token_Type::pound_alt;
             if (fresh_line && possible_directive) {
-                if (const std::size_t directive_length = match_preprocessing_directive(remainder)) {
+                if (const std::size_t directive_length
+                    = match_preprocessing_directive(remainder, c_or_cpp)) {
                     emit(index, directive_length, Highlight_Type::macro);
                     fresh_line = true;
                     index += directive_length;

@@ -311,7 +311,7 @@ Comment_Result match_block_comment(std::u8string_view str) noexcept;
 std::size_t match_line_comment(std::u8string_view str) noexcept;
 
 [[nodiscard]]
-std::size_t match_preprocessing_directive(std::u8string_view str) noexcept;
+std::size_t match_preprocessing_directive(std::u8string_view str, Lang c_or_cpp);
 
 /** @brief Type of https://eel.is/c++draft/lex.icon#nt:integer-literal */
 enum struct Integer_Literal_Type : Underlying {
@@ -422,11 +422,11 @@ struct String_Literal_Result {
 [[nodiscard]]
 String_Literal_Result match_string_literal(std::u8string_view str);
 
-/// @brief Matches a C++
+/// @brief Matches a C or C++
 /// *[preprocessing-op-or-punc](https://eel.is/c++draft/lex#nt:preprocessing-op-or-punc)*
 /// at the start of `str`.
 [[nodiscard]]
-std::optional<Token_Type> match_preprocessing_op_or_punc(std::u8string_view str);
+std::optional<Token_Type> match_preprocessing_op_or_punc(std::u8string_view str, Lang c_or_cpp);
 
 } // namespace ulight::cpp
 
