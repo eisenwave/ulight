@@ -243,7 +243,7 @@ constexpr bool is_cpp_feature(Feature_Source source)
     F(kw_void, "void", keyword_type, c_cpp)                                                        \
     F(kw_volatile, "volatile", keyword, c_cpp)                                                     \
     F(kw_wchar_t, "wchar_t", keyword_type, cpp)                                                    \
-    F(kw_while, "while", keyword_control, cpp)                                                     \
+    F(kw_while, "while", keyword_control, c_cpp)                                                   \
     F(kw_xor, "xor", keyword, c_cpp)                                                               \
     F(kw_xor_eq, "xor_eq", keyword, c_cpp)                                                         \
     F(left_brace, "{", sym_brace, c_cpp)                                                           \
