@@ -589,17 +589,15 @@ std::size_t match_cpp_identifier_except_keywords(std::u8string_view str, bool st
     return 0;
 }
 
-} // namespace
-
-} // namespace cpp
-
-bool highlight_cpp( //
+void highlight_c_cpp( //
     Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
-    std::pmr::memory_resource*,
+    Lang lang,
     const Highlight_Options& options
 )
 {
+    ULIGHT_ASSERT(lang == Lang::c || lang == Lang::cpp);
+
     const auto emit = [&](std::size_t begin, std::size_t length, Highlight_Type type) {
         const bool coalesce = options.coalescing //
             && !out.empty() //
@@ -625,19 +623,19 @@ bool highlight_cpp( //
 
     while (index < source.size()) {
         const std::u8string_view remainder = source.substr(index);
-        if (const std::size_t white_length = cpp::match_whitespace(remainder)) {
+        if (const std::size_t white_length = match_whitespace(remainder)) {
             fresh_line |= remainder.substr(0, white_length).contains(u8'\n');
             index += white_length;
             continue;
         }
-        if (const std::size_t line_comment_length = cpp::match_line_comment(remainder)) {
+        if (const std::size_t line_comment_length = match_line_comment(remainder)) {
             emit(index, 2, Highlight_Type::comment_delimiter);
             emit(index + 2, line_comment_length - 2, Highlight_Type::comment);
             fresh_line = true;
             index += line_comment_length;
             continue;
         }
-        if (const cpp::Comment_Result block_comment = cpp::match_block_comment(remainder)) {
+        if (const Comment_Result block_comment = match_block_comment(remainder)) {
             const std::size_t terminator_length = 2 * std::size_t(block_comment.is_terminated);
             emit(index, 2, Highlight_Type::comment_delimiter); // /*
             emit(index + 2, block_comment.length - 2 - terminator_length, Highlight_Type::comment);
@@ -647,9 +645,9 @@ bool highlight_cpp( //
             index += block_comment.length;
             continue;
         }
-        if (const cpp::String_Literal_Result literal = cpp::match_string_literal(remainder)) {
+        if (const String_Literal_Result literal = match_string_literal(remainder)) {
             const std::size_t suffix_length = literal.terminated
-                ? cpp::match_cpp_identifier_except_keywords(
+                ? match_cpp_identifier_except_keywords(
                       remainder.substr(literal.length), options.strict
                   )
                 : 0;
@@ -659,9 +657,9 @@ bool highlight_cpp( //
             index += combined_length;
             continue;
         }
-        if (const cpp::Character_Literal_Result literal = cpp::match_character_literal(remainder)) {
+        if (const Character_Literal_Result literal = match_character_literal(remainder)) {
             const std::size_t suffix_length = literal.terminated
-                ? cpp::match_cpp_identifier_except_keywords(
+                ? match_cpp_identifier_except_keywords(
                       remainder.substr(literal.length), options.strict
                   )
                 : 0;
@@ -671,43 +669,41 @@ bool highlight_cpp( //
             index += combined_length;
             continue;
         }
-        if (const std::size_t number_length = cpp::match_pp_number(remainder)) {
+        if (const std::size_t number_length = match_pp_number(remainder)) {
             emit(index, number_length, Highlight_Type::number);
             fresh_line = false;
             index += number_length;
             continue;
         }
-        if (const std::size_t id_length = cpp::match_identifier(remainder)) {
-            const std::optional<cpp::Cpp_Token_Type> keyword
-                = cpp::cpp_token_type_by_code(remainder.substr(0, id_length));
+        if (const std::size_t id_length = match_identifier(remainder)) {
+            const std::optional<Cpp_Token_Type> keyword
+                = cpp_token_type_by_code(remainder.substr(0, id_length));
             const auto highlight
-                = keyword ? cpp::cpp_token_type_highlight(*keyword) : Highlight_Type::id;
+                = keyword ? cpp_token_type_highlight(*keyword) : Highlight_Type::id;
             emit(index, id_length, highlight);
             fresh_line = false;
             index += id_length;
             continue;
         }
-        if (const std::optional<cpp::Cpp_Token_Type> op
-            = cpp::match_preprocessing_op_or_punc(remainder)) {
+        if (const std::optional<Cpp_Token_Type> op = match_preprocessing_op_or_punc(remainder)) {
             const bool possible_directive
-                = op == cpp::Cpp_Token_Type::pound || op == cpp::Cpp_Token_Type::pound_alt;
+                = op == Cpp_Token_Type::pound || op == Cpp_Token_Type::pound_alt;
             if (fresh_line && possible_directive) {
-                if (const std::size_t directive_length
-                    = cpp::match_preprocessing_directive(remainder)) {
+                if (const std::size_t directive_length = match_preprocessing_directive(remainder)) {
                     emit(index, directive_length, Highlight_Type::macro);
                     fresh_line = true;
                     index += directive_length;
                     continue;
                 }
             }
-            const std::size_t op_length = cpp::cpp_token_type_length(*op);
+            const std::size_t op_length = cpp_token_type_length(*op);
             const Highlight_Type op_highlight = cpp_token_type_highlight(*op);
             emit(index, op_length, op_highlight);
             fresh_line = false;
             index += op_length;
             continue;
         }
-        if (const std::size_t non_white_length = cpp::match_non_whitespace(remainder)) {
+        if (const std::size_t non_white_length = match_non_whitespace(remainder)) {
             // Don't emit any highlighting.
             // To my understanding, this currently only matches backslashes at the end of the line.
             // We don't have a separate phase for these, so whatever, this seems fine.
@@ -721,7 +717,30 @@ bool highlight_cpp( //
         ULIGHT_ASSERT_UNREACHABLE(u8"Impossible state. One of the rules above should have matched."
         );
     }
+}
 
+} // namespace
+} // namespace cpp
+
+bool highlight_c( //
+    Non_Owning_Buffer<Token>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource*,
+    const Highlight_Options& options
+)
+{
+    cpp::highlight_c_cpp(out, source, Lang::c, options);
+    return true;
+}
+
+bool highlight_cpp( //
+    Non_Owning_Buffer<Token>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource*,
+    const Highlight_Options& options
+)
+{
+    cpp::highlight_c_cpp(out, source, Lang::cpp, options);
     return true;
 }
 
