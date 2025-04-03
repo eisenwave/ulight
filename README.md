@@ -13,6 +13,7 @@ and a stable numeric ID whose value can be found in `include/ulight.h`.
 
 | Display name | Short names | `ulight_lang` |
 | ------------ | ----------- | ------------- |
+| C | `c`, `h` | `ULIGHT_LANG_C` |
 | C++ | `c++`, `cc`, `cplusplus`, `cpp`, `cxx`, `h++`, `hpp` | `ULIGHT_LANG_CPP` |
 | CSS | `css` | `ULIGHT_LANG_CSS` |
 | HTML | `htm`, `html` | `ULIGHT_LANG_HTML` |

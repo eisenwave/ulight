@@ -34,11 +34,13 @@ typedef struct ulight_string_view {
 enum {
     /// @brief The amount of unique languages supported,
     /// including `ULIGHT_LANG_NONE`.
-    ULIGHT_LANG_COUNT = 6
+    ULIGHT_LANG_COUNT = 7
 };
 
 /// @brief A language supported by ulight for syntax highlighting.
 typedef enum ulight_lang {
+    /// @brief C.
+    ULIGHT_LANG_C = 6,
     /// @brief C++.
     ULIGHT_LANG_CPP = 2,
     /// @brief CSS.
