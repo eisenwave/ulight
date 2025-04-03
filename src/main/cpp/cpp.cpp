@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <bitset>
 #include <cstddef>
 #include <memory_resource>
 #include <optional>
@@ -20,10 +19,10 @@ namespace ulight {
 
 namespace cpp {
 
-#define ULIGHT_CPP_TOKEN_TYPE_U8_CODE(id, code, highlight, strict) u8##code,
-#define ULIGHT_CPP_TOKEN_TYPE_LENGTH(id, code, highlight, strict) (sizeof(u8##code) - 1),
-#define ULIGHT_CPP_TOKEN_HIGHLIGHT_TYPE(id, code, highlight, strict) (Highlight_Type::highlight),
-#define ULIGHT_CPP_TOKEN_TYPE_STRICT_STRING(id, code, highlight, strict) #strict
+#define ULIGHT_CPP_TOKEN_TYPE_U8_CODE(id, code, highlight, source) u8##code,
+#define ULIGHT_CPP_TOKEN_TYPE_LENGTH(id, code, highlight, source) (sizeof(u8##code) - 1),
+#define ULIGHT_CPP_TOKEN_HIGHLIGHT_TYPE(id, code, highlight, source) (Highlight_Type::highlight),
+#define ULIGHT_CPP_TOKEN_TYPE_FEATURE_SOURCE(id, code, highlight, source) (Feature_Source::source),
 
 namespace {
 
@@ -41,8 +40,8 @@ inline constexpr Highlight_Type token_type_highlights[] {
     ULIGHT_CPP_TOKEN_ENUM_DATA(ULIGHT_CPP_TOKEN_HIGHLIGHT_TYPE)
 };
 
-inline constexpr std::bitset<cpp_token_type_count> token_type_strictness {
-    ULIGHT_CPP_TOKEN_ENUM_DATA(ULIGHT_CPP_TOKEN_TYPE_STRICT_STRING), cpp_token_type_count
+inline constexpr Feature_Source token_type_sources[] {
+    ULIGHT_CPP_TOKEN_ENUM_DATA(ULIGHT_CPP_TOKEN_TYPE_FEATURE_SOURCE)
 };
 
 } // namespace
@@ -70,9 +69,9 @@ Highlight_Type cpp_token_type_highlight(Cpp_Token_Type type) noexcept
 }
 
 [[nodiscard]]
-bool cpp_token_type_is_strict(Cpp_Token_Type type) noexcept
+Feature_Source cpp_token_type_source(Cpp_Token_Type type) noexcept
 {
-    return token_type_strictness[std::size_t(type)];
+    return token_type_sources[std::size_t(type)];
 }
 
 [[nodiscard]]
@@ -582,7 +581,7 @@ std::size_t match_cpp_identifier_except_keywords(std::u8string_view str, bool st
 {
     if (const std::size_t result = cpp::match_identifier(str)) {
         const std::optional<Cpp_Token_Type> keyword = cpp_token_type_by_code(str.substr(0, result));
-        if (keyword && (!strict_only || cpp_token_type_is_strict(*keyword))) {
+        if (keyword && (!strict_only || is_cpp_feature(cpp_token_type_source(*keyword)))) {
             return 0;
         }
         return result;
