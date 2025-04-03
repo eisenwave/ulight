@@ -23,6 +23,7 @@ enum struct Lang : Underlying {
     html = ULIGHT_LANG_HTML,
     lua = ULIGHT_LANG_LUA,
     mmml = ULIGHT_LANG_MMML,
+    nasm = ULIGHT_LANG_NASM,
     none = ULIGHT_LANG_NONE,
 };
 
