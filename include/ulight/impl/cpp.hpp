@@ -255,30 +255,30 @@ constexpr bool is_cpp_feature(Feature_Source source)
 
 #define ULIGHT_CPP_TOKEN_ENUM_ENUMERATOR(id, code, highlight, strict) id,
 
-enum struct Cpp_Token_Type : Underlying { //
+enum struct Token_Type : Underlying { //
     ULIGHT_CPP_TOKEN_ENUM_DATA(ULIGHT_CPP_TOKEN_ENUM_ENUMERATOR)
 };
 
-inline constexpr auto cpp_token_type_count = std::size_t(Cpp_Token_Type::kw_xor_eq) + 1;
+inline constexpr auto cpp_token_type_count = std::size_t(Token_Type::kw_xor_eq) + 1;
 
 /// @brief Returns the in-code representation of `type`.
 /// For example, if `type` is `plus`, returns `"+"`.
 /// If `type` is invalid, returns an empty string.
 [[nodiscard]]
-std::u8string_view cpp_token_type_code(Cpp_Token_Type type) noexcept;
+std::u8string_view cpp_token_type_code(Token_Type type) noexcept;
 
 /// @brief Equivalent to `cpp_token_type_code(type).length()`.
 [[nodiscard]]
-std::size_t cpp_token_type_length(Cpp_Token_Type type) noexcept;
+std::size_t cpp_token_type_length(Token_Type type) noexcept;
 
 [[nodiscard]]
-Highlight_Type cpp_token_type_highlight(Cpp_Token_Type type) noexcept;
+Highlight_Type cpp_token_type_highlight(Token_Type type) noexcept;
 
 [[nodiscard]]
-Feature_Source cpp_token_type_source(Cpp_Token_Type type) noexcept;
+Feature_Source cpp_token_type_source(Token_Type type) noexcept;
 
 [[nodiscard]]
-std::optional<Cpp_Token_Type> cpp_token_type_by_code(std::u8string_view code) noexcept;
+std::optional<Token_Type> cpp_token_type_by_code(std::u8string_view code) noexcept;
 
 /// @brief Matches zero or more characters for which `is_cpp_whitespace` is `true`.
 [[nodiscard]]
@@ -426,7 +426,7 @@ String_Literal_Result match_string_literal(std::u8string_view str);
 /// *[preprocessing-op-or-punc](https://eel.is/c++draft/lex#nt:preprocessing-op-or-punc)*
 /// at the start of `str`.
 [[nodiscard]]
-std::optional<Cpp_Token_Type> match_preprocessing_op_or_punc(std::u8string_view str);
+std::optional<Token_Type> match_preprocessing_op_or_punc(std::u8string_view str);
 
 } // namespace ulight::cpp
 

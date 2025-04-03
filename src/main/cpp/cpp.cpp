@@ -50,38 +50,38 @@ inline constexpr Feature_Source token_type_sources[] {
 /// For example, if `type` is `plus`, returns `"+"`.
 /// If `type` is invalid, returns an empty string.
 [[nodiscard]]
-std::u8string_view cpp_token_type_code(Cpp_Token_Type type) noexcept
+std::u8string_view cpp_token_type_code(Token_Type type) noexcept
 {
     return token_type_codes[std::size_t(type)];
 }
 
 /// @brief Equivalent to `cpp_token_type_code(type).length()`.
 [[nodiscard]]
-std::size_t cpp_token_type_length(Cpp_Token_Type type) noexcept
+std::size_t cpp_token_type_length(Token_Type type) noexcept
 {
     return token_type_lengths[std::size_t(type)];
 }
 
 [[nodiscard]]
-Highlight_Type cpp_token_type_highlight(Cpp_Token_Type type) noexcept
+Highlight_Type cpp_token_type_highlight(Token_Type type) noexcept
 {
     return token_type_highlights[std::size_t(type)];
 }
 
 [[nodiscard]]
-Feature_Source cpp_token_type_source(Cpp_Token_Type type) noexcept
+Feature_Source cpp_token_type_source(Token_Type type) noexcept
 {
     return token_type_sources[std::size_t(type)];
 }
 
 [[nodiscard]]
-std::optional<Cpp_Token_Type> cpp_token_type_by_code(std::u8string_view code) noexcept
+std::optional<Token_Type> cpp_token_type_by_code(std::u8string_view code) noexcept
 {
     const std::u8string_view* const result = std::ranges::lower_bound(token_type_codes, code);
     if (result == std::end(token_type_codes) || *result != code) {
         return {};
     }
-    return Cpp_Token_Type(result - token_type_codes);
+    return Token_Type(result - token_type_codes);
 }
 
 std::size_t match_whitespace(std::u8string_view str)
@@ -151,8 +151,8 @@ std::size_t match_line_comment(std::u8string_view s) noexcept
 
 std::size_t match_preprocessing_directive(std::u8string_view s) noexcept
 {
-    const std::optional<Cpp_Token_Type> first_token = match_preprocessing_op_or_punc(s);
-    if (first_token != Cpp_Token_Type::pound && first_token != Cpp_Token_Type::pound_alt) {
+    const std::optional<Token_Type> first_token = match_preprocessing_op_or_punc(s);
+    if (first_token != Token_Type::pound && first_token != Token_Type::pound_alt) {
         return {};
     }
 
@@ -468,9 +468,9 @@ String_Literal_Result match_string_literal(std::u8string_view str)
              .terminated = false };
 }
 
-std::optional<Cpp_Token_Type> match_preprocessing_op_or_punc(std::u8string_view str)
+std::optional<Token_Type> match_preprocessing_op_or_punc(std::u8string_view str)
 {
-    using enum Cpp_Token_Type;
+    using enum Token_Type;
     if (str.empty()) {
         return {};
     }
@@ -550,26 +550,26 @@ std::optional<Cpp_Token_Type> match_preprocessing_op_or_punc(std::u8string_view 
     case u8'a':
         return str.starts_with(u8"and_eq") ? kw_and_eq
             : str.starts_with(u8"and")     ? kw_and
-                                           : std::optional<Cpp_Token_Type> {};
+                                           : std::optional<Token_Type> {};
     case u8'o':
         return str.starts_with(u8"or_eq") ? kw_or_eq
             : str.starts_with(u8"or")     ? kw_or
-                                          : std::optional<Cpp_Token_Type> {};
+                                          : std::optional<Token_Type> {};
     case u8'x':
         return str.starts_with(u8"xor_eq") ? kw_xor_eq
             : str.starts_with(u8"xor")     ? kw_xor
-                                           : std::optional<Cpp_Token_Type> {};
+                                           : std::optional<Token_Type> {};
     case u8'n':
         return str.starts_with(u8"not_eq") ? kw_not_eq
             : str.starts_with(u8"not")     ? kw_not
-                                           : std::optional<Cpp_Token_Type> {};
+                                           : std::optional<Token_Type> {};
     case u8'b':
         return str.starts_with(u8"bitand") ? kw_bitand
             : str.starts_with(u8"bitor")   ? kw_bitor
-                                           : std::optional<Cpp_Token_Type> {};
+                                           : std::optional<Token_Type> {};
     case u8'c':
         return str.starts_with(u8"compl") ? kw_compl //
-                                          : std::optional<Cpp_Token_Type> {};
+                                          : std::optional<Token_Type> {};
     default: return {};
     }
 }
@@ -580,7 +580,7 @@ namespace {
 std::size_t match_cpp_identifier_except_keywords(std::u8string_view str, bool strict_only)
 {
     if (const std::size_t result = cpp::match_identifier(str)) {
-        const std::optional<Cpp_Token_Type> keyword = cpp_token_type_by_code(str.substr(0, result));
+        const std::optional<Token_Type> keyword = cpp_token_type_by_code(str.substr(0, result));
         if (keyword && (!strict_only || is_cpp_feature(cpp_token_type_source(*keyword)))) {
             return 0;
         }
@@ -676,7 +676,7 @@ void highlight_c_cpp( //
             continue;
         }
         if (const std::size_t id_length = match_identifier(remainder)) {
-            const std::optional<Cpp_Token_Type> keyword
+            const std::optional<Token_Type> keyword
                 = cpp_token_type_by_code(remainder.substr(0, id_length));
             const auto highlight
                 = keyword ? cpp_token_type_highlight(*keyword) : Highlight_Type::id;
@@ -685,9 +685,8 @@ void highlight_c_cpp( //
             index += id_length;
             continue;
         }
-        if (const std::optional<Cpp_Token_Type> op = match_preprocessing_op_or_punc(remainder)) {
-            const bool possible_directive
-                = op == Cpp_Token_Type::pound || op == Cpp_Token_Type::pound_alt;
+        if (const std::optional<Token_Type> op = match_preprocessing_op_or_punc(remainder)) {
+            const bool possible_directive = op == Token_Type::pound || op == Token_Type::pound_alt;
             if (fresh_line && possible_directive) {
                 if (const std::size_t directive_length = match_preprocessing_directive(remainder)) {
                     emit(index, directive_length, Highlight_Type::macro);
