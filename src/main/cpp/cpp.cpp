@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <memory_resource>
 #include <optional>
 #include <string_view>
@@ -558,12 +559,30 @@ std::optional<Token_Type> match_preprocessing_op_or_punc(std::u8string_view str,
 
 namespace {
 
+constexpr std::uint_fast8_t source_mask_all { 0b1111 };
+constexpr std::uint_fast8_t source_mask_standard_cpp { 0b1100 };
+constexpr std::uint_fast8_t source_mask_standard_c { 0b1010 };
+constexpr std::uint_fast8_t source_mask_standard_c_ext { 0b1011 };
+
 [[nodiscard]]
-std::size_t match_cpp_identifier_except_keywords(std::u8string_view str, bool strict_only)
+bool feature_in_mask(Feature_Source source, std::uint_fast8_t mask)
+{
+    return ((mask >> Underlying(source)) & 1) != 0;
+}
+
+[[nodiscard]]
+bool feature_in_mask(Token_Type type, std::uint_fast8_t mask)
+{
+    return feature_in_mask(cpp_token_type_source(type), mask);
+}
+
+[[nodiscard]]
+std::size_t
+match_cpp_identifier_except_keywords(std::u8string_view str, std::uint_fast8_t source_mask)
 {
     if (const std::size_t result = cpp::match_identifier(str)) {
         const std::optional<Token_Type> keyword = cpp_token_type_by_code(str.substr(0, result));
-        if (keyword && (!strict_only || is_cpp_feature(cpp_token_type_source(*keyword)))) {
+        if (keyword && feature_in_mask(*keyword, source_mask)) {
             return 0;
         }
         return result;
@@ -579,6 +598,11 @@ void highlight_c_cpp( //
 )
 {
     ULIGHT_ASSERT(c_or_cpp == Lang::c || c_or_cpp == Lang::cpp);
+    const std::uint_fast8_t feature_source_mask = //
+        options.strict && c_or_cpp == Lang::c     ? source_mask_standard_c
+        : options.strict && c_or_cpp == Lang::cpp ? source_mask_standard_cpp
+        : c_or_cpp == Lang::c                     ? source_mask_standard_c_ext
+                                                  : source_mask_all;
 
     const auto emit = [&](std::size_t begin, std::size_t length, Highlight_Type type) {
         const bool coalesce = options.coalescing //
@@ -630,7 +654,7 @@ void highlight_c_cpp( //
         if (const String_Literal_Result literal = match_string_literal(remainder)) {
             const std::size_t suffix_length = literal.terminated
                 ? match_cpp_identifier_except_keywords(
-                      remainder.substr(literal.length), options.strict
+                      remainder.substr(literal.length), feature_source_mask
                   )
                 : 0;
             const std::size_t combined_length = literal.length + suffix_length;
@@ -642,7 +666,7 @@ void highlight_c_cpp( //
         if (const Character_Literal_Result literal = match_character_literal(remainder)) {
             const std::size_t suffix_length = literal.terminated
                 ? match_cpp_identifier_except_keywords(
-                      remainder.substr(literal.length), options.strict
+                      remainder.substr(literal.length), feature_source_mask
                   )
                 : 0;
             const std::size_t combined_length = literal.length + suffix_length;
@@ -660,8 +684,9 @@ void highlight_c_cpp( //
         if (const std::size_t id_length = match_identifier(remainder)) {
             const std::optional<Token_Type> keyword
                 = cpp_token_type_by_code(remainder.substr(0, id_length));
-            const auto highlight
-                = keyword ? cpp_token_type_highlight(*keyword) : Highlight_Type::id;
+            const auto highlight = keyword && feature_in_mask(*keyword, feature_source_mask)
+                ? cpp_token_type_highlight(*keyword)
+                : Highlight_Type::id;
             emit(index, id_length, highlight);
             fresh_line = false;
             index += id_length;
