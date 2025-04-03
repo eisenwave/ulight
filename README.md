@@ -4,6 +4,40 @@
 # µlight
 µlight or "u-light" is a zero-dependency, lightweight, and portable syntax highlighter.
 
+## Usage
+
+µlight provides a C API for the library,
+as well as a C++ wrapper for that API.
+Here is a minimal example using the C++ API:
+```cpp
+#include <iostream>
+#include <string_view>
+#include "ulight/ulight.hpp"
+
+int main() {
+    ulight::Token token_buffer[1024];
+    char text_buffer[8192];
+
+    ulight::State state;
+    state.set_source("int x;\n");
+    state.set_lang(ulight::Lang::cpp);
+    state.set_token_buffer(token_buffer);
+    state.set_text_buffer(text_buffer);
+    state.on_flush_text([](const char* str, std::size_t length) {
+        std::cout << std::string_view(str, length);
+    });
+    state.source_to_html();
+    // (In practice, check the returned status from source_to_html)
+}
+```
+This code outputs:
+```html
+<h- data-h=kw_type>int</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>;</h->
+```
+
+For more details,
+check the [examples](https://github.com/Eisenwave/ulight/tree/main/examples).
+
 ## Language support
 
 µlight is still in its early stages, so not a lot of languages are supported.
