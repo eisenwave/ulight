@@ -100,7 +100,7 @@ std::size_t match_non_whitespace(std::u8string_view str)
 namespace {
 
 [[nodiscard]]
-std::size_t match_newline_escape(std::u8string_view str)
+std::size_t match_newline_escape(std::u8string_view str) noexcept
 {
     // https://eel.is/c++draft/lex.phases#1.2
     // > Each sequence of a backslash character (\)
