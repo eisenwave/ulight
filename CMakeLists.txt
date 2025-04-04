@@ -74,9 +74,14 @@ if(DEFINED EMSCRIPTEN)
         COMMENT "Copying ulight.wasm and function.wasm to ${COPY_DESTINATION}"
     )
 else(NOT DEFINED EMSCRIPTEN)
-    find_package(GTest REQUIRED)
-    include(GoogleTest)
-    enable_testing()
+    find_package(GTest QUIET)
+    if (GTest_FOUND)
+        message(STATUS "GTest found. Building tests.")
+        include(GoogleTest)
+        enable_testing()
+    else()
+        message(STATUS "GTest not found. Skipping tests.")
+    endif()
 
     add_library(ulight STATIC ${LIBRARY_SOURCES})
     target_include_directories(ulight PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
@@ -103,10 +108,12 @@ else(NOT DEFINED EMSCRIPTEN)
     target_link_libraries(ulight-cli ulight)
     target_link_libraries(ulight-test ulight GTest::GTest GTest::Main)
 
-    gtest_discover_tests(ulight-test
-        WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
-        DISCOVERY_TIMEOUT 30
-    )
+    if (GTest_FOUND)
+        gtest_discover_tests(ulight-test
+            WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
+            DISCOVERY_TIMEOUT 30
+        )
+    endif()
 
     add_subdirectory(examples)
 endif()
