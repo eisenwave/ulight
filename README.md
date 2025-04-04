@@ -38,6 +38,37 @@ This code outputs:
 For more details,
 check the [examples](https://github.com/Eisenwave/ulight/tree/main/examples).
 
+## Building from source
+
+Building µlight from source is fairly simple.
+There are no (required) external dependencies,
+so you only need a relatively recent version of CMake and a C++ compiler.
+To build with CMake, run:
+
+```sh
+# The compiler specified is just an example; you can also build with GCC.
+cmake -B build \
+    -DCMAKE_CXX_COMPILER=clang++-19 \
+    -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+While µlight is written in C++23 and requires a fairly recent compiler to build,
+you can use the library with an ancient compiler and C++98, once built.
+It can also be used with any version of C, including C89.
+
+That is because the library's API is exposed through the `ulight.h` header,
+which can be compiled in any version of C and C++,
+and because the library's ABI is C-based.
+The `ulight.hpp` header is just a wrapper for convenience,
+and requires C++20 to use.
+
+### Build Requirements
+
+- CMake 3.24 or greater, and
+- GCC 13 or greater, or
+- Clang 19 or greater.
+
 ## Language support
 
 µlight is still in its early stages, so not a lot of languages are supported.
