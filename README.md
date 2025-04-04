@@ -89,7 +89,7 @@ This can be done easily if you have Python installed, like:
 cd www
 python -m http.server
 ```
-Open `http://localhost:8000/live_edit.html` in your browser.
+Open `http://localhost:8000/` in your browser.
 
 ### Build Requirements
 
