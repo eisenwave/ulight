@@ -63,11 +63,40 @@ and because the library's ABI is C-based.
 The `ulight.hpp` header is just a wrapper for convenience,
 and requires C++20 to use.
 
+### Building the WASM library
+
+µlight is also designed to target WASM, using emscripten.
+Building the WASM library also enables you to use the live editor under `www/`.
+
+To build WASM, first
+[install emsdk](https://emscripten.org/docs/getting_started/downloads.html).
+`install` and `activate` the SDK tools.
+
+Then, build using CMake:
+```sh
+# The actual toolchain file path depends on where you've installed emsdk.
+cmake -B build \
+    -DCMAKE_TOOLCHAIN_FILE=emsdk/emscripten/cmake/Modules/Platform/Emscripten.cmake \
+    -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+This will output the `ulight.wasm` WebAssembly module under `build/`.
+It also copies everything necessary into `www/`.
+You can now use the live editor by hosting that directory as a static website.
+This can be done easily if you have Python installed, like:
+```sh
+cd www
+python -m http.server
+```
+Open `http://localhost:8000/live_edit.html` in your browser.
+
 ### Build Requirements
 
 - CMake 3.24 or greater, and
 - GCC 13 or greater, or
-- Clang 19 or greater.
+- Clang 19 or greater, or
+- Emscripten 3.1.53 or greater.
 
 ## Language support
 
