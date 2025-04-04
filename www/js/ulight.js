@@ -239,7 +239,7 @@ export class UlightWasm {
             const str = this._loadUtf8(textAddress, textLength);
             this._bufferedText += str;
         };
-        const flushTextModule = await fetchBytes('/f_i32_i32_i32_to_void.wasm')
+        const flushTextModule = await fetchBytes('f_i32_i32_i32_to_void.wasm')
             .then(bytes => WebAssembly.compile(bytes));
         const flushTextImports = { m: { f: flushTextFunction } };
         const flushTextInstance = await WebAssembly.instantiate(flushTextModule, flushTextImports);
@@ -282,7 +282,7 @@ export async function loadWasm() {
             emscripten_notify_memory_growth() { }
         }
     };
-    const resultWasm = await WebAssembly.instantiateStreaming(fetch("/ulight.wasm"), importObject);
+    const resultWasm = await WebAssembly.instantiateStreaming(fetch("ulight.wasm"), importObject);
     const result = new UlightWasm(resultWasm);
     await result.init();
     return result;
