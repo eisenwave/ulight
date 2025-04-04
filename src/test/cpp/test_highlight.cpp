@@ -83,13 +83,7 @@ TEST_F(Highlight_Test, file_tests)
 
         std::filesystem::path expectations_path = input_path;
         expectations_path += ".html";
-        if (!std::filesystem::is_regular_file(expectations_path)) {
-            if (extension != u8".html") {
-                std::cout << ansi::h_yellow << "NO EXPECTATIONS: " //
-                          << ansi::reset << input_path << '\n';
-            }
-            continue;
-        }
+        const bool has_expectations = std::filesystem::is_regular_file(expectations_path);
 
         const std::u8string_view lang_name = std::u8string_view(extension).substr(1);
         const Lang lang = get_lang(lang_name);
@@ -103,7 +97,7 @@ TEST_F(Highlight_Test, file_tests)
 
         clear();
 
-        if (!load_code(input_path) || !load_expectations(expectations_path)) {
+        if (!load_code(input_path) || (has_expectations && !load_expectations(expectations_path))) {
             continue;
         }
 
@@ -118,16 +112,21 @@ TEST_F(Highlight_Test, file_tests)
         state.set_token_buffer(token_buffer);
         state.set_text_buffer(text_buffer);
         state.on_flush_text(flush_buffer);
-        const Status status = state.source_to_html();
-        EXPECT_EQ(status, Status::ok);
-        if (status != Status::ok) {
+
+        const auto pretty_print_error = [&] {
             std::cout << ansi::h_red << "ERROR: " //
                       << ansi::reset << input_path //
                       << ansi::h_black << " (" << state.get_error_string() << ")\n";
+        };
+
+        const Status status = state.source_to_html();
+        EXPECT_EQ(status, Status::ok);
+        if (status != Status::ok) {
+            pretty_print_error();
             continue;
         }
 
-        const bool compare_succeeded = expected == actual;
+        const bool compare_succeeded = !has_expectations || expected == actual;
         if (!compare_succeeded) {
             std::cout << ansi::h_red << "FAIL: " //
                       << ansi::reset << input_path //
@@ -139,7 +138,12 @@ TEST_F(Highlight_Test, file_tests)
         EXPECT_TRUE(compare_succeeded);
 
         std::cout << ansi::h_green << "OK: " //
-                  << ansi::reset << input_path.generic_string() << '\n';
+                  << ansi::reset << input_path.generic_string();
+        if (!has_expectations && extension != u8".html") {
+            std::cout << ansi::h_yellow << " (no expectations)" //
+                      << ansi::reset;
+        }
+        std::cout << '\n';
     }
 }
 
