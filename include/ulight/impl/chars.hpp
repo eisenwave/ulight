@@ -751,41 +751,135 @@ constexpr bool is_lua_hex_digit(char32_t c) noexcept
 
 // JS ==============================================================================================
 
+/// @brief Classifications are from https://262.ecma-international.org/15.0/index.html#sec-grammar-summary
+// Note that this should be updated whenever the Unicode standard changes.
 [[nodiscard]]
-constexpr bool is_js_whitespace(char8_t c)
+constexpr bool is_js_whitespace(char32_t c)
 {
-    // Space, tab, vertical tab, form feed, non-breaking space and similar.
-    return c == u8' ' || c == u8'\t' || c == u8'\v' || c == u8'\f' || c == u8'\n' || c == u8'\r';
+    if (c <= 0x7F) {
+        return c == u8' ' || c == u8'\t' || c == u8'\v' || c == u8'\f' || c == u8'\n' || c == u8'\r' ||
+           // Unicodes.
+           c == U'\u00A0' || // No-break space.
+           c == U'\u2028' || // Line separator.
+           c == U'\u2029' || // Paragraph separator.
+           c == U'\uFEFF';   // Zero width no-break space.
+    }
+
+    return c == U'\u00A0' ||
+           c == U'\u2028' ||
+           c == U'\u2029' ||
+           c == U'\uFEFF' ||
+           // Additional from `is_js_whitespace` with `char8_t` overload.
+           (c >= U'\u1680' && c <= U'\u180E') ||
+           (c >= U'\u2000' && c <= U'\u200A') ||
+           c == U'\u202F' ||
+           c == U'\u205F' ||
+           c == U'\u3000';
 }
 
 [[nodiscard]]
-constexpr bool is_js_digit(char8_t c)
+constexpr bool is_js_digit(char32_t c)
 {
-    return c >= u8'0' && c <= u8'9';
+    if (c <= 0x7F) {
+        return c >= U'0' && c <= U'9'; // ASCII.
+    }
+
+    return false;
 }
 
 [[nodiscard]]
-constexpr bool is_js_hex_digit(char8_t c)
+constexpr bool is_js_hex_digit(char32_t c)
 {
-    return is_js_digit(c) || (c >= u8'a' && c <= u8'f') || (c >= u8'A' && c <= u8'F');
+    return (c >= U'0' && c <= U'9') ||
+           (c >= U'a' && c <= U'f') ||
+           (c >= U'A' && c <= U'F');
 }
 
 [[nodiscard]]
 constexpr bool is_js_identifier_start(char32_t c)
 {
-    return (c >= u8'a' && c <= u8'z') || (c >= u8'A' && c <= u8'Z') || c == u8'_' || c == u8'$';
+    // Special JS characters.
+    if (c == U'$' || c == U'_') {
+        return true;
+    }
+
+    // ASCII letters.
+    if ((c >= U'a' && c <= U'z') || (c >= U'A' && c <= U'Z')) {
+        return true;
+    }
+
+    // Lu, Ll, Lt, Lm, Lo, Nl categories.
+
+    if ((c >= U'\u00C0' && c <= U'\u00D6') ||
+        (c >= U'\u00D8' && c <= U'\u00F6') ||
+        (c >= U'\u00F8' && c <= U'\u02FF')) {
+        return true;
+    }
+
+    if ((c >= U'\u0370' && c <= U'\u037D') ||
+        (c >= U'\u037F' && c <= U'\u1FFF') ||
+        (c >= U'\u200C' && c <= U'\u200D')) {
+        return true;
+    }
+
+    if ((c >= U'\u2070' && c <= U'\u218F') ||
+        (c >= U'\u2C00' && c <= U'\u2FEF') ||
+        (c >= U'\u3001' && c <= U'\uD7FF')) {
+        return true;
+    }
+
+    if ((c >= U'\uF900' && c <= U'\uFDCF') ||
+        (c >= U'\uFDF0' && c <= U'\uFFFD') ||
+        (c >= U'\U00010000' && c <= U'\U000EFFFF')) {
+        return true;
+    }
+
+    return false;
 }
 
 [[nodiscard]]
 constexpr bool is_js_identifier_part(char32_t c)
 {
-    return is_js_identifier_start(c) || is_js_digit(c);
+    if (is_js_identifier_start(c)) {
+        return true;
+    }
+
+    if (c >= U'0' && c <= U'9') {
+        return true;
+    }
+
+    // Mn, Mc, Nd, Pc categories.
+    if ((c >= U'\u0300' && c <= U'\u036F') ||
+        (c >= U'\u1DC0' && c <= U'\u1DFF') ||
+        (c >= U'\u20D0' && c <= U'\u20FF')) {
+        return true;
+    }
+
+    if ((c >= U'\uFE20' && c <= U'\uFE2F')) {
+        return true;
+    }
+
+    if ((c >= U'\u0660' && c <= U'\u0669') || // Arabic-Indic digits.
+        (c >= U'\u06F0' && c <= U'\u06F9') || // Extended Arabic-Indic digits.
+        (c >= U'\u07C0' && c <= U'\u07C9') || // NKo digits.
+        (c >= U'\u0966' && c <= U'\u096F')) { // Devanagari digits.
+        return true;
+    }
+
+    // Zero-width non-joiner and joiner.
+    if (c == U'\u200C' || c == U'\u200D') {
+        return true;
+    }
+
+    return false;
 }
 
+// JSX tag names can include identifiers, hyphens, colons, and periods
+// according to the official JSX spec.
 [[nodiscard]]
 constexpr bool is_jsx_tag_name_part(char32_t c)
 {
-    return is_js_identifier_part(c) || c == u8'-' || c == u8':';
+    return is_js_identifier_part(c) || c == U'-' || c == U':' || c == U'.';
 }
 
 } // namespace ulight

@@ -17,8 +17,8 @@ namespace ulight {
 
 namespace js {
 
-#define ULIGHT_JS_TOKEN_TYPE_U8_CODE(id, code, highlight, source) u8## code,
-#define ULIGHT_JS_TOKEN_TYPE_LENGTH(id, code, highlight, source) (sizeof(u8## code) - 1),
+#define ULIGHT_JS_TOKEN_TYPE_U8_CODE(id, code, highlight, source) u8##code,
+#define ULIGHT_JS_TOKEN_TYPE_LENGTH(id, code, highlight, source) (sizeof(u8##code) - 1),
 #define ULIGHT_JS_TOKEN_HIGHLIGHT_TYPE(id, code, highlight, source) (Highlight_Type::highlight),
 #define ULIGHT_JS_TOKEN_TYPE_FEATURE_SOURCE(id, code, highlight, source) (Feature_Source::source),
 
@@ -265,7 +265,8 @@ std::size_t match_template_substitution(std::u8string_view str)
         else if (str.substr(length).starts_with(u8"/*")) {
             const Comment_Result comment_result = match_block_comment(str.substr(length));
             if (comment_result) {
-                length += comment_result.length - 1; // -1 because it will be incremented at the end.
+                length
+                    += comment_result.length - 1; // -1 because it will be incremented at the end.
             }
         }
 
@@ -409,13 +410,12 @@ std::size_t match_private_identifier(std::u8string_view str)
         return 0;
     }
 
-    std::size_t length = 1; // Skip '#'.
-    const std::size_t id_length = match_identifier(str.substr(length));
+    const std::size_t id_length = match_identifier(str.substr(1)); // Skip '#'.
     if (id_length == 0) {
         return 0;
     }
 
-    return length + id_length;
+    return 1 + id_length; // '#' + <identifier> length
 }
 
 std::size_t match_jsx_tag_name(std::u8string_view str)
@@ -499,24 +499,28 @@ std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str, 
     case u8':': return colon;
     case u8';': return semicolon;
 
-    case u8'<':
-        {if (is_jsx) {
+    case u8'<': {
+        if (is_jsx) {
             return str.starts_with(u8"</>") ? jsx_fragment_close
                 : str.starts_with(u8"<>")   ? jsx_fragment_open
                 : str.starts_with(u8"</")   ? jsx_tag_end_open
                                             : jsx_tag_open;
-        }return str.starts_with(u8"<<=") ? left_shift_equal
-                : str.starts_with(u8"<<")   ? left_shift
-                : str.starts_with(u8"<=")   ? less_equal
-                                            : less_than;}
+        }
+        return str.starts_with(u8"<<=") ? left_shift_equal
+            : str.starts_with(u8"<<")   ? left_shift
+            : str.starts_with(u8"<=")   ? less_equal
+                                        : less_than;
+    }
 
-    case u8'=':
-        {if (is_jsx) {
+    case u8'=': {
+        if (is_jsx) {
             return jsx_attr_equals;
-        }return str.starts_with(u8"===") ? strict_equals
-                : str.starts_with(u8"==")   ? equals
-                : str.starts_with(u8"=>")   ? arrow
-                                            : assignment;}
+        }
+        return str.starts_with(u8"===") ? strict_equals
+            : str.starts_with(u8"==")   ? equals
+            : str.starts_with(u8"=>")   ? arrow
+                                        : assignment;
+    }
 
     case u8'>': {
         if (is_jsx) {
@@ -557,38 +561,41 @@ std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str, 
     }
 }
 
-} // namespace js
-
-bool highlight_javascript(
+namespace {
+/// @brief  Common JS and JSX highlighter implementation.
+bool highlight_javascript_impl(
     Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
-    std::pmr::memory_resource*,
+    std::size_t start_index,
+    std::size_t length,
+    bool initial_can_be_regex,
+    bool is_at_start_of_file,
+    Jsx_State jsx_state,
     const Highlight_Options& options
 )
 {
-    const auto emit = [&](std::size_t begin, std::size_t length, Highlight_Type type) {
+    const auto emit = [&](std::size_t begin, std::size_t len, Highlight_Type type) {
         const bool coalesce = options.coalescing //
             && !out.empty() //
             && Highlight_Type(out.back().type) == type //
             && out.back().begin + out.back().length == begin;
         if (coalesce) {
-            out.back().length += length;
+            out.back().length += len;
         }
         else {
-            out.emplace_back(begin, length, Underlying(type));
+            out.emplace_back(begin, len, Underlying(type));
         }
     };
 
-    std::size_t index = 0;
-    bool is_at_start_of_file = true;
-    bool can_be_regex = true;
-    js::Jsx_State jsx_state;
+    std::size_t index = start_index;
+    const std::size_t end_index = start_index + length;
+    bool can_be_regex = initial_can_be_regex;
 
-    while (index < source.size()) {
-        const std::u8string_view remainder = source.substr(index);
+    while (index < end_index) {
+        const std::u8string_view remainder = source.substr(index, end_index - index);
 
         // Ws.
-        if (const std::size_t white_length = js::match_whitespace(remainder)) {
+        if (const std::size_t white_length = match_whitespace(remainder)) {
             index += white_length;
             continue;
         }
@@ -596,7 +603,7 @@ bool highlight_javascript(
         // Hashbang comment (#!...)
         // note: can appear only at the start of the file
         if (const std::size_t hashbang_length
-            = js::match_hashbang_comment(remainder, is_at_start_of_file)) {
+            = match_hashbang_comment(remainder, is_at_start_of_file)) {
             emit(index, 2, Highlight_Type::comment_delimiter); // #!
             emit(index + 2, hashbang_length - 2, Highlight_Type::comment);
             index += hashbang_length;
@@ -607,7 +614,7 @@ bool highlight_javascript(
         is_at_start_of_file = false;
 
         // Single line comments.
-        if (const std::size_t line_comment_length = js::match_line_comment(remainder)) {
+        if (const std::size_t line_comment_length = match_line_comment(remainder)) {
             emit(index, 2, Highlight_Type::comment_delimiter); // //
             emit(index + 2, line_comment_length - 2, Highlight_Type::comment);
             index += line_comment_length;
@@ -616,7 +623,7 @@ bool highlight_javascript(
         }
 
         // Block comments.
-        if (const js::Comment_Result block_comment = js::match_block_comment(remainder)) {
+        if (const Comment_Result block_comment = match_block_comment(remainder)) {
             emit(index, 2, Highlight_Type::comment_delimiter); // /*
             emit(
                 index + 2, block_comment.length - 2 - (block_comment.is_terminated ? 2 : 0),
@@ -631,7 +638,6 @@ bool highlight_javascript(
         }
 
         if (!jsx_state.in_jsx) {
-
             if (remainder[0] == u8'<') {
                 bool is_jsx_tag = false;
 
@@ -675,8 +681,8 @@ bool highlight_javascript(
             }
             if (!jsx_state.in_jsx_tag && remainder.length() > 1 && remainder[0] == u8'<'
                 && remainder[1] == u8'/') {
-                std::size_t tag_end = remainder.find(u8'>', 2);
-                if (tag_end != std::string_view::npos) {
+                if (const std::size_t tag_end = remainder.find(u8'>', 2);
+                    tag_end != std::string_view::npos) {
                     emit(index, 2, Highlight_Type::markup_tag); // </
                     if (tag_end > 2) {
                         emit(index + 2, tag_end - 2, Highlight_Type::id);
@@ -701,7 +707,7 @@ bool highlight_javascript(
                 int brace_level = 1;
                 std::size_t brace_pos = index;
 
-                while (brace_pos < source.size() && brace_level > 0) {
+                while (brace_pos < end_index && brace_level > 0) {
                     if (source[brace_pos] == u8'{') {
                         brace_level++;
                     }
@@ -713,7 +719,11 @@ bool highlight_javascript(
 
                 if (brace_level == 0) {
                     if (brace_pos - 1 > index) {
-                        emit(index, brace_pos - 1 - index, Highlight_Type::id);
+                        // Use recursive highlighting for JSX expression
+                        highlight_javascript_impl(
+                            out, source, index, brace_pos - 1 - index, true, false, Jsx_State {},
+                            options
+                        );
                     }
 
                     emit(brace_pos - 1, 1, Highlight_Type::escape);
@@ -727,7 +737,7 @@ bool highlight_javascript(
 
                 int brace_level = 1;
                 std::size_t brace_pos = index;
-                while (brace_pos < source.size() && brace_level > 0) {
+                while (brace_pos < end_index && brace_level > 0) {
                     if (source[brace_pos] == u8'{') {
                         brace_level++;
                     }
@@ -739,7 +749,11 @@ bool highlight_javascript(
 
                 if (brace_level == 0) {
                     if (brace_pos - 1 > index) {
-                        emit(index, brace_pos - 1 - index, Highlight_Type::id);
+                        // Use recursive highlighting for JSX expression
+                        highlight_javascript_impl(
+                            out, source, index, brace_pos - 1 - index, true, false, Jsx_State {},
+                            options
+                        );
                     }
 
                     emit(brace_pos - 1, 1, Highlight_Type::escape);
@@ -749,14 +763,14 @@ bool highlight_javascript(
             }
 
             if (jsx_state.in_jsx_tag) {
-                const std::size_t tag_name_length = js::match_jsx_tag_name(remainder);
+                const std::size_t tag_name_length = match_jsx_tag_name(remainder);
                 if (tag_name_length > 0) {
                     emit(index, tag_name_length, Highlight_Type::id);
                     index += tag_name_length;
                     continue;
                 }
                 // JSX attr.
-                const std::size_t attr_name_length = js::match_jsx_attribute_name(remainder);
+                const std::size_t attr_name_length = match_jsx_attribute_name(remainder);
                 if (attr_name_length > 0) {
                     emit(index, attr_name_length, Highlight_Type::markup_attr);
                     index += attr_name_length;
@@ -773,7 +787,7 @@ bool highlight_javascript(
             // JSX str literal as attr val.
             if (jsx_state.in_jsx_tag && jsx_state.in_jsx_attr_value
                 && (remainder[0] == u8'"' || remainder[0] == u8'\'' || remainder[0] == u8'`')) {
-                const js::String_Literal_Result string = js::match_string_literal(remainder);
+                const String_Literal_Result string = match_string_literal(remainder);
                 if (string) {
                     emit(index, 1, Highlight_Type::string_delim);
 
@@ -809,9 +823,10 @@ bool highlight_javascript(
             }
         }
 
-        // note: If not in JSX or no special JSX handling was applied, fall back to regular JS handling
+        // note: If not in JSX or no special JSX handling was applied, fall back to regular JS
+        // handling
 
-        if (const js::String_Literal_Result string = js::match_string_literal(remainder)) {
+        if (const String_Literal_Result string = match_string_literal(remainder)) {
             if (string.is_template_literal) {
                 std::size_t pos = index;
 
@@ -821,7 +836,7 @@ bool highlight_javascript(
 
                 std::size_t content_end = index + string.length;
                 if (string.terminated) {
-                    content_end -= 1; // Blacklist closing backtick.
+                    content_end -= 1; // Exclude closing backtick
                 }
 
                 while (pos < content_end) {
@@ -843,8 +858,9 @@ bool highlight_javascript(
                         int brace_level = 1;
                         std::size_t subst_pos = pos;
                         while (subst_pos < content_end && brace_level > 0) {
-                            const js::String_Literal_Result nested_string
-                                = js::match_string_literal(source.substr(subst_pos));
+                            const String_Literal_Result nested_string = match_string_literal(
+                                source.substr(subst_pos, content_end - subst_pos)
+                            );
                             if (nested_string) {
                                 emit(subst_pos, nested_string.length, Highlight_Type::string);
                                 subst_pos += nested_string.length;
@@ -859,12 +875,15 @@ bool highlight_javascript(
 
                                 if (brace_level == 0) {
                                     if (subst_pos > pos) {
-                                        // TODO: refactor out the `highLight_javascript` to
-                                        // be able to start highlighting recursively in
-                                        // the expression
-                                        emit(pos, subst_pos - pos, Highlight_Type::id);
+                                        // Use recursive highlighting for template expression
+                                        highlight_javascript_impl(
+                                            out, source, pos, subst_pos - pos, true, false,
+                                            Jsx_State {}, options
+                                        );
                                     }
-                                    emit(subst_pos, 1, Highlight_Type::escape);
+                                    emit(
+                                        subst_pos, 1, Highlight_Type::escape
+                                    ); // Emit "}" as escape
                                     pos = subst_pos + 1;
                                     break;
                                 }
@@ -874,13 +893,14 @@ bool highlight_javascript(
                         }
 
                         if (brace_level > 0) {
+                            // For unterminated template expressions, highlight with id
                             emit(pos, content_end - pos, Highlight_Type::id);
                             pos = content_end;
                         }
                     }
                 }
 
-                if (string.terminated) { // Closing bactick.
+                if (string.terminated) { // Closing backtick
                     emit(content_end, 1, Highlight_Type::string);
                 }
 
@@ -898,12 +918,12 @@ bool highlight_javascript(
         // Regex.
         if (!jsx_state.in_jsx && can_be_regex && remainder[0] == u8'/') {
             if (remainder.length() > 1 && remainder[1] != u8'/' && remainder[1] != u8'*') {
-                std::size_t length = 1;
-                bool escaped = false;
-                bool terminated = false;
+                std::size_t size = 1;
+                auto escaped = false;
+                auto terminated = false;
 
-                while (length < remainder.length()) {
-                    const char8_t c = remainder[length];
+                while (size < remainder.length()) {
+                    const char8_t c = remainder[size];
 
                     if (escaped) {
                         escaped = false;
@@ -913,29 +933,29 @@ bool highlight_javascript(
                     }
                     else if (c == u8'/') {
                         terminated = true;
-                        ++length;
+                        ++size;
                         break;
                     }
                     else if (c == u8'\n') { // Unterminated as newlines aren't allowed in regex.
                         break;
                     }
 
-                    ++length;
+                    ++size;
                 }
 
                 if (terminated) {
                     // Match flags after regex i.e. /pattern/gi.
-                    while (length < remainder.length()) {
-                        const char8_t c = remainder[length];
+                    while (size < remainder.length()) {
+                        const char8_t c = remainder[size];
                         if (is_js_identifier_part(c)) {
-                            ++length;
+                            ++size;
                         }
                         else {
                             break;
                         }
                     }
-                    emit(index, length, Highlight_Type::string);
-                    index += length;
+                    emit(index, size, Highlight_Type::string);
+                    index += size;
                     can_be_regex = false;
                     continue;
                 }
@@ -943,7 +963,7 @@ bool highlight_javascript(
         }
 
         // Numbers.
-        if (const std::size_t number_length = js::match_number(remainder)) {
+        if (const std::size_t number_length = match_number(remainder)) {
             emit(index, number_length, Highlight_Type::number);
             index += number_length;
             can_be_regex = false;
@@ -951,7 +971,7 @@ bool highlight_javascript(
         }
 
         // Private identifiers.
-        if (const std::size_t private_id_length = js::match_private_identifier(remainder)) {
+        if (const std::size_t private_id_length = match_private_identifier(remainder)) {
             emit(index, private_id_length, Highlight_Type::id);
             index += private_id_length;
             can_be_regex = false;
@@ -959,12 +979,12 @@ bool highlight_javascript(
         }
 
         // Symbols.
-        if (const std::size_t id_length = js::match_identifier(remainder)) {
-            const std::optional<js::Token_Type> keyword
-                = js::js_token_type_by_code(remainder.substr(0, id_length));
+        if (const std::size_t id_length = match_identifier(remainder)) {
+            const std::optional<Token_Type> keyword
+                = js_token_type_by_code(remainder.substr(0, id_length));
 
             if (keyword) {
-                const auto highlight = js::js_token_type_highlight(*keyword);
+                const auto highlight = js_token_type_highlight(*keyword);
                 emit(index, id_length, highlight);
             }
             else {
@@ -976,7 +996,7 @@ bool highlight_javascript(
 
             // Certain keywords are followed by expressions where regex can appear.
             if (keyword) {
-                const auto& code = js::js_token_type_code(*keyword);
+                const auto& code = js_token_type_code(*keyword);
                 static constexpr std::u8string_view expr_keywords[]
                     = { u8"return", u8"throw", u8"case",       u8"delete", u8"void", u8"typeof",
                         u8"yield",  u8"await", u8"instanceof", u8"in",     u8"new" };
@@ -992,29 +1012,26 @@ bool highlight_javascript(
             continue;
         }
 
-        if (const std::optional<js::Token_Type> op = js::match_operator_or_punctuation(
-                remainder, jsx_state.in_jsx
-            )) {
-            const std::size_t op_length = js::js_token_type_length(*op);
-            const Highlight_Type op_highlight = js::js_token_type_highlight(*op);
+        if (const std::optional<Token_Type> op
+            = match_operator_or_punctuation(remainder, jsx_state.in_jsx)) {
+            const std::size_t op_length = js_token_type_length(*op);
+            const Highlight_Type op_highlight = js_token_type_highlight(*op);
 
             emit(index, op_length, op_highlight);
             index += op_length;
 
             // JSX update state.
             if (jsx_state.in_jsx) {
-                if (*op == js::Token_Type::jsx_tag_open
-                    || *op == js::Token_Type::jsx_tag_end_open) {
+                if (*op == Token_Type::jsx_tag_open || *op == Token_Type::jsx_tag_end_open) {
                     jsx_state.in_jsx_tag = true;
                 }
             }
 
             can_be_regex = true;
-            static constexpr js::Token_Type non_regex_ops[]
-                = { js::Token_Type::increment,   js::Token_Type::decrement,
-                    js::Token_Type::right_paren, js::Token_Type::right_bracket,
-                    js::Token_Type::right_brace, js::Token_Type::plus,
-                    js::Token_Type::minus };
+            static constexpr Token_Type non_regex_ops[]
+                = { Token_Type::increment,     Token_Type::decrement,   Token_Type::right_paren,
+                    Token_Type::right_bracket, Token_Type::right_brace, Token_Type::plus,
+                    Token_Type::minus };
 
             for (const auto& non_regex_op : non_regex_ops) {
                 if (*op == non_regex_op) {
@@ -1032,6 +1049,23 @@ bool highlight_javascript(
     }
 
     return true;
+}
+
+} // namespace
+
+} // namespace js
+
+bool highlight_javascript(
+    Non_Owning_Buffer<Token>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource*,
+    const Highlight_Options& options
+)
+{
+    constexpr js::Jsx_State initial_jsx_state {};
+    return js::highlight_javascript_impl(
+        out, source, 0, source.size(), true, true, initial_jsx_state, options
+    );
 }
 
 } // namespace ulight
