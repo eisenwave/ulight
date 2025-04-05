@@ -749,6 +749,45 @@ constexpr bool is_lua_hex_digit(char32_t c) noexcept
     return is_ascii_digit(c) || (c >= U'a' && c <= U'f') || (c >= U'A' && c <= U'F');
 }
 
+// JS ==============================================================================================
+
+[[nodiscard]]
+constexpr bool is_js_whitespace(char8_t c)
+{
+    // Space, tab, vertical tab, form feed, non-breaking space and similar.
+    return c == u8' ' || c == u8'\t' || c == u8'\v' || c == u8'\f' || c == u8'\n' || c == u8'\r';
+}
+
+[[nodiscard]]
+constexpr bool is_js_digit(char8_t c)
+{
+    return c >= u8'0' && c <= u8'9';
+}
+
+[[nodiscard]]
+constexpr bool is_js_hex_digit(char8_t c)
+{
+    return is_js_digit(c) || (c >= u8'a' && c <= u8'f') || (c >= u8'A' && c <= u8'F');
+}
+
+[[nodiscard]]
+constexpr bool is_js_identifier_start(char32_t c)
+{
+    return (c >= u8'a' && c <= u8'z') || (c >= u8'A' && c <= u8'Z') || c == u8'_' || c == u8'$';
+}
+
+[[nodiscard]]
+constexpr bool is_js_identifier_part(char32_t c)
+{
+    return is_js_identifier_start(c) || is_js_digit(c);
+}
+
+[[nodiscard]]
+constexpr bool is_jsx_tag_name_part(char32_t c)
+{
+    return is_js_identifier_part(c) || c == u8'-' || c == u8':';
+}
+
 } // namespace ulight
 
 #endif
