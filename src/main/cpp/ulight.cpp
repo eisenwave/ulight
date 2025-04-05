@@ -95,6 +95,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     // make_lang_entry( u8"jsx", ULIGHT_LANG_javascript ),
     make_lang_entry("lua", ULIGHT_LANG_LUA),
     make_lang_entry("mmml", ULIGHT_LANG_MMML),
+    make_lang_entry("nasm", ULIGHT_LANG_NASM)
     // make_lang_entry( u8"mts", ULIGHT_LANG_typescript ),
     // make_lang_entry( u8"ts", ULIGHT_LANG_typescript ),
     // make_lang_entry( u8"tsx", ULIGHT_LANG_typescript ),
