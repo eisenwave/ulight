@@ -17,8 +17,8 @@ namespace ulight {
 
 namespace js {
 
-#define ULIGHT_JS_TOKEN_TYPE_U8_CODE(id, code, highlight, source) u8##code,
-#define ULIGHT_JS_TOKEN_TYPE_LENGTH(id, code, highlight, source) (sizeof(u8##code) - 1),
+#define ULIGHT_JS_TOKEN_TYPE_U8_CODE(id, code, highlight, source) u8## code,
+#define ULIGHT_JS_TOKEN_TYPE_LENGTH(id, code, highlight, source) (sizeof(u8## code) - 1),
 #define ULIGHT_JS_TOKEN_HIGHLIGHT_TYPE(id, code, highlight, source) (Highlight_Type::highlight),
 #define ULIGHT_JS_TOKEN_TYPE_FEATURE_SOURCE(id, code, highlight, source) (Feature_Source::source),
 
@@ -606,16 +606,16 @@ bool highlight_javascript(
 
         is_at_start_of_file = false;
 
-        // Single line comments
+        // Single line comments.
         if (const std::size_t line_comment_length = js::match_line_comment(remainder)) {
             emit(index, 2, Highlight_Type::comment_delimiter); // //
             emit(index + 2, line_comment_length - 2, Highlight_Type::comment);
             index += line_comment_length;
-            can_be_regex = true; // After a comment, a regex can appear
+            can_be_regex = true; // After a comment, a regex can appear.
             continue;
         }
 
-        // Block comments
+        // Block comments.
         if (const js::Comment_Result block_comment = js::match_block_comment(remainder)) {
             emit(index, 2, Highlight_Type::comment_delimiter); // /*
             emit(
@@ -695,11 +695,9 @@ bool highlight_javascript(
                 }
             }
             else if (jsx_state.in_jsx_tag && remainder[0] == u8'{') {
-                // Handle JSX expression in attribute value
                 emit(index, 1, Highlight_Type::escape);
                 index += 1;
 
-                // Find matching closing brace
                 int brace_level = 1;
                 std::size_t brace_pos = index;
 
@@ -817,7 +815,8 @@ bool highlight_javascript(
             if (string.is_template_literal) {
                 std::size_t pos = index;
 
-                emit(pos, 1, Highlight_Type::string_delim);
+                // Opening backtick
+                emit(pos, 1, Highlight_Type::string);
                 pos += 1;
 
                 std::size_t content_end = index + string.length;
@@ -827,8 +826,8 @@ bool highlight_javascript(
 
                 while (pos < content_end) {
                     const std::u8string_view template_part = source.substr(pos, content_end - pos);
-                    std::size_t next_subst = template_part.find(u8"${");
-                    if (next_subst == std::string_view::npos) { // No more substitutions, emit the rest as a string.
+                    const std::size_t next_subst = template_part.find(u8"${");
+                    if (next_subst == std::string_view::npos) {
                         emit(pos, content_end - pos, Highlight_Type::string);
                         pos = content_end;
                     }
@@ -859,9 +858,10 @@ bool highlight_javascript(
                                 brace_level--;
 
                                 if (brace_level == 0) {
-                                    // TODO: Process the substitution content recursively by highlighting
-                                    // this segment
                                     if (subst_pos > pos) {
+                                        // TODO: refactor out the `highLight_javascript` to
+                                        // be able to start highlighting recursively in
+                                        // the expression
                                         emit(pos, subst_pos - pos, Highlight_Type::id);
                                     }
                                     emit(subst_pos, 1, Highlight_Type::escape);
@@ -880,25 +880,14 @@ bool highlight_javascript(
                     }
                 }
 
-                if (string.terminated) {
-                    emit(content_end, 1, Highlight_Type::string_delim);
+                if (string.terminated) { // Closing bactick.
+                    emit(content_end, 1, Highlight_Type::string);
                 }
 
                 index += string.length;
             }
             else {
-                emit(index, 1, Highlight_Type::string_delim);
-                if (string.length > 2) {
-                    emit(
-                        index + 1, string.length - (string.terminated ? 2 : 1),
-                        Highlight_Type::string
-                    );
-                }
-
-                if (string.terminated) {
-                    emit(index + string.length - 1, 1, Highlight_Type::string_delim);
-                }
-
+                emit(index, string.length, Highlight_Type::string);
                 index += string.length;
             }
 
