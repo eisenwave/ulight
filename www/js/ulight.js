@@ -96,19 +96,24 @@ export class UlightWasm {
      * @returns {string} The highlighted HTML.
      */
     toHtml(source, id) {
-        const lang = typeof (id) === "string" ? this.getLanguageId(id) : id;
+        const tokenSize = 12; // sizeof(ulight_token)
+        const tokenAlign = 4; // alignof(ulight_token)
+        const bufferByteSize = 64 * 1024;
 
-        const bufferSize = 64 * 1024;
-        const tokenAlign = 4;
+        const lang = typeof (id) === "string" ? this.getLanguageId(id) : id;
         const sourceData = typeof (source) === "string" ? new TextEncoder().encode(source) : source;
 
         this._bufferedText = "";
-        let u8source, tokenBuffer, textBuffer, state;
+
+        let u8source = 0;
+        let tokenBuffer = 0;
+        let textBuffer = 0;
+        let state = 0;
         try {
             u8source = this._allocBytes(sourceData);
-            tokenBuffer = this._alloc(bufferSize, tokenAlign);
-            textBuffer = this._alloc(bufferSize, 1);
-            state = this._exports.ulight_new();
+            tokenBuffer = this._alloc(bufferByteSize, tokenAlign);
+            textBuffer = this._alloc(bufferByteSize, 1);
+            state = this._newState();
 
             const heap32 = new Int32Array(this._memory.buffer);
             heap32[state / 4 + 0] = u8source;
@@ -116,7 +121,7 @@ export class UlightWasm {
             heap32[state / 4 + 2] = lang;
             heap32[state / 4 + 3] = 0; // TODO: flags
             heap32[state / 4 + 4] = tokenBuffer;
-            heap32[state / 4 + 5] = bufferSize;
+            heap32[state / 4 + 5] = bufferByteSize / tokenSize;
             // 6: flush_tokens_data is added automatically
             // 7: flush_tokens is added automatically
             // 8: html_tag_name stays defaulted
@@ -124,7 +129,7 @@ export class UlightWasm {
             // 10: html_attr_name stays defaulted
             // 11: html_attr_name_length stays defaulted
             heap32[state / 4 + 12] = textBuffer;
-            heap32[state / 4 + 13] = bufferSize;
+            heap32[state / 4 + 13] = bufferByteSize;
             // no flush_text_data necessary
             heap32[state / 4 + 15] = this._flushTextIndex;
 
@@ -138,10 +143,18 @@ export class UlightWasm {
             }
             return this._bufferedText;
         } finally {
-            this._exports.ulight_delete(state);
-            this._free(textBuffer, bufferSize, 1);
-            this._free(tokenBuffer, bufferSize, tokenAlign);
-            this._free(u8source, sourceData.length, 1);
+            if (state) {
+                this._deleteState(state);
+            }
+            if (textBuffer) {
+                this._free(textBuffer, bufferByteSize, 1);
+            }
+            if (tokenBuffer) {
+                this._free(tokenBuffer, bufferByteSize, tokenAlign);
+            }
+            if (u8source) {
+                this._free(u8source, sourceData.length, 1);
+            }
         }
     }
 
@@ -196,9 +209,14 @@ export class UlightWasm {
      * @param {number} size The requested number of bytes.
      * @param {number} alignment The memory alignment.
      * @returns {number} The address of the allocated memory.
+     * @throws If allocation failed.
      */
     _alloc(size, alignment) {
-        return this._exports.ulight_alloc(size, alignment);
+        const result = this._exports.ulight_alloc(size, alignment);
+        if (result === 0) {
+            throw new Error(`Allocation failure in WASM with: bytes=${bytes}, align=${alignment}`);
+        }
+        return result;
     }
 
     /**
@@ -211,17 +229,28 @@ export class UlightWasm {
     }
 
     /**
+     * @returns {number} The address of the allocated `ulight_state` object.
+     * @throws If allocation failed.
+     */
+    _newState() {
+        const result = this._exports.ulight_new();
+        if (result === 0) {
+            throw new Error("Allocation failure in ulight_new.");
+        }
+        return result;
+    }
+
+    /**
+     * @param {number} state 
+     */
+    _deleteState(state) {
+        this._exports.ulight_delete(state);
+    }
+
+    /**
      * @param {WebAssembly.ExportValue} flushText 
      */
     _addCallbacks(flushText) {
-        /*const fnFlushText = WebAssembly.Function(
-            { parameters: ["i32", "i32", "i32"], results: [] },
-            (_, textAddress, textLength) => {
-                const str = this._loadUtf8(textAddress, textLength);
-                console.log(str);
-            }
-        );*/
-
         const index = this._functionTable.length;
         this._functionTable.grow(2);
         this._functionTable.set(index, flushText);
@@ -239,7 +268,7 @@ export class UlightWasm {
             const str = this._loadUtf8(textAddress, textLength);
             this._bufferedText += str;
         };
-        const flushTextModule = await fetchBytes('/f_i32_i32_i32_to_void.wasm')
+        const flushTextModule = await fetchBytes('f_i32_i32_i32_to_void.wasm')
             .then(bytes => WebAssembly.compile(bytes));
         const flushTextImports = { m: { f: flushTextFunction } };
         const flushTextInstance = await WebAssembly.instantiate(flushTextModule, flushTextImports);
@@ -280,9 +309,19 @@ export async function loadWasm() {
     const importObject = {
         env: {
             emscripten_notify_memory_growth() { }
+        },
+        wasi_snapshot_preview1: {
+            clock_time_get() { },
+            proc_exit() { },
+            fd_close() { },
+            fd_write() { },
+            fd_seek() { },
+            fd_read() { },
+            environ_sizes_get() { },
+            environ_get() { }
         }
     };
-    const resultWasm = await WebAssembly.instantiateStreaming(fetch("/ulight.wasm"), importObject);
+    const resultWasm = await WebAssembly.instantiateStreaming(fetch("ulight.wasm"), importObject);
     const result = new UlightWasm(resultWasm);
     await result.init();
     return result;
