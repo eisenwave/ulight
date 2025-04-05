@@ -113,6 +113,7 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("HTML"),
     make_sv("CSS"),
     make_sv("C"),
+    make_sv("NASM")
 };
 // clang-format on
 
@@ -247,7 +248,8 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     case ULIGHT_LANG_CSS:
     case ULIGHT_LANG_HTML:
     case ULIGHT_LANG_LUA:
-    case ULIGHT_LANG_MMML: break;
+    case ULIGHT_LANG_MMML:
+    case ULIGHT_LANG_NASM: break;
     case ULIGHT_LANG_NONE: {
         return error(
             state, ULIGHT_STATUS_BAD_LANG, u8"The given language (numeric value) is invalid."
