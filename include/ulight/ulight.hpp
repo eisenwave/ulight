@@ -17,7 +17,9 @@ using Underlying = unsigned char;
 
 /// See `ulight_lang`.
 enum struct Lang : Underlying {
+    c = ULIGHT_LANG_C,
     cpp = ULIGHT_LANG_CPP,
+    css = ULIGHT_LANG_CSS,
     html = ULIGHT_LANG_HTML,
     lua = ULIGHT_LANG_LUA,
     mmml = ULIGHT_LANG_MMML,
@@ -65,10 +67,14 @@ constexpr Flag operator|(Flag x, Flag y) noexcept
 enum struct Highlight_Type : Underlying {
     error = ULIGHT_HL_ERROR,
     comment = ULIGHT_HL_COMMENT,
-    comment_delimiter = ULIGHT_HL_COMMENT_DELIMITER,
+    comment_delimiter = ULIGHT_HL_COMMENT_DELIM,
     value = ULIGHT_HL_VALUE,
     number = ULIGHT_HL_NUMBER,
+    number_delim = ULIGHT_HL_NUMBER_DELIM,
+    number_decor = ULIGHT_HL_NUMBER_DECOR,
     string = ULIGHT_HL_STRING,
+    string_delim = ULIGHT_HL_STRING_DELIM,
+    string_decor = ULIGHT_HL_STRING_DECOR,
     escape = ULIGHT_HL_ESCAPE,
     null = ULIGHT_HL_NULL,
     bool_ = ULIGHT_HL_BOOL,
@@ -81,6 +87,8 @@ enum struct Highlight_Type : Underlying {
     id_var_use = ULIGHT_HL_ID_VAR_USE,
     id_const_decl = ULIGHT_HL_ID_CONST_DECL,
     id_const_use = ULIGHT_HL_ID_CONST_USE,
+    id_function_decl = ULIGHT_HL_ID_FUNCTION_DECL,
+    id_function_use = ULIGHT_HL_ID_FUNCTION_USE,
     id_type_decl = ULIGHT_HL_ID_TYPE_DECL,
     id_type_use = ULIGHT_HL_ID_TYPE_USE,
     id_module_decl = ULIGHT_HL_ID_MODULE_DECL,
@@ -111,15 +119,19 @@ constexpr std::string_view ulight_highlight_type_id(Highlight_Type type) noexcep
     // Design note:
     // All names should be underscore-separated blocks of up to four characters.
     // The abbreviations should always be distinct if they abbreviate different words.
-    // For example, "del" stands for "deletion", and "dlm" stands for "delimiter".
+    // For example, "del" stands for "deletion", and "dlim" stands for "delimiter".
     switch (type) {
         using enum Highlight_Type;
     case error: return "err";
     case comment: return "cmt";
-    case comment_delimiter: return "cmt_dlm";
+    case comment_delimiter: return "cmt_dlim";
     case value: return "val";
     case number: return "num";
+    case number_delim: return "num_dlim";
+    case number_decor: return "num_deco";
     case string: return "str";
+    case string_delim: return "str_dlim";
+    case string_decor: return "str_deco";
     case escape: return "esc";
     case null: return "null";
     case bool_: return "bool";
@@ -132,6 +144,8 @@ constexpr std::string_view ulight_highlight_type_id(Highlight_Type type) noexcep
     case id_var_use: return "id_var_use";
     case id_const_decl: return "id_cons_dcl";
     case id_const_use: return "id_cons_use";
+    case id_function_decl: return "id_fun_dcl";
+    case id_function_use: return "id_fun_use";
     case id_type_decl: return "id_type_dcl";
     case id_type_use: return "id_type_use";
     case id_module_decl: return "id_mod_dcl";
@@ -154,8 +168,8 @@ constexpr std::string_view ulight_highlight_type_id(Highlight_Type type) noexcep
     case sym_square: return "sym_sqr";
     case sym_brace: return "sym_brac";
     case sym_op: return "sym_op";
-    default: return "";
     }
+    return {};
 }
 
 [[nodiscard]]

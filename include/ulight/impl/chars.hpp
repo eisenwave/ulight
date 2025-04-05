@@ -330,7 +330,7 @@ constexpr bool is_html_ascii_tag_name_character(char8_t c)
 constexpr bool is_html_ascii_control(char8_t c)
 {
     // https://infra.spec.whatwg.org/#control
-    return (c >= u8'\u0000' && c <= u8'\u001F') || c == u8'\u007F';
+    return c <= u8'\u001F' || c == u8'\u007F';
 }
 
 constexpr bool is_html_control(char8_t c) = delete;
@@ -339,7 +339,7 @@ constexpr bool is_html_control(char8_t c) = delete;
 constexpr bool is_html_control(char32_t c)
 {
     // https://infra.spec.whatwg.org/#control
-    return (c >= U'\u0000' && c <= U'\u001F') || (c >= U'\u007F' && c <= U'\u009F');
+    return c <= U'\u001F' || (c >= U'\u007F' && c <= U'\u009F');
 }
 
 constexpr bool is_html_tag_name_character(char8_t c) = delete;
@@ -514,6 +514,64 @@ constexpr bool is_html_min_raw_passthrough_character(char8_t c)
 constexpr bool is_html_min_raw_passthrough_character(char32_t c)
 {
     return c != U'<' && c != U'&';
+}
+
+// CSS =============================================================================================
+
+[[nodiscard]]
+constexpr bool is_css_newline(char8_t c)
+{
+    // https://www.w3.org/TR/css-syntax-3/#newline
+    return c == u8'\n' || c == u8'\r' || c == u8'\f';
+}
+
+[[nodiscard]]
+constexpr bool is_css_newline(char32_t c)
+{
+    // https://www.w3.org/TR/css-syntax-3/#newline
+    return c == U'\n' || c == U'\r' || c == U'\f';
+}
+
+[[nodiscard]]
+constexpr bool is_css_whitespace(char8_t c)
+{
+    // https://www.w3.org/TR/css-syntax-3/#whitespace
+    return is_html_whitespace(c);
+}
+
+[[nodiscard]]
+constexpr bool is_css_whitespace(char32_t c)
+{
+    // https://www.w3.org/TR/css-syntax-3/#whitespace
+    return is_html_whitespace(c);
+}
+
+[[nodiscard]]
+constexpr bool is_css_identifier_start(char8_t c)
+{
+    // https://www.w3.org/TR/css-syntax-3/#ident-start-code-point
+    return is_ascii_alpha(c) || c == u8'_' || !is_ascii(c);
+}
+
+[[nodiscard]]
+constexpr bool is_css_identifier_start(char32_t c)
+{
+    // https://www.w3.org/TR/css-syntax-3/#ident-start-code-point
+    return is_ascii_alpha(c) || c == U'_' || !is_ascii(c);
+}
+
+[[nodiscard]]
+constexpr bool is_css_identifier(char8_t c)
+{
+    // https://www.w3.org/TR/css-syntax-3/#ident-code-point
+    return is_css_identifier_start(c) || is_ascii_digit(c) || c == u8'-';
+}
+
+[[nodiscard]]
+constexpr bool is_css_identifier(char32_t c)
+{
+    // https://www.w3.org/TR/css-syntax-3/#ident-code-point
+    return is_css_identifier_start(c) || is_ascii_digit(c) || c == U'-';
 }
 
 // MMML ============================================================================================

@@ -9,7 +9,7 @@
         font-style: italic;
     }
 
-    h-[data-h^=cmt_dlm] {
+    h-[data-h^=cmt_dlim] {
         font-style: normal;
     }
 
@@ -22,7 +22,8 @@
     }
 
     h-[data-h^=str],
-    h-[data-h^=num] {
+    h-[data-h^=num],
+    h-[data-h^=val] {
         color: #367c2a;
     }
 
@@ -73,7 +74,7 @@
         font-style: italic;
     }
 
-    h-[data-h^=cmt_dlm] {
+    h-[data-h^=cmt_dlim] {
         font-style: normal;
     }
 
@@ -86,7 +87,8 @@
     }
 
     h-[data-h^=str],
-    h-[data-h^=num] {
+    h-[data-h^=num],
+    h-[data-h^=val] {
         color: #98d48e;
     }
 

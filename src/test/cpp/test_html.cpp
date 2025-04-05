@@ -5,6 +5,7 @@
 #include "ulight/impl/html.hpp"
 
 namespace ulight::html {
+namespace {
 
 [[maybe_unused]]
 std::ostream& operator<<(std::ostream& out, Match_Result result) // NOLINT
@@ -12,8 +13,6 @@ std::ostream& operator<<(std::ostream& out, Match_Result result) // NOLINT
     return out << "{ .length = " << result.length
                << ", .terminated = " << (result.terminated ? "true" : "false") << " }";
 }
-
-namespace {
 
 TEST(HTML, match_whitespace)
 {
