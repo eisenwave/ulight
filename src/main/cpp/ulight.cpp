@@ -247,6 +247,7 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     case ULIGHT_LANG_CSS:
     case ULIGHT_LANG_HTML:
     case ULIGHT_LANG_LUA:
+    case ULIGHT_LANG_JS:
     case ULIGHT_LANG_MMML: break;
     case ULIGHT_LANG_NONE: {
         return error(
