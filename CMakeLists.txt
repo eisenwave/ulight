@@ -44,6 +44,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/cpp.cpp
     src/main/cpp/css.cpp
     src/main/cpp/html.cpp
+    src/main/cpp/js.cpp
     src/main/cpp/lua.cpp
     src/main/cpp/mmml.cpp
     src/main/cpp/parse_utils.cpp
