@@ -307,7 +307,7 @@ public:
                 if (c == u8'-') {
                     const std::u8string_view cdc_token = u8"-->";
                     if (remainder.starts_with(cdc_token)) {
-                        emit_and_advance(cdc_token.length(), Highlight_Type::comment_delimiter);
+                        emit_and_advance(cdc_token.length(), Highlight_Type::comment_delim);
                         break;
                     }
                     if (starts_with_ident_sequence(remainder.substr(1))) {
@@ -356,7 +356,7 @@ public:
             case u8'<': {
                 constexpr std::u8string_view cdo_token = u8"<!--";
                 if (remainder.starts_with(cdo_token)) {
-                    emit_and_advance(cdo_token.length(), Highlight_Type::comment_delimiter);
+                    emit_and_advance(cdo_token.length(), Highlight_Type::comment_delim);
                 }
                 else {
                     emit_and_advance(1, Highlight_Type::sym_op);
@@ -471,10 +471,10 @@ public:
         // https://www.w3.org/TR/css-syntax-3/#consume-comment
         while (const cpp::Comment_Result block_comment = cpp::match_block_comment(remainder)) {
             const std::size_t terminator_length = 2 * std::size_t(block_comment.is_terminated);
-            emit(index, 2, Highlight_Type::comment_delimiter); // /*
+            emit(index, 2, Highlight_Type::comment_delim); // /*
             emit(index + 2, block_comment.length - 2 - terminator_length, Highlight_Type::comment);
             if (block_comment.is_terminated) {
-                emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delimiter); // */
+                emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delim); // */
             }
             advance(block_comment.length);
         }
@@ -534,7 +534,7 @@ public:
 
         const auto actual_type = //
             default_type != Highlight_Type::id    ? default_type
-            : result.type == Ident_Type::function ? Highlight_Type::id_function_use
+            : result.type == Ident_Type::function ? Highlight_Type::id_function
             : result.type == Ident_Type::url      ? Highlight_Type::keyword
                                                   : Highlight_Type::id;
 

@@ -591,7 +591,7 @@ bool feature_in_mask(Token_Type type, std::uint_fast8_t mask)
 [[nodiscard]]
 Highlight_Type usual_fallback_highlight(std::u8string_view id)
 {
-    return id.ends_with(u8"_t") ? Highlight_Type::id_type_use : Highlight_Type::id;
+    return id.ends_with(u8"_t") ? Highlight_Type::id_type : Highlight_Type::id;
 }
 
 // Approximately implements highlighting based on C++ tokenization,
@@ -695,7 +695,7 @@ public:
     bool expect_line_comment()
     {
         if (const std::size_t line_comment_length = match_line_comment(remainder())) {
-            emit(index, 2, Highlight_Type::comment_delimiter);
+            emit(index, 2, Highlight_Type::comment_delim);
             emit(index + 2, line_comment_length - 2, Highlight_Type::comment);
             fresh_line = true;
             advance(line_comment_length);
@@ -708,10 +708,10 @@ public:
     {
         if (const Comment_Result block_comment = match_block_comment(remainder())) {
             const std::size_t terminator_length = 2 * std::size_t(block_comment.is_terminated);
-            emit(index, 2, Highlight_Type::comment_delimiter); // /*
+            emit(index, 2, Highlight_Type::comment_delim); // /*
             emit(index + 2, block_comment.length - 2 - terminator_length, Highlight_Type::comment);
             if (block_comment.is_terminated) {
-                emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delimiter); // */
+                emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delim); // */
             }
             advance(block_comment.length);
             return true;
