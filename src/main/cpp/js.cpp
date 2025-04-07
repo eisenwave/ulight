@@ -12,6 +12,7 @@
 #include "ulight/impl/chars.hpp"
 #include "ulight/impl/js.hpp"
 #include "ulight/impl/unicode.hpp"
+#include "ulight/impl/unicode_algorithm.hpp"
 
 namespace ulight {
 
@@ -80,14 +81,9 @@ std::optional<Token_Type> js_token_type_by_code(std::u8string_view code) noexcep
 
 std::size_t match_whitespace(std::u8string_view str)
 {
-    constexpr auto predicate = [](char8_t c) { return is_js_whitespace(c); };
-    return std::size_t(std::ranges::find_if_not(str, predicate) - str.begin());
-}
-
-std::size_t match_non_whitespace(std::u8string_view str)
-{
-    constexpr auto predicate = [](char8_t c) { return !is_js_whitespace(c); };
-    return std::size_t(std::ranges::find_if_not(str, predicate) - str.begin());
+    constexpr auto predicate = [](char32_t c) { return is_js_whitespace(c); };
+    const std::size_t result = utf8::find_if_not(str, predicate);
+    return result == std::u8string_view::npos ? str.length() : result;
 }
 
 std::size_t match_line_comment(std::u8string_view s) noexcept
@@ -306,8 +302,8 @@ std::size_t match_number(std::u8string_view str)
         }
         else if (str[1] == u8'x' || str[1] == u8'X') {
             length = 2;
-            while (length < str.length() && (is_js_hex_digit(str[length]) || str[length] == u8'_')
-            ) {
+            while (length < str.length()
+                   && (is_ascii_hex_digit(str[length]) || str[length] == u8'_')) {
                 if (str[length] != u8'_') {
                     has_digit = true;
                 }
@@ -317,31 +313,32 @@ std::size_t match_number(std::u8string_view str)
         else {
             has_digit = true;
             length = 1;
-            while (length < str.length() && (is_js_digit(str[length]) || str[length] == u8'_')) {
+            while (length < str.length() && (is_ascii_digit(str[length]) || str[length] == u8'_')) {
                 ++length;
             }
         }
     }
     else {
-        while (length < str.length() && (is_js_digit(str[length]) || str[length] == u8'_')) {
-            if (is_js_digit(str[length])) {
+        while (length < str.length() && (is_ascii_digit(str[length]) || str[length] == u8'_')) {
+            if (is_ascii_digit(str[length])) {
                 has_digit = true;
             }
             ++length;
         }
     }
 
-    if (!has_digit && length == 0 && str.length() >= 2 && str[0] == u8'.' && is_js_digit(str[1])) {
+    if (!has_digit && length == 0 && str.length() >= 2 && str[0] == u8'.'
+        && is_ascii_digit(str[1])) {
         has_digit = true;
         length = 1;
-        while (length < str.length() && (is_js_digit(str[length]) || str[length] == u8'_')) {
+        while (length < str.length() && (is_ascii_digit(str[length]) || str[length] == u8'_')) {
             ++length;
         }
     }
     else if (length > 0) {
         if (length < str.length() && str[length] == u8'.') {
             ++length;
-            while (length < str.length() && (is_js_digit(str[length]) || str[length] == u8'_')) {
+            while (length < str.length() && (is_ascii_digit(str[length]) || str[length] == u8'_')) {
                 ++length;
             }
         }
@@ -360,8 +357,8 @@ std::size_t match_number(std::u8string_view str)
         }
 
         std::size_t exp_digits = 0;
-        while (length < str.length() && (is_js_digit(str[length]) || str[length] == u8'_')) {
-            if (is_js_digit(str[length])) {
+        while (length < str.length() && (is_ascii_digit(str[length]) || str[length] == u8'_')) {
+            if (is_ascii_digit(str[length])) {
                 ++exp_digits;
             }
             ++length;
@@ -643,13 +640,16 @@ bool highlight_javascript_impl(
 
                 if (remainder.length() > 1) {
                     // Fragment opening <> or <Tag
-                    if (remainder[1] == u8'>' || is_js_identifier_start(remainder[1])) {
+                    // FIXME: do Unicode decode instead of casting to char32_t
+                    if (remainder[1] == u8'>' || is_js_identifier_start(char32_t(remainder[1]))) {
                         is_jsx_tag = true;
                     }
                     // Fragment closing </> or </Tag
                     else if (remainder[1] == u8'/') {
+                        // FIXME: do Unicode decode instead of casting to char32_t
                         if (remainder.length() > 2
-                            && (is_js_identifier_start(remainder[2]) || remainder[2] == u8'>')) {
+                            && (is_js_identifier_start(char32_t(remainder[2]))
+                                || remainder[2] == u8'>')) {
                             is_jsx_tag = true;
                         }
                     }
@@ -947,7 +947,8 @@ bool highlight_javascript_impl(
                     // Match flags after regex i.e. /pattern/gi.
                     while (size < remainder.length()) {
                         const char8_t c = remainder[size];
-                        if (is_js_identifier_part(c)) {
+                        // FIXME: do Unicode decode instead of casting to char32_t
+                        if (is_js_identifier_part(char32_t(c))) {
                             ++size;
                         }
                         else {
