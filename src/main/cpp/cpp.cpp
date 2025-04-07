@@ -594,21 +594,46 @@ match_cpp_identifier_except_keywords(std::u8string_view str, std::uint_fast8_t s
     return 0;
 }
 
-void highlight_c_cpp( //
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    Lang c_or_cpp,
-    const Highlight_Options& options
-)
-{
-    ULIGHT_ASSERT(c_or_cpp == Lang::c || c_or_cpp == Lang::cpp);
+// Approximately implements highlighting based on C++ tokenization,
+// as described in:
+// https://eel.is/c++draft/lex.phases
+// https://eel.is/c++draft/lex.pptoken
+struct Highlighter {
+private:
+    Non_Owning_Buffer<Token>& out;
+    std::u8string_view source;
+    Lang c_or_cpp;
+    const Highlight_Options& options;
+
+    std::size_t index = 0;
+    // We need to keep track of whether we're on a "fresh line" for preprocessing directives.
+    // A line is fresh if we've not encountered anything but whitespace on it yet.
+    // https://eel.is/c++draft/cpp#def:preprocessing_directive
+    bool fresh_line = true;
     const std::uint_fast8_t feature_source_mask = //
         options.strict && c_or_cpp == Lang::c     ? source_mask_standard_c
         : options.strict && c_or_cpp == Lang::cpp ? source_mask_standard_cpp
         : c_or_cpp == Lang::c                     ? source_mask_standard_c_ext
                                                   : source_mask_all;
 
-    const auto emit = [&](std::size_t begin, std::size_t length, Highlight_Type type) {
+public:
+    Highlighter(
+        Non_Owning_Buffer<Token>& out,
+        std::u8string_view source,
+        Lang c_or_cpp,
+        const Highlight_Options& options
+    )
+        : out { out }
+        , source { source }
+        , c_or_cpp { c_or_cpp }
+        , options { options }
+    {
+        ULIGHT_ASSERT(c_or_cpp == Lang::c || c_or_cpp == Lang::cpp);
+    }
+
+private:
+    void emit(std::size_t begin, std::size_t length, Highlight_Type type)
+    {
         const bool coalesce = options.coalescing //
             && !out.empty() //
             && Highlight_Type(out.back().type) == type //
@@ -619,33 +644,57 @@ void highlight_c_cpp( //
         else {
             out.emplace_back(begin, length, Underlying(type));
         }
-    };
-    // Approximately implements highlighting based on C++ tokenization,
-    // as described in:
-    // https://eel.is/c++draft/lex.phases
-    // https://eel.is/c++draft/lex.pptoken
+    }
 
-    std::size_t index = 0;
-    // We need to keep track of whether we're on a "fresh line" for preprocessing directives.
-    // A line is fresh if we've not encountered anything but whitespace on it yet.
-    // https://eel.is/c++draft/cpp#def:preprocessing_directive
-    bool fresh_line = true;
+    [[nodiscard]]
+    std::u8string_view remainder() const
+    {
+        return source.substr(index);
+    }
 
-    while (index < source.size()) {
-        const std::u8string_view remainder = source.substr(index);
-        if (const std::size_t white_length = match_whitespace(remainder)) {
-            fresh_line |= remainder.substr(0, white_length).contains(u8'\n');
-            index += white_length;
-            continue;
+public:
+    bool operator()()
+    {
+        while (index < source.size()) {
+            const bool any_matched = expect_whitespace() //
+                || expect_line_comment() //
+                || expect_block_comment() //
+                || expect_string_literal() //
+                || expect_character_literal() //
+                || expect_pp_number() //
+                || expect_identifier() //
+                || expect_preprocessing_op_or_punc() //
+                || expect_non_whitespace();
+            ULIGHT_ASSERT(any_matched);
         }
-        if (const std::size_t line_comment_length = match_line_comment(remainder)) {
+        return true;
+    }
+
+    bool expect_whitespace()
+    {
+        if (const std::size_t white_length = match_whitespace(remainder())) {
+            fresh_line |= remainder().substr(0, white_length).contains(u8'\n');
+            index += white_length;
+            return true;
+        }
+        return false;
+    }
+
+    bool expect_line_comment()
+    {
+        if (const std::size_t line_comment_length = match_line_comment(remainder())) {
             emit(index, 2, Highlight_Type::comment_delimiter);
             emit(index + 2, line_comment_length - 2, Highlight_Type::comment);
             fresh_line = true;
             index += line_comment_length;
-            continue;
+            return true;
         }
-        if (const Comment_Result block_comment = match_block_comment(remainder)) {
+        return false;
+    }
+
+    bool expect_block_comment()
+    {
+        if (const Comment_Result block_comment = match_block_comment(remainder())) {
             const std::size_t terminator_length = 2 * std::size_t(block_comment.is_terminated);
             emit(index, 2, Highlight_Type::comment_delimiter); // /*
             emit(index + 2, block_comment.length - 2 - terminator_length, Highlight_Type::comment);
@@ -653,59 +702,84 @@ void highlight_c_cpp( //
                 emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delimiter); // */
             }
             index += block_comment.length;
-            continue;
+            return true;
         }
-        if (const String_Literal_Result literal = match_string_literal(remainder)) {
+        return false;
+    }
+
+    bool expect_string_literal()
+    {
+        if (const String_Literal_Result literal = match_string_literal(remainder())) {
             const std::size_t suffix_length = literal.terminated
                 ? match_cpp_identifier_except_keywords(
-                      remainder.substr(literal.length), feature_source_mask
+                      remainder().substr(literal.length), feature_source_mask
                   )
                 : 0;
             const std::size_t combined_length = literal.length + suffix_length;
             emit(index, combined_length, Highlight_Type::string);
             fresh_line = false;
             index += combined_length;
-            continue;
+            return true;
         }
-        if (const Character_Literal_Result literal = match_character_literal(remainder)) {
+        return false;
+    }
+
+    bool expect_character_literal()
+    {
+        if (const Character_Literal_Result literal = match_character_literal(remainder())) {
             const std::size_t suffix_length = literal.terminated
                 ? match_cpp_identifier_except_keywords(
-                      remainder.substr(literal.length), feature_source_mask
+                      remainder().substr(literal.length), feature_source_mask
                   )
                 : 0;
             const std::size_t combined_length = literal.length + suffix_length;
             emit(index, combined_length, Highlight_Type::string);
             fresh_line = false;
             index += combined_length;
-            continue;
+            return true;
         }
-        if (const std::size_t number_length = match_pp_number(remainder)) {
+        return false;
+    }
+
+    bool expect_pp_number()
+    {
+        if (const std::size_t number_length = match_pp_number(remainder())) {
             emit(index, number_length, Highlight_Type::number);
             fresh_line = false;
             index += number_length;
-            continue;
+            return true;
         }
-        if (const std::size_t id_length = match_identifier(remainder)) {
+        return false;
+    }
+
+    bool expect_identifier()
+    {
+        if (const std::size_t id_length = match_identifier(remainder())) {
             const std::optional<Token_Type> keyword
-                = cpp_token_type_by_code(remainder.substr(0, id_length));
+                = cpp_token_type_by_code(remainder().substr(0, id_length));
             const auto highlight = keyword && feature_in_mask(*keyword, feature_source_mask)
                 ? cpp_token_type_highlight(*keyword)
                 : Highlight_Type::id;
             emit(index, id_length, highlight);
             fresh_line = false;
             index += id_length;
-            continue;
+            return true;
         }
+        return false;
+    }
+
+    bool expect_preprocessing_op_or_punc()
+    {
         if (const std::optional<Token_Type> op
-            = match_preprocessing_op_or_punc(remainder, c_or_cpp)) {
+            = match_preprocessing_op_or_punc(remainder(), c_or_cpp)) {
             const bool possible_directive = op == Token_Type::pound || op == Token_Type::pound_alt;
             if (fresh_line && possible_directive) {
                 if (const std::size_t directive_length
-                    = match_preprocessing_directive(remainder, c_or_cpp)) {
+                    = match_preprocessing_directive(remainder(), c_or_cpp)) {
                     emit(index, directive_length, Highlight_Type::macro);
                     fresh_line = true;
                     index += directive_length;
-                    continue;
+                    return true;
                 }
             }
             const std::size_t op_length = cpp_token_type_length(*op);
@@ -713,21 +787,24 @@ void highlight_c_cpp( //
             emit(index, op_length, op_highlight);
             fresh_line = false;
             index += op_length;
-            continue;
+            return true;
         }
-        if (const std::size_t non_white_length = match_non_whitespace(remainder)) {
+        return false;
+    }
+
+    bool expect_non_whitespace()
+    {
+        if (const std::size_t non_white_length = match_non_whitespace(remainder())) {
             // Don't emit any highlighting.
-            // To my understanding, this currently only matches backslashes at the end of the line.
-            // We don't have a separate phase for these, so whatever, this seems fine.
+            // To my understanding, this currently only matches backslashes at the end of the
+            // line. We don't have a separate phase for these, so whatever, this seems fine.
             fresh_line = false;
             index += non_white_length;
-            continue;
+            return true;
         }
-
-        ULIGHT_ASSERT_UNREACHABLE(u8"Impossible state. One of the rules above should have matched."
-        );
+        return false;
     }
-}
+};
 
 } // namespace
 } // namespace cpp
@@ -739,8 +816,7 @@ bool highlight_c( //
     const Highlight_Options& options
 )
 {
-    cpp::highlight_c_cpp(out, source, Lang::c, options);
-    return true;
+    return cpp::Highlighter { out, source, Lang::c, options }();
 }
 
 bool highlight_cpp( //
@@ -750,8 +826,7 @@ bool highlight_cpp( //
     const Highlight_Options& options
 )
 {
-    cpp::highlight_c_cpp(out, source, Lang::cpp, options);
-    return true;
+    return cpp::Highlighter { out, source, Lang::cpp, options }();
 }
 
 } // namespace ulight
