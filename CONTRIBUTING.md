@@ -62,6 +62,27 @@ number(-5)      ; digits with sign
 number_decor(f) ; type/unit suffix
 ```
 
+### Highlighting strings
+
+Similar to numbers, strings consist of multiple parts,
+which should be highlighted as shown below.
+Also note that we don't treat character literals and string literals separately,
+even if some languages (e.g. C++) do.
+
+| Part | Policy | Sample input | Sample Tokens |
+| ---- | ------ | ------------ | ------------- |
+| String contents | As `string` | `"abc"` | `string_delim(")`, `string(abc)`, `string_delim(")`
+| String delimiters | As `string_delim` | (see above) | (see above)
+| String prefixes and suffixes | As `string_decor` | `u8"..."sv` | `string_decor(u8)`, `string_delim(")`,<br>`string(...)`, `string_delim(")`, `string_decor(sv)`
+| Escape sequences | As `escape` | `"abc\n"` | `string_delim(")`, `string(abc)`,<br>`escape(\n)`, `string_delim(")`
+| Basic interpolations | All as `escape` | `"Hello, $NAME"` | `string_delim(")`, `string(Hello, )`,<br>`escape($NAME)`, `string_delim(")`
+| Delimited interpolations | Delimiters as `escape`,<br>rest as code | `"${100}"` | `string_delim(")`, `escape(${)`, `number(100)`,<br> `escape(})`, `string_delim(")`
+
+Note that there are also escape sequences that contain a numeric or string value of variable length.
+For example, C++ supports `\U{123ABC}` Unicode escapes containing a hex digit sequence.
+Just like the fixed-length escapes like `\u1234`, the whole escape should be highlighted as `escape`.
+The same applies to named character references such as `\N{EQUALS SIGN}`.
+
 ### Character testing
 
 As part of writing a new highlighter,
