@@ -737,18 +737,6 @@ constexpr bool is_lua_identifier_continue(char32_t c) noexcept
     return is_cpp_ascii_identifier_continue(c);
 }
 
-[[nodiscard]]
-constexpr bool is_lua_hex_digit(char8_t c) noexcept
-{
-    return is_ascii_digit(c) || (c >= u8'a' && c <= u8'f') || (c >= u8'A' && c <= u8'F');
-}
-
-[[nodiscard]]
-constexpr bool is_lua_hex_digit(char32_t c) noexcept
-{
-    return is_ascii_digit(c) || (c >= U'a' && c <= U'f') || (c >= U'A' && c <= U'F');
-}
-
 } // namespace ulight
 
 #endif

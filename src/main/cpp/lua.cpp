@@ -312,14 +312,14 @@ std::size_t match_number(std::u8string_view str)
     if (str.length() >= 2 && str[0] == u8'0' && (str[1] == u8'x' || str[1] == u8'X')) {
         length = 2;
 
-        while (length < str.length() && is_lua_hex_digit(str[length])) {
+        while (length < str.length() && is_ascii_hex_digit(str[length])) {
             length++;
         }
 
         // Fractions e.g. (0x1.Fp10).
         if (length < str.length() && str[length] == u8'.') {
             length++;
-            while (length < str.length() && is_lua_hex_digit(str[length])) {
+            while (length < str.length() && is_ascii_hex_digit(str[length])) {
                 length++;
             }
         }
