@@ -238,6 +238,11 @@ struct [[nodiscard]] State {
         return Lang(impl.lang);
     }
 
+    void set_lang(ulight_lang lang) noexcept
+    {
+        impl.lang = lang;
+    }
+
     void set_lang(Lang lang) noexcept
     {
         impl.lang = ulight_lang(lang);
@@ -247,6 +252,11 @@ struct [[nodiscard]] State {
     Flag get_flags() const noexcept
     {
         return Flag(impl.flags);
+    }
+
+    void set_flags(ulight_flag flags) noexcept
+    {
+        impl.flags = flags;
     }
 
     void set_flags(Flag flags) noexcept
