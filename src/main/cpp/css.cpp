@@ -302,19 +302,20 @@ public:
             case u8'-': {
                 if (starts_with_number(remainder)) {
                     consume_numeric_token();
+                    break;
                 }
-                else if (c == u8'-') {
+                if (c == u8'-') {
                     const std::u8string_view cdc_token = u8"-->";
                     if (remainder.starts_with(cdc_token)) {
                         emit_and_advance(cdc_token.length(), Highlight_Type::comment_delimiter);
+                        break;
                     }
                     if (starts_with_ident_sequence(remainder.substr(1))) {
                         consume_ident_like_token(Highlight_Type::id);
+                        break;
                     }
                 }
-                else {
-                    emit_and_advance(1, Highlight_Type::error);
-                }
+                emit_and_advance(1, Highlight_Type::error);
                 break;
             }
             case u8',': {
