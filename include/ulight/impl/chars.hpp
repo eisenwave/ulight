@@ -693,6 +693,59 @@ constexpr bool is_cpp_whitespace(char32_t c)
     return c == u8'\t' || c == u8'\n' || c == u8'\f' || c == u8'\r' || c == u8' ' || c == U'\v';
 }
 
+/// @brief Returns `true` iff `c` is in the
+/// [basic character set](https://eel.is/c++draft/tab:lex.charset.basic).
+[[nodiscard]]
+constexpr bool is_cpp_basic(char8_t c)
+{
+    switch (c) {
+    case u8'\t':
+    case u8'\v':
+    case u8'\f':
+    case u8'\r':
+    case u8'\n':
+    case u8'!':
+    case u8'"':
+    case u8'#':
+    case u8'$':
+    case u8'%':
+    case u8'&':
+    case u8'\'':
+    case u8'(':
+    case u8')':
+    case u8'*':
+    case u8'+':
+    case u8',':
+    case u8'-':
+    case u8'.':
+    case u8'/':
+    case u8':':
+    case u8';':
+    case u8'<':
+    case u8'>':
+    case u8'=':
+    case u8'?':
+    case u8'@':
+    case u8'[':
+    case u8']':
+    case u8'\\':
+    case u8'^':
+    case u8'_':
+    case u8'`':
+    case u8'{':
+    case u8'|':
+    case u8'}':
+    case u8'~': return true;
+    default: return is_ascii_alphanumeric(c);
+    }
+}
+
+[[nodiscard]]
+constexpr bool is_cpp_basic(char32_t c)
+{
+    return is_ascii(c) && is_cpp_basic(char8_t(c));
+}
+
 // LUA =============================================================================================
 
 [[nodiscard]]
