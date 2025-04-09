@@ -634,6 +634,7 @@ public:
 private:
     void emit(std::size_t begin, std::size_t length, Highlight_Type type)
     {
+        ULIGHT_DEBUG_ASSERT(length != 0);
         const bool coalesce = options.coalescing //
             && !out.empty() //
             && Highlight_Type(out.back().type) == type //
@@ -644,6 +645,17 @@ private:
         else {
             out.emplace_back(begin, length, Underlying(type));
         }
+    }
+
+    void emit_and_advance(std::size_t length, Highlight_Type type)
+    {
+        emit(index, length, type);
+        index += length;
+    }
+
+    void advance(std::size_t length)
+    {
+        index += length;
     }
 
     [[nodiscard]]
@@ -686,7 +698,7 @@ public:
             emit(index, 2, Highlight_Type::comment_delimiter);
             emit(index + 2, line_comment_length - 2, Highlight_Type::comment);
             fresh_line = true;
-            index += line_comment_length;
+            advance(line_comment_length);
             return true;
         }
         return false;
@@ -701,7 +713,7 @@ public:
             if (block_comment.is_terminated) {
                 emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delimiter); // */
             }
-            index += block_comment.length;
+            advance(block_comment.length);
             return true;
         }
         return false;
@@ -716,9 +728,8 @@ public:
                   )
                 : 0;
             const std::size_t combined_length = literal.length + suffix_length;
-            emit(index, combined_length, Highlight_Type::string);
+            emit_and_advance(combined_length, Highlight_Type::string);
             fresh_line = false;
-            index += combined_length;
             return true;
         }
         return false;
@@ -733,9 +744,8 @@ public:
                   )
                 : 0;
             const std::size_t combined_length = literal.length + suffix_length;
-            emit(index, combined_length, Highlight_Type::string);
+            emit_and_advance(combined_length, Highlight_Type::string);
             fresh_line = false;
-            index += combined_length;
             return true;
         }
         return false;
@@ -743,13 +753,118 @@ public:
 
     bool expect_pp_number()
     {
-        if (const std::size_t number_length = match_pp_number(remainder())) {
-            emit(index, number_length, Highlight_Type::number);
+        // While it may seem unnecessary to match pp-numbers first,
+        // we want a strict guarantee that the highlighter progresses by a number,
+        // even if it doesn't match any valid literal.
+        const std::u8string_view rem = remainder();
+        if (const std::size_t number_length = match_pp_number(rem)) {
+            const std::size_t old_index = index;
+            highlight_pp_number(rem.substr(0, number_length));
+            ULIGHT_DEBUG_ASSERT(old_index + number_length == index);
             fresh_line = false;
-            index += number_length;
             return true;
         }
         return false;
+    }
+
+    void highlight_pp_number(std::u8string_view pp_number)
+    {
+        ULIGHT_ASSERT(!pp_number.empty());
+
+        const bool is_hex = pp_number.starts_with(u8"0x");
+        const bool is_binary = pp_number.starts_with(u8"0b");
+
+        if (is_hex || is_binary) {
+            emit_and_advance(2, Highlight_Type::number_decor);
+            pp_number.remove_prefix(2);
+        }
+
+        std::size_t digits = 0;
+        const auto flush_digits = [&] {
+            if (digits != 0) {
+                emit_and_advance(digits, Highlight_Type::number);
+                digits = 0;
+            }
+        };
+
+        while (!pp_number.empty()) {
+            switch (const char8_t c = pp_number[0]) {
+            // https://eel.is/c++draft/lex.fcon#nt:digit-sequence
+            case u8'\'': {
+                flush_digits();
+                emit_and_advance(1, Highlight_Type::number_delim);
+                pp_number.remove_prefix(1);
+                break;
+            }
+            // https://eel.is/c++draft/lex.fcon#nt:exponent-part
+            case u8'e':
+            case u8'E': {
+                if (is_hex) {
+                    pp_number.remove_prefix(1);
+                    ++digits;
+                    break;
+                }
+                flush_digits();
+                const bool is_exponent = pp_number.size() >= 2
+                    && (pp_number[1] == u8'-' || pp_number[1] == u8'+'
+                        || is_ascii_digit(pp_number[1]));
+                if (is_exponent) {
+                    emit_and_advance(1, Highlight_Type::number_delim);
+                    pp_number.remove_prefix(1);
+                    break;
+                }
+                emit_and_advance(pp_number.length(), Highlight_Type::number_decor);
+                return;
+            }
+            case u8'p':
+            case u8'P': {
+                flush_digits();
+                const bool is_exponent = pp_number.size() >= 2 && is_hex
+                    && (pp_number[1] == u8'-' || pp_number[1] == u8'+'
+                        || is_ascii_digit(pp_number[1]));
+                if (is_exponent) {
+                    emit_and_advance(1, Highlight_Type::number_delim);
+                    pp_number.remove_prefix(1);
+                    break;
+                }
+                emit_and_advance(pp_number.length(), Highlight_Type::number_decor);
+                return;
+            }
+            case u8'.': {
+                flush_digits();
+                emit_and_advance(1, Highlight_Type::number_delim);
+                pp_number.remove_prefix(1);
+                break;
+            }
+            case u8'+':
+            case u8'-':
+            case u8'0':
+            case u8'1':
+            case u8'2':
+            case u8'3':
+            case u8'4':
+            case u8'5':
+            case u8'6':
+            case u8'7':
+            case u8'8':
+            case u8'9': {
+                digits += 1;
+                pp_number.remove_prefix(1);
+                break;
+            }
+            default: {
+                if (is_hex && is_ascii_hex_digit(c)) {
+                    digits += 1;
+                    pp_number.remove_prefix(1);
+                    break;
+                }
+                flush_digits();
+                emit_and_advance(pp_number.length(), Highlight_Type::number_decor);
+                return;
+            }
+            }
+        }
+        flush_digits();
     }
 
     bool expect_identifier()
@@ -760,9 +875,8 @@ public:
             const auto highlight = keyword && feature_in_mask(*keyword, feature_source_mask)
                 ? cpp_token_type_highlight(*keyword)
                 : Highlight_Type::id;
-            emit(index, id_length, highlight);
+            emit_and_advance(id_length, highlight);
             fresh_line = false;
-            index += id_length;
             return true;
         }
         return false;
@@ -776,17 +890,15 @@ public:
             if (fresh_line && possible_directive) {
                 if (const std::size_t directive_length
                     = match_preprocessing_directive(remainder(), c_or_cpp)) {
-                    emit(index, directive_length, Highlight_Type::macro);
+                    emit_and_advance(directive_length, Highlight_Type::macro);
                     fresh_line = true;
-                    index += directive_length;
                     return true;
                 }
             }
             const std::size_t op_length = cpp_token_type_length(*op);
             const Highlight_Type op_highlight = cpp_token_type_highlight(*op);
-            emit(index, op_length, op_highlight);
+            emit_and_advance(op_length, op_highlight);
             fresh_line = false;
-            index += op_length;
             return true;
         }
         return false;
@@ -799,7 +911,7 @@ public:
             // To my understanding, this currently only matches backslashes at the end of the
             // line. We don't have a separate phase for these, so whatever, this seems fine.
             fresh_line = false;
-            index += non_white_length;
+            advance(non_white_length);
             return true;
         }
         return false;
