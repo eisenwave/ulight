@@ -411,7 +411,7 @@ struct Escape_Result {
     /// For example, there can be unterminated `\\o{...` escapes,
     /// `\\u{...}` escapes whose contents are not valid,
     /// `\\U` escapes where one of the following 8 characters is not a hexadecimal digit,
-    /// and other such cases. 
+    /// and other such cases.
     bool erroneous = false;
 
     [[nodiscard]]
@@ -433,26 +433,6 @@ struct Escape_Result {
 /// returns zero.
 [[nodiscard]]
 Escape_Result match_escape_sequence(std::u8string_view str);
-
-struct String_Literal_Result {
-    std::size_t length;
-    std::size_t encoding_prefix_length;
-    bool raw;
-    bool terminated;
-
-    [[nodiscard]]
-    constexpr explicit operator bool() const noexcept
-    {
-        return length != 0;
-    }
-};
-
-/// @brief Matches a C++
-/// *[string-literal](https://eel.is/c++draft/lex#nt:string-literal)*
-/// at the start of `str`.
-/// Returns zero if noe could be matched.
-[[nodiscard]]
-String_Literal_Result match_string_literal(std::u8string_view str);
 
 /// @brief Matches a C or C++
 /// *[preprocessing-op-or-punc](https://eel.is/c++draft/lex#nt:preprocessing-op-or-punc)*
