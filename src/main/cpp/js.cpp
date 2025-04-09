@@ -88,6 +88,7 @@ std::size_t match_whitespace(std::u8string_view str)
 
 std::size_t match_line_comment(std::u8string_view s) noexcept
 {
+    // https://262.ecma-international.org/15.0/index.html#prod-SingleLineComment
     if (!s.starts_with(u8"//")) {
         return 0;
     }
@@ -108,6 +109,7 @@ std::size_t match_line_comment(std::u8string_view s) noexcept
 
 Comment_Result match_block_comment(std::u8string_view s) noexcept
 {
+    // https://262.ecma-international.org/15.0/index.html#prod-MultiLineComment
     if (!s.starts_with(u8"/*")) {
         return {};
     }
