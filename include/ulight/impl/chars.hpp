@@ -330,7 +330,7 @@ constexpr bool is_html_ascii_tag_name_character(char8_t c)
 constexpr bool is_html_ascii_control(char8_t c)
 {
     // https://infra.spec.whatwg.org/#control
-    return c <= u8'\u001F' || c == u8'\u007F';
+    return c <= u8'\u001F' || c == u8'\N{DELETE}';
 }
 
 constexpr bool is_html_control(char8_t c) = delete;
@@ -359,7 +359,7 @@ constexpr bool is_html_tag_name_character(char32_t c)
         ||  c == U'-'
         ||  c == U'.'
         ||  c == U'_'
-        ||  c == U'\u00B7'
+        ||  c == U'\N{MIDDLE DOT}'
         || (c >= U'\u00C0' && c <= U'\u00D6')
         || (c >= U'\u00D8' && c <= U'\u00F6')
         || (c >= U'\u00F8' && c <= U'\u037D')
@@ -735,18 +735,6 @@ constexpr bool is_lua_identifier_continue(char32_t c) noexcept
 {
     // Lua identifiers contain letters, digits, or underscores after the first char
     return is_cpp_ascii_identifier_continue(c);
-}
-
-[[nodiscard]]
-constexpr bool is_lua_hex_digit(char8_t c) noexcept
-{
-    return is_ascii_digit(c) || (c >= u8'a' && c <= u8'f') || (c >= u8'A' && c <= u8'F');
-}
-
-[[nodiscard]]
-constexpr bool is_lua_hex_digit(char32_t c) noexcept
-{
-    return is_ascii_digit(c) || (c >= U'a' && c <= U'f') || (c >= U'A' && c <= U'F');
 }
 
 // JS ==============================================================================================
