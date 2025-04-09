@@ -3,8 +3,11 @@
 #include <gtest/gtest.h>
 
 #include "ulight/impl/cpp.hpp"
+#include "ulight/impl/platform.h"
 
 namespace ulight::cpp {
+
+ULIGHT_SUPPRESS_MISSING_DECLARATIONS_WARNING()
 
 // NOLINTNEXTLINE(misc-use-internal-linkage)
 std::ostream& operator<<(std::ostream& out, Escape_Type type)
