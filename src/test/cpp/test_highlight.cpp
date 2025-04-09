@@ -147,5 +147,55 @@ TEST_F(Highlight_Test, file_tests)
     }
 }
 
+TEST_F(Highlight_Test, fuzz_single_ascii_char)
+{
+    Token token_buffer[16];
+    char8_t source;
+
+    bool success = true;
+    for (int i = 1; i < int(ULIGHT_LANG_COUNT); ++i) {
+        bool lang_success = true;
+        const auto lang = ulight_lang(i);
+        const std::string_view lang_name { ulight_lang_display_names[i].text,
+                                           ulight_lang_display_names[i].length };
+        const std::string_view source_view { reinterpret_cast<const char*>(&source), 1 };
+
+        State state;
+        state.set_source(source_view);
+        state.set_lang(lang);
+        state.set_token_buffer(token_buffer);
+        state.on_flush_tokens(Constant<[](Token* tokens, std::size_t amount) {
+            ULIGHT_ASSERT(amount <= 1);
+            if (amount != 0) {
+                ULIGHT_ASSERT(tokens != nullptr);
+                ULIGHT_ASSERT(tokens->begin == 0);
+                ULIGHT_ASSERT(tokens->length == 1);
+            }
+        }> {});
+
+        for (char8_t i = 0; i <= u8'\u007F'; ++i) {
+            source = i;
+            const Status status = state.source_to_tokens();
+            if (status != Status::ok && status != Status::bad_code) {
+                success = false;
+                std::cout << ansi::h_red << "FAIL: " << ansi::reset << lang_name //
+                          << ", for" << " U+00" << std::hex << int(source) << std::dec;
+                if (!is_html_ascii_control(source)) {
+                    std::cout << " '" << source_view << '\'';
+                }
+                std::cout << ": " << state.get_error_string() << "\n";
+            }
+        }
+
+        if (lang_success) {
+            std::cout << ansi::h_green << "OK: " << ansi::reset << lang_name << '\n';
+        }
+        else {
+            success = false;
+        }
+    }
+    ASSERT_TRUE(success);
+}
+
 } // namespace
 } // namespace ulight
