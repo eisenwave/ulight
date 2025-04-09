@@ -383,24 +383,56 @@ std::size_t match_pp_number(std::u8string_view str);
 [[nodiscard]]
 std::size_t match_identifier(std::u8string_view str);
 
-struct Character_Literal_Result {
+enum struct Escape_Type : Underlying {
+    /// @brief *simple-escape-sequence*
+    simple,
+    /// @brief *octal-escape-sequence*
+    octal,
+    /// @brief *hexadecimal-escape-sequence*
+    hexadecimal,
+    /// @brief *conditional-escape-sequence*
+    conditional,
+    /// @brief *universal-character-name*
+    universal,
+    /// @brief  `\\` followed by optional whitespace and a newline character.
+    /// These are not considered *escape-sequence*s grammatically,
+    /// but would have been preprocessed into a single space character in an earlier
+    /// translation phase.
+    newline,
+};
+
+struct Escape_Result {
+    /// @brief The length of the escape sequence, in code units.
     std::size_t length;
-    std::size_t encoding_prefix_length;
-    bool terminated;
+    /// @brief The type of escape sequence.
+    Escape_Type type;
+    /// @brief If `true`, the escape sequence was recognized,
+    /// but its contents are not valid.
+    /// For example, there can be unterminated `\\o{...` escapes,
+    /// `\\u{...}` escapes whose contents are not valid,
+    /// `\\U` escapes where one of the following 8 characters is not a hexadecimal digit,
+    /// and other such cases. 
+    bool erroneous = false;
 
     [[nodiscard]]
-    constexpr explicit operator bool() const noexcept
+    constexpr explicit operator bool() const
     {
         return length != 0;
     }
+
+    [[nodiscard]]
+    friend constexpr bool operator==(Escape_Result, Escape_Result)
+        = default;
 };
 
 /// @brief Matches a C++
-/// *[character-literal](https://eel.is/c++draft/lex#nt:character-literal)*
-/// at the start of `str`.
-/// Returns zero if noe could be matched.
+/// *[escape-sequence](https://eel.is/c++draft/lex.literal#nt:escape-sequence)*,
+/// *[universal-character-name](https://eel.is/c++draft/lex.universal.char#nt:universal-character-name)*,
+/// or "newline escape" at the start of `str`,
+// and returns its length. If none could be matched,
+/// returns zero.
 [[nodiscard]]
-Character_Literal_Result match_character_literal(std::u8string_view str);
+Escape_Result match_escape_sequence(std::u8string_view str);
 
 struct String_Literal_Result {
     std::size_t length;

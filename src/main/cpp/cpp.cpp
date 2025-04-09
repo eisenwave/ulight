@@ -335,48 +335,134 @@ std::size_t match_identifier(std::u8string_view str)
     return length;
 }
 
-Character_Literal_Result match_character_literal(std::u8string_view str)
+Escape_Result match_escape_sequence(std::u8string_view str)
 {
-    std::size_t length = 0;
-    if (str.starts_with(u8"u8")) {
-        length += 2;
-    }
-    else if (str.starts_with(u8'u') || str.starts_with(u8'U') || str.starts_with(u8'L')) {
-        length += 1;
-    }
-    const std::size_t encoding_prefix_length = length;
-
-    if (length >= str.size() || str[length] != u8'\'') {
+    // https://eel.is/c++draft/lex.literal#nt:escape-sequence
+    if (!str.starts_with(u8'\\') || str.length() < 2) {
         return {};
     }
-    ++length;
-    while (length < str.size()) {
-        const std::u8string_view remainder = str.substr(length);
-        const auto [code_point, units] = utf8::decode_and_length_or_throw(remainder);
-        switch (code_point) {
-        case '\'': {
-            return { .length = length + 1,
-                     .encoding_prefix_length = encoding_prefix_length,
-                     .terminated = true };
+
+    const auto* const data_end = str.data() + str.length();
+    switch (str[1]) {
+    // https://eel.is/c++draft/lex.literal#nt:simple-escape-sequence-char
+    case u8'\'':
+    case u8'"':
+    case u8'?':
+    case u8'\\':
+    case u8'a':
+    case u8'b':
+    case u8'f':
+    case u8'n':
+    case u8'r':
+    case u8't':
+    case u8'v': {
+        return { .length = 2, .type = Escape_Type::simple };
+    }
+    case u8' ':
+    case u8'\t':
+    case u8'\v':
+    case u8'\f':
+    case u8'\r': {
+        if (const std::size_t length = match_newline_escape(str)) {
+            return { .length = length, .type = Escape_Type::newline };
         }
-        case U'\\': {
-            length += std::size_t(units) + 1;
-            break;
+        return { .length = 2, .type = Escape_Type::newline, .erroneous = true };
+    }
+    case u8'\n': {
+        return { .length = 2, .type = Escape_Type::newline };
+    }
+    case u8'u': {
+        // https://eel.is/c++draft/lex.universal.char#nt:universal-character-name
+        if (str.length() >= 3 && str[2] == u8'{') {
+            const auto* const end = std::ranges::find_if(str.data() + 3, data_end, [](char8_t c) {
+                return c == u8'}' || !is_ascii_hex_digit(c);
+            });
+            if (end == data_end || *end != u8'}') {
+                return { .length = 3, .type = Escape_Type::universal, .erroneous = true };
+            }
+            return { .length = std::size_t(end - str.data() + 1), .type = Escape_Type::universal };
         }
-        case U'\n':
-            return { .length = length,
-                     .encoding_prefix_length = encoding_prefix_length,
-                     .terminated = false };
-        default: {
-            length += std::size_t(units);
-            break;
+        const auto* const end = std::ranges::find_if_not(
+            str.data() + 2, str.data() + std::min(str.length(), 6uz),
+            [](char8_t c) { return is_ascii_hex_digit(c); }
+        );
+        return { .length = 6, .type = Escape_Type::universal, .erroneous = end - str.begin() != 6 };
+    }
+    case u8'U': {
+        const auto* const end = std::ranges::find_if_not(
+            str.data() + 2, str.data() + std::min(str.length(), 10uz),
+            [](char8_t c) { return is_ascii_hex_digit(c); }
+        );
+        const auto length = std::size_t(end - str.data());
+        return { .length = length, .type = Escape_Type::universal, .erroneous = length != 10 };
+    }
+    case u8'N': {
+        // https://eel.is/c++draft/lex.universal.char#nt:named-universal-character
+        if (str.length() >= 3 && str[2] == u8'{') {
+            const std::size_t end = str.find_first_of(u8"}\n");
+            if (end == std::u8string_view::npos || str[end] != u8'}') {
+                return { .length = 3, .type = Escape_Type::universal, .erroneous = true };
+            }
+            return { .length = end + 1, .type = Escape_Type::universal };
         }
+        return { .length = 2, .type = Escape_Type::universal, .erroneous = true };
+    }
+    case u8'x': {
+        // https://eel.is/c++draft/lex.literal#nt:hexadecimal-escape-sequence
+        if (str.length() >= 3 && str[2] == u8'{') {
+            const auto* const end = std::ranges::find_if(str.data() + 3, data_end, [](char8_t c) {
+                return c == u8'}' || !is_ascii_hex_digit(c);
+            });
+            if (end == data_end || *end != u8'}') {
+                return { .length = 3, .type = Escape_Type::hexadecimal, .erroneous = true };
+            }
+            return { .length = std::size_t(end - str.data() + 1),
+                     .type = Escape_Type::hexadecimal };
         }
+        const auto* const end = std::ranges::find_if_not(str.data() + 2, data_end, [](char8_t c) {
+            return is_ascii_hex_digit(c);
+        });
+        if (end == data_end) {
+            return {};
+        }
+        return { .length = std::size_t(end - str.data()), .type = Escape_Type::hexadecimal };
+    }
+    case u8'o': {
+        // https://eel.is/c++draft/lex.literal#nt:octal-escape-sequence
+        if (str.length() >= 3 && str[2] == u8'{') {
+            const auto* const end = std::ranges::find_if(str.data() + 3, data_end, [](char8_t c) {
+                return c == u8'}' || !is_ascii_octal_digit(c);
+            });
+            if (end == data_end || *end != u8'}') {
+                return { .length = 3, .type = Escape_Type::octal, .erroneous = true };
+            }
+            return { .length = std::size_t(end - str.data() + 1), .type = Escape_Type::octal };
+        }
+        return { .length = 2, .type = Escape_Type::octal, .erroneous = true };
+    }
+    case u8'0':
+    case u8'1':
+    case u8'2':
+    case u8'3':
+    case u8'4':
+    case u8'5':
+    case u8'6':
+    case u8'7': {
+        // https://eel.is/c++draft/lex.literal#nt:octal-escape-sequence
+        const auto* const limit = str.data() + std::min(str.length(), 4uz);
+        const auto* const end = std::ranges::find_if_not(str.data() + 2, limit, [](char8_t c) {
+            return is_ascii_octal_digit(c);
+        });
+        return { .length = std::size_t(end - str.data()), .type = Escape_Type::octal };
     }
 
-    return { .length = length,
-             .encoding_prefix_length = encoding_prefix_length,
-             .terminated = false };
+    default: {
+        return { .length = 2,
+                 .type = Escape_Type::conditional,
+                 .erroneous = !is_cpp_basic(str[1]) };
+    }
+    }
+    ULIGHT_ASSERT_UNREACHABLE(u8"Some switch case should have handled it.");
 }
 
 namespace {
@@ -737,18 +823,80 @@ public:
 
     bool expect_character_literal()
     {
-        if (const Character_Literal_Result literal = match_character_literal(remainder())) {
-            const std::size_t suffix_length = literal.terminated
-                ? match_cpp_identifier_except_keywords(
-                      remainder().substr(literal.length), feature_source_mask
-                  )
-                : 0;
-            const std::size_t combined_length = literal.length + suffix_length;
-            emit_and_advance(combined_length, Highlight_Type::string);
-            fresh_line = false;
-            return true;
+        // https://eel.is/c++draft/lex#nt:character-literal
+        const std::size_t prefix_length = match_identifier(remainder());
+        if (source[index + prefix_length] != u8'\'') {
+            return false;
         }
-        return false;
+
+        if (prefix_length != 0) {
+            const auto prefix = remainder().substr(0, prefix_length);
+            const auto prefix_highlight
+                = prefix == u8"u8" || prefix == u8"u" || prefix == u8"U" || prefix == u8"L"
+                ? Highlight_Type::string_decor
+                : Highlight_Type::error;
+            emit_and_advance(prefix_length, prefix_highlight);
+        }
+        ULIGHT_DEBUG_ASSERT(source[index] == u8'\'');
+        emit_and_advance(1, Highlight_Type::string_delim);
+
+        std::size_t chars_length = 0;
+        const auto flush_chars = [&] {
+            if (chars_length != 0) {
+                ULIGHT_DEBUG_ASSERT(chars_length <= index);
+                emit(index - chars_length, chars_length, Highlight_Type::string);
+                chars_length = 0;
+            }
+        };
+
+        while (index < source.size()) {
+            switch (source[index]) {
+            case u8'\'': {
+                flush_chars();
+                emit_and_advance(1, Highlight_Type::string_delim);
+                if (const std::size_t id_length
+                    = match_cpp_identifier_except_keywords(remainder(), feature_source_mask)) {
+                    emit_and_advance(id_length, Highlight_Type::string_decor);
+                }
+                fresh_line = false;
+                return true;
+            }
+            case u8'\\': {
+                if (const Escape_Result escape = match_escape_sequence(remainder())) {
+                    if (escape.type == Escape_Type::newline) {
+                        chars_length += escape.length;
+                    }
+                    else {
+                        flush_chars();
+                        emit_and_advance(
+                            escape.length,
+                            escape.erroneous ? Highlight_Type::error : Highlight_Type::escape
+                        );
+                    }
+                }
+                else {
+                    flush_chars();
+                    emit_and_advance(1, Highlight_Type::error);
+                }
+                break;
+            }
+            case u8'\r':
+            case u8'\n':
+                flush_chars();
+                fresh_line = true;
+                return true;
+            default: {
+                const auto code_units = std::size_t(utf8::sequence_length(source[index], 1));
+                chars_length += code_units;
+                advance(code_units);
+                break;
+            }
+            }
+        }
+
+        flush_chars();
+        fresh_line = false;
+        return true;
     }
 
     bool expect_pp_number()
