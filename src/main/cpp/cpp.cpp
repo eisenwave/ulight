@@ -482,85 +482,6 @@ std::size_t match_d_char_sequence(std::u8string_view str)
 
 } // namespace
 
-String_Literal_Result match_string_literal(std::u8string_view str)
-{
-    std::size_t length = 0;
-    const auto expect = [&](char8_t c) {
-        if (length < str.length() && str[length] == c) {
-            ++length;
-            return true;
-        }
-        return false;
-    };
-
-    if (str.starts_with(u8"u8")) {
-        length += 2;
-    }
-    else {
-        expect(u8'u') || expect(u8'U') || expect(u8'L');
-    }
-    const std::size_t encoding_prefix_length = length;
-
-    if (length >= str.size()) {
-        return {};
-    }
-    const bool raw = expect(u8'R');
-    if (!expect(u8'"')) {
-        return {};
-    }
-    if (raw) {
-        const std::size_t d_char_sequence_length = match_d_char_sequence(str.substr(length));
-        const std::u8string_view d_char_sequence = str.substr(length, d_char_sequence_length);
-        length += d_char_sequence_length;
-
-        if (!expect(u8'(')) {
-            return {};
-        }
-        for (; length < str.size(); ++length) {
-            if (str[length] == u8')' //
-                && str.substr(1).starts_with(d_char_sequence) //
-                && str.substr(1 + d_char_sequence_length).starts_with(u8'"')) {
-                return { .length = length + d_char_sequence_length + 2,
-                         .encoding_prefix_length = encoding_prefix_length,
-                         .raw = true,
-                         .terminated = true };
-            }
-        }
-    }
-    else {
-        while (length < str.size()) {
-            const std::u8string_view remainder = str.substr(length);
-            const auto [code_point, units] = utf8::decode_and_length_or_throw(remainder);
-            switch (code_point) {
-            case '\"': {
-                return { .length = length + 1,
-                         .encoding_prefix_length = encoding_prefix_length,
-                         .raw = raw,
-                         .terminated = true };
-            }
-            case U'\\': {
-                length += std::size_t(units) + 1;
-                break;
-            }
-            case U'\n':
-                return { .length = length,
-                         .encoding_prefix_length = encoding_prefix_length,
-                         .raw = raw,
-                         .terminated = false };
-            default: {
-                length += std::size_t(units);
-                break;
-            }
-            }
-        }
-    }
-
-    return { .length = length,
-             .encoding_prefix_length = encoding_prefix_length,
-             .raw = raw,
-             .terminated = false };
-}
-
 std::optional<Token_Type> match_preprocessing_op_or_punc(std::u8string_view str, Lang c_or_cpp)
 {
     ULIGHT_ASSERT(c_or_cpp == Lang::c || c_or_cpp == Lang::cpp);
@@ -805,27 +726,13 @@ public:
         return false;
     }
 
-    bool expect_string_literal()
-    {
-        if (const String_Literal_Result literal = match_string_literal(remainder())) {
-            const std::size_t suffix_length = literal.terminated
-                ? match_cpp_identifier_except_keywords(
-                      remainder().substr(literal.length), feature_source_mask
-                  )
-                : 0;
-            const std::size_t combined_length = literal.length + suffix_length;
-            emit_and_advance(combined_length, Highlight_Type::string);
-            fresh_line = false;
-            return true;
-        }
-        return false;
-    }
-
     bool expect_character_literal()
     {
         // https://eel.is/c++draft/lex#nt:character-literal
+        constexpr char8_t quote_char = u8'\'';
+
         const std::size_t prefix_length = match_identifier(remainder());
-        if (source[index + prefix_length] != u8'\'') {
+        if (source[index + prefix_length] != quote_char) {
             return false;
         }
 
@@ -837,9 +744,51 @@ public:
                 : Highlight_Type::error;
             emit_and_advance(prefix_length, prefix_highlight);
         }
-        ULIGHT_DEBUG_ASSERT(source[index] == u8'\'');
+        ULIGHT_DEBUG_ASSERT(source[index] == quote_char);
         emit_and_advance(1, Highlight_Type::string_delim);
 
+        consume_char_sequence_and_suffix(quote_char);
+        return true;
+    }
+
+    bool expect_string_literal()
+    {
+        // https://eel.is/c++draft/lex.string#:string-literal
+        constexpr char8_t quote_char = u8'"';
+
+        const std::size_t prefix_length = match_identifier(remainder());
+        if (source[index + prefix_length] != quote_char) {
+            return false;
+        }
+
+        bool is_raw = false;
+        if (prefix_length != 0) {
+            const auto prefix = remainder().substr(0, prefix_length);
+            const auto prefix_highlight = //
+                prefix == u8"u8" || prefix == u8"u" || prefix == u8"U" || prefix == u8"L" || //
+                    prefix == u8"u8R" || prefix == u8"uR" || prefix == u8"UR" || prefix == u8"LR"
+                    || //
+                    prefix == u8"R"
+                ? Highlight_Type::string_decor
+                : Highlight_Type::error;
+            emit_and_advance(prefix_length, prefix_highlight);
+            is_raw = prefix.ends_with(u8'R');
+        }
+        ULIGHT_DEBUG_ASSERT(source[index] == quote_char);
+
+        if (is_raw) {
+            consume_raw_string_and_suffix();
+        }
+        else {
+            emit_and_advance(1, Highlight_Type::string_delim);
+            consume_char_sequence_and_suffix(quote_char);
+        }
+
+        return true;
+    }
+
+    void consume_char_sequence_and_suffix(char8_t quote_char)
+    {
         std::size_t chars_length = 0;
         const auto flush_chars = [&] {
             if (chars_length != 0) {
@@ -850,8 +799,7 @@ public:
         };
 
         while (index < source.size()) {
-            switch (source[index]) {
-            case u8'\'': {
+            if (source[index] == quote_char) {
                 flush_chars();
                 emit_and_advance(1, Highlight_Type::string_delim);
                 if (const std::size_t id_length
@@ -859,12 +807,13 @@ public:
                     emit_and_advance(id_length, Highlight_Type::string_decor);
                 }
                 fresh_line = false;
-                return true;
+                return;
             }
-            case u8'\\': {
+            if (source[index] == u8'\\') {
                 if (const Escape_Result escape = match_escape_sequence(remainder())) {
                     if (escape.type == Escape_Type::newline) {
                         chars_length += escape.length;
+                        advance(escape.length);
                     }
                     else {
                         flush_chars();
@@ -878,25 +827,63 @@ public:
                     flush_chars();
                     emit_and_advance(1, Highlight_Type::error);
                 }
-                break;
+                continue;
             }
-            case u8'\r':
-            case u8'\n':
+            if (source[index] == u8'\r' || source[index] == u8'\n') {
                 flush_chars();
                 fresh_line = true;
-                return true;
-            default: {
-                const auto code_units = std::size_t(utf8::sequence_length(source[index], 1));
-                chars_length += code_units;
-                advance(code_units);
-                break;
+                return;
             }
-            }
+            const auto code_units = std::size_t(utf8::sequence_length(source[index], 1));
+            chars_length += code_units;
+            advance(code_units);
         }
 
+        // This point is only reached when the literal is unterminated.
+        // We still want the literal to be highlighted.
         flush_chars();
         fresh_line = false;
-        return true;
+    }
+
+    void consume_raw_string_and_suffix()
+    {
+        // https://eel.is/c++draft/lex.string#nt:raw-string
+        std::u8string_view rem = remainder();
+        ULIGHT_DEBUG_ASSERT(rem.starts_with(u8'"'));
+
+        fresh_line = false;
+        const std::size_t d_char_sequence_length = match_d_char_sequence(rem.substr(1));
+        const std::u8string_view d_char_sequence = rem.substr(1, d_char_sequence_length);
+
+        if (rem.length() <= d_char_sequence_length + 1) {
+            emit_and_advance(d_char_sequence_length + 1, Highlight_Type::error);
+            return;
+        }
+        if (rem[d_char_sequence_length + 1] != u8'(') {
+            emit_and_advance(d_char_sequence_length + 2, Highlight_Type::error);
+            return;
+        }
+        rem.remove_prefix(d_char_sequence_length + 2);
+        emit_and_advance(d_char_sequence_length + 2, Highlight_Type::string_delim);
+
+        const auto match_raw_terminator = [&](std::u8string_view str) {
+            return str.starts_with(u8')') //
+                && str.substr(1).starts_with(d_char_sequence) //
+                && str.substr(1 + d_char_sequence_length).starts_with(u8'"');
+        };
+
+        std::size_t raw_length = 0;
+        for (; raw_length < rem.size(); ++raw_length) {
+            if (!match_raw_terminator(rem.substr(raw_length))) {
+                continue;
+            }
+            if (raw_length != 0) {
+                emit_and_advance(raw_length, Highlight_Type::string);
+            }
+            emit_and_advance(d_char_sequence_length + 2, Highlight_Type::string_delim);
+            return;
+        }
+        emit_and_advance(raw_length, Highlight_Type::string);
     }
 
     bool expect_pp_number()
