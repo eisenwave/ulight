@@ -159,7 +159,7 @@ std::size_t match_preprocessing_directive(std::u8string_view s, Lang c_or_cpp)
         return {};
     }
 
-    std::size_t length = 2;
+    std::size_t length = cpp_token_type_length(*first_token);
 
     while (length < s.length()) {
         const auto remainder = s.substr(length);
