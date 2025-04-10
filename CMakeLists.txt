@@ -121,6 +121,7 @@ else(NOT DEFINED EMSCRIPTEN)
         src/test/cpp/test_css.cpp
         src/test/cpp/test_highlight.cpp
         src/test/cpp/test_html.cpp
+        src/test/cpp/test_js.cpp
         src/test/cpp/test_unicode.cpp
     )
 
