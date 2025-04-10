@@ -258,7 +258,7 @@ std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str, 
 
 /// @brief Matches a JSX tag name at the start of the string
 [[nodiscard]]
-std::size_t match_jsx_tag_name(std::u8string_view str);
+std::size_t match_jsx_element_name(std::u8string_view str);
 
 /// @brief Matches a JSX attribute name at the start of the string
 [[nodiscard]]

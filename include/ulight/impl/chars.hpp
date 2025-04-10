@@ -750,7 +750,7 @@ constexpr bool is_js_whitespace(char8_t c)
 [[nodiscard]]
 constexpr bool is_js_whitespace(char32_t c)
 {
-    // // https://262.ecma-international.org/15.0/index.html#sec-white-space
+    // https://262.ecma-international.org/15.0/index.html#sec-white-space
     // clang-format off
     return c == U' '
         || c == U'\t'
@@ -777,7 +777,7 @@ constexpr bool is_js_identifier_start(char8_t c)
 [[nodiscard]]
 constexpr bool is_js_identifier_start(char32_t c)
 {
-    // // https://262.ecma-international.org/15.0/index.html#prod-IdentifierName
+    // https://262.ecma-international.org/15.0/index.html#prod-IdentifierName
     // clang-format off
     return c == U'$'
         || c == U'_' // Special JS characters.
@@ -804,7 +804,7 @@ constexpr bool is_js_identifier_part(char8_t c)
 [[nodiscard]]
 constexpr bool is_js_identifier_part(char32_t c)
 {
-    // // https://262.ecma-international.org/15.0/index.html#prod-IdentifierPart
+    // https://262.ecma-international.org/15.0/index.html#prod-IdentifierPart
     // clang-format off
     return is_js_identifier_start(c)
         || is_ascii_digit(c)

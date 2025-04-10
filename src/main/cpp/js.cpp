@@ -81,6 +81,7 @@ std::optional<Token_Type> js_token_type_by_code(std::u8string_view code) noexcep
 
 std::size_t match_whitespace(std::u8string_view str)
 {
+    // https://262.ecma-international.org/15.0/index.html#sec-white-space
     constexpr auto predicate = [](char32_t c) { return is_js_whitespace(c); };
     const std::size_t result = utf8::find_if_not(str, predicate);
     return result == std::u8string_view::npos ? str.length() : result;
@@ -144,6 +145,7 @@ std::size_t match_hashbang_comment(std::u8string_view s, bool is_at_start_of_fil
 
 String_Literal_Result match_string_literal(std::u8string_view str)
 {
+    // https://262.ecma-international.org/15.0/index.html#sec-literals-string-literals
     if (str.empty()) {
         return {};
     }
@@ -232,6 +234,7 @@ String_Literal_Result match_string_literal(std::u8string_view str)
 
 std::size_t match_template_substitution(std::u8string_view str)
 {
+    // // https://262.ecma-international.org/15.0/index.html#sec-template-literal-lexical-components
     if (!str.starts_with(u8"${")) {
         return 0;
     }
@@ -382,6 +385,7 @@ std::size_t match_number(std::u8string_view str)
 
 std::size_t match_identifier(std::u8string_view str)
 {
+    // https://262.ecma-international.org/15.0/index.html#sec-names-and-keywords
     if (str.empty()) {
         return 0;
     }
@@ -405,6 +409,7 @@ std::size_t match_identifier(std::u8string_view str)
 
 std::size_t match_private_identifier(std::u8string_view str)
 {
+    // https://262.ecma-international.org/15.0/index.html#prod-PrivateIdentifier
     if (str.empty() || str[0] != u8'#') {
         return 0;
     }
@@ -417,8 +422,9 @@ std::size_t match_private_identifier(std::u8string_view str)
     return 1 + id_length; // '#' + <identifier> length
 }
 
-std::size_t match_jsx_tag_name(std::u8string_view str)
+std::size_t match_jsx_element_name(std::u8string_view str)
 {
+    // https://facebook.github.io/jsx/#prod-JSXElementName
     if (str.empty()) {
         return 0;
     }
@@ -428,13 +434,13 @@ std::size_t match_jsx_tag_name(std::u8string_view str)
         return 0;
     }
 
-    auto length = static_cast<std::size_t>(first_units);
+    auto length = std::size_t(first_units);
     while (length < str.length()) {
         const auto [code_point, units] = utf8::decode_and_length_or_throw(str.substr(length));
         if (!is_jsx_tag_name_part(code_point)) {
             break;
         }
-        length += static_cast<std::size_t>(units);
+        length += std::size_t(units);
     }
 
     return length;
@@ -442,7 +448,8 @@ std::size_t match_jsx_tag_name(std::u8string_view str)
 
 std::size_t match_jsx_attribute_name(std::u8string_view str)
 {
-    return match_identifier(str);
+    // https://facebook.github.io/jsx/#prod-JSXAttributeName
+    return match_jsx_element_name(str);
 }
 
 std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str, bool js_or_jsx)
@@ -765,7 +772,7 @@ bool highlight_javascript_impl(
             }
 
             if (jsx_state.in_jsx_tag) {
-                const std::size_t tag_name_length = match_jsx_tag_name(remainder);
+                const std::size_t tag_name_length = match_jsx_element_name(remainder);
                 if (tag_name_length > 0) {
                     emit(index, tag_name_length, Highlight_Type::id);
                     index += tag_name_length;
