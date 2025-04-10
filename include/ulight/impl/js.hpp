@@ -235,10 +235,63 @@ String_Literal_Result match_string_literal(std::u8string_view str);
 [[nodiscard]]
 std::size_t match_template_substitution(std::u8string_view str);
 
+struct Digits_Result {
+    std::size_t length;
+    /// @brief If `true`, does not satisfy the rules for a digit sequence.
+    /// In particular, digit separators cannot be leading or trailing,
+    /// and there cannot be multiple consecutive digit separators.
+    bool erroneous;
+
+    [[nodiscard]]
+    constexpr explicit operator bool() const noexcept
+    {
+        return length != 0;
+    }
+
+    [[nodiscard]]
+    friend constexpr bool operator==(Digits_Result, Digits_Result)
+        = default;
+};
+
+/// @brief Matches a JavaScript sequence of digits,
+/// possibly containing `_` separators, in the given base.
+/// @param base The base of integer, in range [2, 16].
+[[nodiscard]]
+Digits_Result match_digits(std::u8string_view str, int base = 10);
+
+struct Numeric_Result {
+    /// @brief The total length.
+    /// This is also the sum of all the other parts of the result.
+    std::size_t length = 0;
+    /// @brief The length of the prefix (e.g. `0x`) or zero if none present.
+    std::size_t prefix = 0;
+    /// @brief The length of the digits prior to the radix point or exponent part.
+    std::size_t integer = 0;
+    /// @brief The length of the fractional part, including the radix point.
+    std::size_t fractional = 0;
+    /// @brief The length of the exponent part, including the `E+`, `e-`, etc. or other prefix.
+    std::size_t exponent = 0;
+    /// @brief The length of the suffix (`n`) or zero if none present.
+    std::size_t suffix = 0;
+    /// @brief If `true`, was recognized as a number,
+    /// but does not satisfy some rule related to numeric literals.
+    bool erroneous = false;
+
+    [[nodiscard]]
+    constexpr explicit operator bool() const
+    {
+        return length != 0;
+    }
+
+    [[nodiscard]]
+    friend constexpr bool operator==(Numeric_Result, Numeric_Result)
+        = default;
+};
+
 /// @brief Matches a JavaScript numeric literal at the start of `str`.
 /// Handles integers, decimals, hex, binary, octal, BigInt, scientific notation, and separators
 [[nodiscard]]
-std::size_t match_number(std::u8string_view str);
+Numeric_Result match_numeric_literal(std::u8string_view str);
 
 /// @brief Matches a JavaScript identifier at the start of `str`
 /// and returns its length.
@@ -263,14 +316,6 @@ std::size_t match_jsx_element_name(std::u8string_view str);
 /// @brief Matches a JSX attribute name at the start of the string
 [[nodiscard]]
 std::size_t match_jsx_attribute_name(std::u8string_view str);
-
-/// @brief Structure to track JSX state during parsing
-struct Jsx_State {
-    bool in_jsx = false;
-    bool in_jsx_tag = false;
-    bool in_jsx_attr_value = false;
-    int jsx_depth = 0;
-};
 
 } // namespace ulight::js
 

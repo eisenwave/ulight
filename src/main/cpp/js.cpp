@@ -5,11 +5,12 @@
 #include <string_view>
 #include <vector>
 
-#include "ulight/impl/buffer.hpp"
-#include "ulight/impl/highlight.hpp"
 #include "ulight/ulight.hpp"
 
+#include "ulight/impl/assert.hpp"
+#include "ulight/impl/buffer.hpp"
 #include "ulight/impl/chars.hpp"
+#include "ulight/impl/highlight.hpp"
 #include "ulight/impl/js.hpp"
 #include "ulight/impl/unicode.hpp"
 #include "ulight/impl/unicode_algorithm.hpp"
@@ -276,111 +277,102 @@ std::size_t match_template_substitution(std::u8string_view str)
     return brace_level == 0 ? length : 0; // the closing brace is found if brace_level is 0.
 }
 
-std::size_t match_number(std::u8string_view str)
+Digits_Result match_digits(std::u8string_view str, int base)
+{
+    const auto* const data_end = str.data() + str.length();
+    bool erroneous = false;
+
+    char8_t previous = u8'_';
+    const auto* const it = std::ranges::find_if_not(str.data(), data_end, [&](char8_t c) {
+        if (c == u8'_') {
+            erroneous |= previous == u8'_';
+            previous = c;
+            return true;
+        }
+        const bool is_digit = is_ascii_digit_base(c, base);
+        previous = c;
+        return is_digit;
+    });
+    erroneous |= previous == u8'_';
+
+    const std::size_t length = it == data_end ? str.length() : std::size_t(it - str.data());
+    return { .length = length, .erroneous = erroneous };
+}
+
+Numeric_Result match_numeric_literal(std::u8string_view str)
 {
     if (str.empty()) {
-        return 0;
+        return {};
     }
 
+    Numeric_Result result {};
     std::size_t length = 0;
-    bool has_digit = false;
-    if (str.length() >= 2 && str[0] == u8'0') {
-        if (str[1] == u8'b' || str[1] == u8'B') {
-            length = 2;
-            while (length < str.length()
-                   && (str[length] == u8'0' || str[length] == u8'1' || str[length] == u8'_')) {
-                if (str[length] != u8'_') {
-                    has_digit = true;
-                }
-                ++length;
-            }
+
+    {
+        const auto base = //
+            str.starts_with(u8"0b") || str.starts_with(u8"0B")   ? 2
+            : str.starts_with(u8"0o") || str.starts_with(u8"0O") ? 8
+            : str.starts_with(u8"0x") || str.starts_with(u8"0X") ? 16
+                                                                 : 10;
+        if (base != 10) {
+            result.prefix = 2;
+            length += result.prefix;
         }
-        else if (str[1] == u8'o' || str[1] == u8'O') {
-            length = 2;
-            while (length < str.length()
-                   && ((str[length] >= u8'0' && str[length] <= u8'7') || str[length] == u8'_')) {
-                if (str[length] != u8'_') {
-                    has_digit = true;
-                }
-                ++length;
-            }
-        }
-        else if (str[1] == u8'x' || str[1] == u8'X') {
-            length = 2;
-            while (length < str.length()
-                   && (is_ascii_hex_digit(str[length]) || str[length] == u8'_')) {
-                if (str[length] != u8'_') {
-                    has_digit = true;
-                }
-                ++length;
-            }
-        }
-        else {
-            has_digit = true;
-            length = 1;
-            while (length < str.length() && (is_ascii_digit(str[length]) || str[length] == u8'_')) {
-                ++length;
-            }
-        }
-    }
-    else {
-        while (length < str.length() && (is_ascii_digit(str[length]) || str[length] == u8'_')) {
-            if (is_ascii_digit(str[length])) {
-                has_digit = true;
-            }
-            ++length;
-        }
+        const auto integer_digits = match_digits(str.substr(result.prefix), base);
+        result.integer = integer_digits.length;
+        result.erroneous |= integer_digits.erroneous;
+        length += result.integer;
     }
 
-    if (!has_digit && length == 0 && str.length() >= 2 && str[0] == u8'.'
-        && is_ascii_digit(str[1])) {
-        has_digit = true;
-        length = 1;
-        while (length < str.length() && (is_ascii_digit(str[length]) || str[length] == u8'_')) {
-            ++length;
+    if (str.substr(length).starts_with(u8'.')) {
+        result.erroneous |= result.prefix != 0;
+        result.fractional = 1;
+
+        const auto [fractional_digits, fractional_error] = match_digits(str.substr(length));
+        result.fractional += fractional_digits;
+        result.erroneous |= fractional_digits == 0;
+        result.erroneous |= fractional_error;
+
+        if (result.prefix == 0 && result.integer == 0 && !is_ascii_digit(str[length])) {
+            return {};
         }
-    }
-    else if (length > 0) {
-        if (length < str.length() && str[length] == u8'.') {
-            ++length;
-            while (length < str.length() && (is_ascii_digit(str[length]) || str[length] == u8'_')) {
-                ++length;
-            }
-        }
+        length += result.fractional;
     }
 
-    if (!has_digit) {
-        return 0;
+    if (length == 0) {
+        return {};
     }
 
     if (length < str.length() && (str[length] == u8'e' || str[length] == u8'E')) {
-        const std::size_t exp_start = length;
-        ++length;
+        result.exponent = 1;
+        result.erroneous |= result.prefix != 0;
 
-        if (length < str.length() && (str[length] == u8'+' || str[length] == u8'-')) {
-            ++length;
+        if (length + result.exponent < str.length()
+            && (str[length + result.exponent] == u8'+' || str[length + result.exponent] == u8'-')) {
+            ++result.exponent;
         }
 
-        std::size_t exp_digits = 0;
-        while (length < str.length() && (is_ascii_digit(str[length]) || str[length] == u8'_')) {
-            if (is_ascii_digit(str[length])) {
-                ++exp_digits;
-            }
-            ++length;
-        }
-
-        // Go back if no exponnent
-        if (exp_digits == 0) {
-            length = exp_start;
-        }
+        const auto [exp_digits, exp_error] = match_digits(str.substr(length + result.exponent));
+        result.exponent += exp_digits;
+        result.erroneous |= exp_digits == 0;
+        result.erroneous |= exp_error;
+        length += result.exponent;
     }
 
-    // BigInt suffix
-    if (length < str.length() && (str[length] == u8'n')) {
-        ++length;
+    // https://262.ecma-international.org/15.0/index.html#prod-BigIntLiteralSuffix
+    if (length < str.length() && str[length] == u8'n') {
+        result.suffix = 1;
+        result.erroneous |= result.fractional != 0;
+        result.erroneous |= result.exponent != 0;
+        length += result.suffix;
     }
 
-    return length;
+    result.length = length;
+    ULIGHT_DEBUG_ASSERT(
+        (result.prefix + result.integer + result.fractional + result.exponent + result.suffix)
+        == result.length
+    );
+    return result;
 }
 
 std::size_t match_identifier(std::u8string_view str)
@@ -568,498 +560,568 @@ std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str, 
 }
 
 namespace {
+
 /// @brief  Common JS and JSX highlighter implementation.
-bool highlight_javascript_impl(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::size_t start_index,
-    std::size_t length,
-    bool initial_can_be_regex,
-    bool is_at_start_of_file,
-    Jsx_State jsx_state,
-    const Highlight_Options& options
-)
-{
-    const auto emit = [&](std::size_t begin, std::size_t len, Highlight_Type type) {
+struct [[nodiscard]] Highlighter {
+    Non_Owning_Buffer<Token>& out;
+    std::u8string_view source;
+    const Highlight_Options& options;
+    bool can_be_regex = true;
+    bool at_start_of_file;
+
+    bool in_jsx = false;
+    bool in_jsx_tag = false;
+    bool in_jsx_attr_value = false;
+    int jsx_depth = 0;
+    std::size_t index = 0;
+
+    Highlighter(
+        Non_Owning_Buffer<Token>& out,
+        std::u8string_view source,
+        const Highlight_Options& options,
+        bool is_at_start_of_file = true
+    )
+        : out { out }
+        , source { source }
+        , options { options }
+        , at_start_of_file { is_at_start_of_file }
+    {
+    }
+
+    [[nodiscard]]
+    Highlighter sub_highlighter(std::u8string_view sub_source) const
+    {
+        ULIGHT_ASSERT(index != 0);
+        return Highlighter { out, sub_source, options, false };
+    }
+
+    void emit(std::size_t begin, std::size_t length, Highlight_Type type)
+    {
         const bool coalesce = options.coalescing //
             && !out.empty() //
             && Highlight_Type(out.back().type) == type //
             && out.back().begin + out.back().length == begin;
         if (coalesce) {
-            out.back().length += len;
+            out.back().length += length;
         }
         else {
-            out.emplace_back(begin, len, Underlying(type));
+            out.emplace_back(begin, length, Underlying(type));
         }
-    };
+    }
 
-    std::size_t index = start_index;
-    const std::size_t end_index = start_index + length;
-    bool can_be_regex = initial_can_be_regex;
+    void emit_and_advance(std::size_t length, Highlight_Type type)
+    {
+        emit(index, length, type);
+        index += length;
+    }
 
-    while (index < end_index) {
-        const std::u8string_view remainder = source.substr(index, end_index - index);
+    [[nodiscard]]
+    std::u8string_view remainder() const
+    {
+        return source.substr(index);
+    }
 
-        // Ws.
-        if (const std::size_t white_length = match_whitespace(remainder)) {
-            index += white_length;
-            continue;
+    bool operator()()
+    {
+        while (index < source.length()) {
+            if (expect_whitespace()) {
+                continue;
+            }
+            if (at_start_of_file) {
+                at_start_of_file = false;
+                if (expect_hashbang_comment()) {
+                    continue;
+                }
+            }
+            if (expect_line_comment() || expect_block_comment()) {
+                continue;
+            }
+
+            if (!in_jsx && is_at_jsx_begin()) {
+                in_jsx = true;
+                in_jsx_tag = true;
+                in_jsx_attr_value = false;
+                jsx_depth = 1;
+            }
+
+            if (expect_jsx() || //
+                expect_string_literal() || //
+                expect_regex() || //
+                expect_numeric_literal() || //
+                expect_private_identifier() || //
+                expect_symbols() || //
+                expect_operator_or_punctuation()) {
+                continue;
+            }
+
+            // Assume a regex can appear after any other symbol.
+            emit(index, 1, Highlight_Type::sym);
+            ++index;
+            can_be_regex = true;
         }
 
+        return true;
+    }
+
+    [[nodiscard]]
+    bool is_at_jsx_begin() const
+    {
+        const std::u8string_view rem = remainder();
+        if (rem.length() < 2 || rem[0] != u8'<') {
+            return false;
+        }
+        // Fragment opening <> or <Tag
+        // FIXME: do Unicode decode instead of casting to char32_t
+        if (rem[1] == u8'>' || is_js_identifier_start(char32_t(rem[1]))) {
+            return true;
+        }
+        // Fragment closing </> or </Tag
+        // FIXME: do Unicode decode instead of casting to char32_t
+        return rem.length() > 2 && rem[1] == u8'/'
+            && (is_js_identifier_start(char32_t(rem[2])) || rem[2] == u8'>');
+    }
+
+    bool expect_jsx()
+    {
+        if (!in_jsx) {
+            return false;
+        }
+        const std::u8string_view rem = source.substr(index);
+        if (in_jsx_tag && rem[0] == u8'>') {
+            emit_and_advance(1, Highlight_Type::sym_punc);
+            in_jsx_tag = false;
+            return true;
+        }
+        if (in_jsx_tag && rem.length() > 1 && rem[0] == u8'/' && rem[1] == u8'>') {
+            emit_and_advance(2, Highlight_Type::sym_punc);
+            in_jsx_tag = false;
+            in_jsx = false;
+            jsx_depth = 0;
+            return true;
+        }
+        if (!in_jsx_tag && rem.length() > 1 && rem[0] == u8'<' && rem[1] == u8'/') {
+            if (const std::size_t tag_end = rem.find(u8'>', 2); tag_end != std::string_view::npos) {
+                emit(index, 2, Highlight_Type::markup_tag); // </
+                if (tag_end > 2) {
+                    emit(index + 2, tag_end - 2, Highlight_Type::id);
+                }
+
+                emit(index + tag_end, 1, Highlight_Type::markup_tag); // >
+
+                index += tag_end + 1;
+                jsx_depth--;
+
+                if (jsx_depth <= 0) {
+                    in_jsx = false;
+                }
+
+                return true;
+            }
+        }
+        else if (in_jsx_tag && rem[0] == u8'{') {
+            emit_and_advance(1, Highlight_Type::escape);
+
+            int brace_level = 1;
+            std::size_t brace_pos = index;
+
+            while (brace_pos < source.length() && brace_level > 0) {
+                if (source[brace_pos] == u8'{') {
+                    brace_level++;
+                }
+                else if (source[brace_pos] == u8'}') {
+                    brace_level--;
+                }
+                brace_pos++;
+            }
+
+            if (brace_level == 0) {
+                if (brace_pos - 1 > index) {
+                    sub_highlighter(source.substr(index, brace_pos - 1 - index))();
+                }
+
+                emit(brace_pos - 1, 1, Highlight_Type::escape);
+                index = brace_pos;
+                return true;
+            }
+        }
+        else if (!in_jsx_tag && rem[0] == u8'{') {
+            emit(index, 1, Highlight_Type::escape);
+            index += 1;
+
+            int brace_level = 1;
+            std::size_t brace_pos = index;
+            while (brace_pos < source.length() && brace_level > 0) {
+                if (source[brace_pos] == u8'{') {
+                    brace_level++;
+                }
+                else if (source[brace_pos] == u8'}') {
+                    brace_level--;
+                }
+                brace_pos++;
+            }
+
+            if (brace_level == 0) {
+                if (brace_pos - 1 > index) {
+                    sub_highlighter(source.substr(index, brace_pos - 1 - index))();
+                }
+
+                emit(brace_pos - 1, 1, Highlight_Type::escape);
+                index = brace_pos;
+                return true;
+            }
+        }
+
+        if (in_jsx_tag) {
+            if (const std::size_t tag_name_length = match_jsx_element_name(rem)) {
+                emit_and_advance(tag_name_length, Highlight_Type::markup_tag);
+                return true;
+            }
+            if (const std::size_t attr_name_length = match_jsx_attribute_name(rem)) {
+                emit_and_advance(attr_name_length, Highlight_Type::markup_attr);
+                return true;
+            }
+            if (rem[0] == u8'=') {
+                emit_and_advance(1, Highlight_Type::sym_punc);
+                in_jsx_attr_value = true;
+                return true;
+            }
+        }
+
+        // JSX str literal as attr val.
+        if (in_jsx_tag && in_jsx_attr_value
+            && (rem[0] == u8'"' || rem[0] == u8'\'' || rem[0] == u8'`')) {
+            const String_Literal_Result string = match_string_literal(rem);
+            if (string) {
+                emit(index, 1, Highlight_Type::string_delim);
+
+                if (string.length > 2) {
+                    emit(
+                        index + 1, string.length - (string.terminated ? 2 : 1),
+                        Highlight_Type::string
+                    );
+                }
+
+                if (string.terminated) {
+                    emit(index + string.length - 1, 1, Highlight_Type::string_delim);
+                }
+
+                index += string.length;
+                in_jsx_attr_value = false;
+                return true;
+            }
+        }
+
+        // JSX txt content.
+        if (!in_jsx_tag) {
+            std::size_t next_special = rem.find_first_of(u8"<{");
+            if (next_special == std::string_view::npos) {
+                next_special = rem.length();
+            }
+
+            if (next_special > 0) {
+                emit(index, next_special, Highlight_Type::string);
+                index += next_special;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool expect_whitespace()
+    {
+        const std::size_t white_length = match_whitespace(remainder());
+        index += white_length;
+        return white_length != 0;
+    }
+
+    bool expect_hashbang_comment()
+    {
         // Hashbang comment (#!...)
         // note: can appear only at the start of the file
-        if (const std::size_t hashbang_length
-            = match_hashbang_comment(remainder, is_at_start_of_file)) {
-            emit(index, 2, Highlight_Type::comment_delimiter); // #!
-            emit(index + 2, hashbang_length - 2, Highlight_Type::comment);
-            index += hashbang_length;
-            is_at_start_of_file = false;
-            continue;
+        const std::size_t hashbang_length = match_hashbang_comment(remainder(), at_start_of_file);
+        if (hashbang_length == 0) {
+            return false;
         }
 
-        is_at_start_of_file = false;
+        emit(index, 2, Highlight_Type::comment_delimiter); // #!
+        emit(index + 2, hashbang_length - 2, Highlight_Type::comment);
+        index += hashbang_length;
+        at_start_of_file = false;
+        return true;
+    }
 
-        // Single line comments.
-        if (const std::size_t line_comment_length = match_line_comment(remainder)) {
-            emit(index, 2, Highlight_Type::comment_delimiter); // //
-            emit(index + 2, line_comment_length - 2, Highlight_Type::comment);
-            index += line_comment_length;
-            can_be_regex = true; // After a comment, a regex can appear.
-            continue;
+    bool expect_line_comment()
+    {
+        const std::size_t length = match_line_comment(remainder());
+        if (length == 0) {
+            return false;
+        }
+        emit(index, 2, Highlight_Type::comment_delimiter); // //
+        emit(index + 2, length - 2, Highlight_Type::comment);
+        index += length;
+        can_be_regex = true; // After a comment, a regex can appear.
+        return true;
+    }
+
+    bool expect_block_comment()
+    {
+        const Comment_Result block_comment = match_block_comment(remainder());
+        if (!block_comment) {
+            return false;
+        }
+        emit(index, 2, Highlight_Type::comment_delimiter); // /*
+        emit(
+            index + 2, block_comment.length - 2 - (block_comment.is_terminated ? 2 : 0),
+            Highlight_Type::comment
+        );
+        if (block_comment.is_terminated) {
+            emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delimiter); // */
+        }
+        index += block_comment.length;
+        can_be_regex = true; // a regex can appear after a comment
+        return true;
+    }
+
+    bool expect_string_literal()
+    {
+        const String_Literal_Result string = match_string_literal(remainder());
+        if (!string) {
+            return false;
+        }
+        if (!string.is_template_literal) {
+            emit_and_advance(string.length, Highlight_Type::string);
+            can_be_regex = false;
+            return true;
         }
 
-        // Block comments.
-        if (const Comment_Result block_comment = match_block_comment(remainder)) {
-            emit(index, 2, Highlight_Type::comment_delimiter); // /*
-            emit(
-                index + 2, block_comment.length - 2 - (block_comment.is_terminated ? 2 : 0),
-                Highlight_Type::comment
-            );
-            if (block_comment.is_terminated) {
-                emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delimiter); // */
-            }
-            index += block_comment.length;
-            can_be_regex = true; // a regex can appear after a comment
-            continue;
+        std::size_t pos = index;
+
+        // Opening backtick
+        emit(pos, 1, Highlight_Type::string);
+        pos += 1;
+
+        std::size_t content_end = index + string.length;
+        if (string.terminated) {
+            content_end -= 1; // Exclude closing backtick
         }
 
-        if (!jsx_state.in_jsx) {
-            if (remainder[0] == u8'<') {
-                bool is_jsx_tag = false;
-
-                if (remainder.length() > 1) {
-                    // Fragment opening <> or <Tag
-                    // FIXME: do Unicode decode instead of casting to char32_t
-                    if (remainder[1] == u8'>' || is_js_identifier_start(char32_t(remainder[1]))) {
-                        is_jsx_tag = true;
-                    }
-                    // Fragment closing </> or </Tag
-                    else if (remainder[1] == u8'/') {
-                        // FIXME: do Unicode decode instead of casting to char32_t
-                        if (remainder.length() > 2
-                            && (is_js_identifier_start(char32_t(remainder[2]))
-                                || remainder[2] == u8'>')) {
-                            is_jsx_tag = true;
-                        }
-                    }
-                }
-
-                if (is_jsx_tag) {
-                    jsx_state.in_jsx = true;
-                    jsx_state.in_jsx_tag = true;
-                    jsx_state.jsx_depth = 1;
-                }
-            }
-        }
-
-        if (jsx_state.in_jsx) {
-            if (jsx_state.in_jsx_tag && remainder[0] == u8'>') {
-                emit(index, 1, Highlight_Type::markup_tag);
-                index += 1;
-                jsx_state.in_jsx_tag = false;
-                continue;
-            }
-            if (jsx_state.in_jsx_tag && remainder.length() > 1 && remainder[0] == u8'/'
-                && remainder[1] == u8'>') {
-                emit(index, 2, Highlight_Type::markup_tag);
-                index += 2;
-                jsx_state.in_jsx_tag = false;
-                jsx_state.in_jsx = false;
-                jsx_state.jsx_depth = 0;
-                continue;
-            }
-            if (!jsx_state.in_jsx_tag && remainder.length() > 1 && remainder[0] == u8'<'
-                && remainder[1] == u8'/') {
-                if (const std::size_t tag_end = remainder.find(u8'>', 2);
-                    tag_end != std::string_view::npos) {
-                    emit(index, 2, Highlight_Type::markup_tag); // </
-                    if (tag_end > 2) {
-                        emit(index + 2, tag_end - 2, Highlight_Type::id);
-                    }
-
-                    emit(index + tag_end, 1, Highlight_Type::markup_tag); // >
-
-                    index += tag_end + 1;
-                    jsx_state.jsx_depth--;
-
-                    if (jsx_state.jsx_depth <= 0) {
-                        jsx_state.in_jsx = false;
-                    }
-
-                    continue;
-                }
-            }
-            else if (jsx_state.in_jsx_tag && remainder[0] == u8'{') {
-                emit(index, 1, Highlight_Type::escape);
-                index += 1;
-
-                int brace_level = 1;
-                std::size_t brace_pos = index;
-
-                while (brace_pos < end_index && brace_level > 0) {
-                    if (source[brace_pos] == u8'{') {
-                        brace_level++;
-                    }
-                    else if (source[brace_pos] == u8'}') {
-                        brace_level--;
-                    }
-                    brace_pos++;
-                }
-
-                if (brace_level == 0) {
-                    if (brace_pos - 1 > index) {
-                        // Use recursive highlighting for JSX expression
-                        highlight_javascript_impl(
-                            out, source, index, brace_pos - 1 - index, true, false, Jsx_State {},
-                            options
-                        );
-                    }
-
-                    emit(brace_pos - 1, 1, Highlight_Type::escape);
-                    index = brace_pos;
-                    continue;
-                }
-            }
-            else if (!jsx_state.in_jsx_tag && remainder[0] == u8'{') {
-                emit(index, 1, Highlight_Type::escape);
-                index += 1;
-
-                int brace_level = 1;
-                std::size_t brace_pos = index;
-                while (brace_pos < end_index && brace_level > 0) {
-                    if (source[brace_pos] == u8'{') {
-                        brace_level++;
-                    }
-                    else if (source[brace_pos] == u8'}') {
-                        brace_level--;
-                    }
-                    brace_pos++;
-                }
-
-                if (brace_level == 0) {
-                    if (brace_pos - 1 > index) {
-                        // Use recursive highlighting for JSX expression
-                        highlight_javascript_impl(
-                            out, source, index, brace_pos - 1 - index, true, false, Jsx_State {},
-                            options
-                        );
-                    }
-
-                    emit(brace_pos - 1, 1, Highlight_Type::escape);
-                    index = brace_pos;
-                    continue;
-                }
-            }
-
-            if (jsx_state.in_jsx_tag) {
-                const std::size_t tag_name_length = match_jsx_element_name(remainder);
-                if (tag_name_length > 0) {
-                    emit(index, tag_name_length, Highlight_Type::id);
-                    index += tag_name_length;
-                    continue;
-                }
-                // JSX attr.
-                const std::size_t attr_name_length = match_jsx_attribute_name(remainder);
-                if (attr_name_length > 0) {
-                    emit(index, attr_name_length, Highlight_Type::markup_attr);
-                    index += attr_name_length;
-                    continue;
-                }
-                if (remainder[0] == u8'=') {
-                    emit(index, 1, Highlight_Type::markup_attr);
-                    index += 1;
-                    jsx_state.in_jsx_attr_value = true;
-                    continue;
-                }
-            }
-
-            // JSX str literal as attr val.
-            if (jsx_state.in_jsx_tag && jsx_state.in_jsx_attr_value
-                && (remainder[0] == u8'"' || remainder[0] == u8'\'' || remainder[0] == u8'`')) {
-                const String_Literal_Result string = match_string_literal(remainder);
-                if (string) {
-                    emit(index, 1, Highlight_Type::string_delim);
-
-                    if (string.length > 2) {
-                        emit(
-                            index + 1, string.length - (string.terminated ? 2 : 1),
-                            Highlight_Type::string
-                        );
-                    }
-
-                    if (string.terminated) {
-                        emit(index + string.length - 1, 1, Highlight_Type::string_delim);
-                    }
-
-                    index += string.length;
-                    jsx_state.in_jsx_attr_value = false;
-                    continue;
-                }
-            }
-
-            // JSX txt content.
-            if (!jsx_state.in_jsx_tag) {
-                std::size_t next_special = remainder.find_first_of(u8"<{");
-                if (next_special == std::string_view::npos) {
-                    next_special = remainder.length();
-                }
-
-                if (next_special > 0) {
-                    emit(index, next_special, Highlight_Type::string);
-                    index += next_special;
-                    continue;
-                }
-            }
-        }
-
-        // note: If not in JSX or no special JSX handling was applied, fall back to regular JS
-        // handling
-
-        if (const String_Literal_Result string = match_string_literal(remainder)) {
-            if (string.is_template_literal) {
-                std::size_t pos = index;
-
-                // Opening backtick
-                emit(pos, 1, Highlight_Type::string);
-                pos += 1;
-
-                std::size_t content_end = index + string.length;
-                if (string.terminated) {
-                    content_end -= 1; // Exclude closing backtick
-                }
-
-                while (pos < content_end) {
-                    const std::u8string_view template_part = source.substr(pos, content_end - pos);
-                    const std::size_t next_subst = template_part.find(u8"${");
-                    if (next_subst == std::string_view::npos) {
-                        emit(pos, content_end - pos, Highlight_Type::string);
-                        pos = content_end;
-                    }
-                    else {
-                        if (next_subst > 0) {
-                            emit(pos, next_subst, Highlight_Type::string);
-                        }
-
-                        pos += next_subst; // Start of substitution.
-                        emit(pos, 2, Highlight_Type::escape);
-                        pos += 2;
-
-                        int brace_level = 1;
-                        std::size_t subst_pos = pos;
-                        while (subst_pos < content_end && brace_level > 0) {
-                            const String_Literal_Result nested_string = match_string_literal(
-                                source.substr(subst_pos, content_end - subst_pos)
-                            );
-                            if (nested_string) {
-                                emit(subst_pos, nested_string.length, Highlight_Type::string);
-                                subst_pos += nested_string.length;
-                                continue;
-                            }
-
-                            if (source[subst_pos] == u8'{') {
-                                brace_level++;
-                            }
-                            else if (source[subst_pos] == u8'}') {
-                                brace_level--;
-
-                                if (brace_level == 0) {
-                                    if (subst_pos > pos) {
-                                        // Use recursive highlighting for template expression
-                                        highlight_javascript_impl(
-                                            out, source, pos, subst_pos - pos, true, false,
-                                            Jsx_State {}, options
-                                        );
-                                    }
-                                    emit(
-                                        subst_pos, 1, Highlight_Type::escape
-                                    ); // Emit "}" as escape
-                                    pos = subst_pos + 1;
-                                    break;
-                                }
-                            }
-
-                            subst_pos++;
-                        }
-
-                        if (brace_level > 0) {
-                            // For unterminated template expressions, highlight with id
-                            emit(pos, content_end - pos, Highlight_Type::id);
-                            pos = content_end;
-                        }
-                    }
-                }
-
-                if (string.terminated) { // Closing backtick
-                    emit(content_end, 1, Highlight_Type::string);
-                }
-
-                index += string.length;
+        while (pos < content_end) {
+            const std::u8string_view template_part = source.substr(pos, content_end - pos);
+            const std::size_t next_subst = template_part.find(u8"${");
+            if (next_subst == std::string_view::npos) {
+                emit(pos, content_end - pos, Highlight_Type::string);
+                pos = content_end;
             }
             else {
-                emit(index, string.length, Highlight_Type::string);
-                index += string.length;
-            }
-
-            can_be_regex = false;
-            continue;
-        }
-
-        // Regex.
-        if (!jsx_state.in_jsx && can_be_regex && remainder[0] == u8'/') {
-            if (remainder.length() > 1 && remainder[1] != u8'/' && remainder[1] != u8'*') {
-                std::size_t size = 1;
-                auto escaped = false;
-                auto terminated = false;
-
-                while (size < remainder.length()) {
-                    const char8_t c = remainder[size];
-
-                    if (escaped) {
-                        escaped = false;
-                    }
-                    else if (c == u8'\\') {
-                        escaped = true;
-                    }
-                    else if (c == u8'/') {
-                        terminated = true;
-                        ++size;
-                        break;
-                    }
-                    else if (c == u8'\n') { // Unterminated as newlines aren't allowed in regex.
-                        break;
-                    }
-
-                    ++size;
+                if (next_subst > 0) {
+                    emit(pos, next_subst, Highlight_Type::string);
                 }
 
-                if (terminated) {
-                    // Match flags after regex i.e. /pattern/gi.
-                    while (size < remainder.length()) {
-                        const char8_t c = remainder[size];
-                        // FIXME: do Unicode decode instead of casting to char32_t
-                        if (is_js_identifier_part(char32_t(c))) {
-                            ++size;
-                        }
-                        else {
+                pos += next_subst; // Start of substitution.
+                emit(pos, 2, Highlight_Type::escape);
+                pos += 2;
+
+                int brace_level = 1;
+                std::size_t subst_pos = pos;
+                while (subst_pos < content_end && brace_level > 0) {
+                    const String_Literal_Result nested_string
+                        = match_string_literal(source.substr(subst_pos, content_end - subst_pos));
+                    if (nested_string) {
+                        emit(subst_pos, nested_string.length, Highlight_Type::string);
+                        subst_pos += nested_string.length;
+                        continue;
+                    }
+
+                    if (source[subst_pos] == u8'{') {
+                        brace_level++;
+                    }
+                    else if (source[subst_pos] == u8'}') {
+                        brace_level--;
+
+                        if (brace_level == 0) {
+                            if (subst_pos > pos) {
+                                sub_highlighter(source.substr(index, subst_pos - pos))();
+                            }
+                            emit(subst_pos, 1, Highlight_Type::escape); // Emit "}" as escape
+                            pos = subst_pos + 1;
                             break;
                         }
                     }
-                    emit(index, size, Highlight_Type::string);
-                    index += size;
-                    can_be_regex = false;
-                    continue;
+
+                    subst_pos++;
+                }
+
+                if (brace_level > 0) {
+                    // For unterminated template expressions, highlight with id
+                    emit(pos, content_end - pos, Highlight_Type::id);
+                    pos = content_end;
                 }
             }
         }
 
-        // Numbers.
-        if (const std::size_t number_length = match_number(remainder)) {
-            emit(index, number_length, Highlight_Type::number);
-            index += number_length;
-            can_be_regex = false;
-            continue;
+        if (string.terminated) { // Closing backtick
+            emit(content_end, 1, Highlight_Type::string);
         }
 
-        // Private identifiers.
-        if (const std::size_t private_id_length = match_private_identifier(remainder)) {
-            emit(index, private_id_length, Highlight_Type::id);
-            index += private_id_length;
-            can_be_regex = false;
-            continue;
+        index += string.length;
+
+        can_be_regex = false;
+        return true;
+    }
+
+    bool expect_regex()
+    {
+        const std::u8string_view rem = remainder();
+
+        if (in_jsx || !can_be_regex || !rem.starts_with(u8'/')) {
+            return false;
         }
 
-        // Symbols.
-        if (const std::size_t id_length = match_identifier(remainder)) {
-            const std::optional<Token_Type> keyword
-                = js_token_type_by_code(remainder.substr(0, id_length));
+        if (rem.length() > 1 && rem[1] != u8'/' && rem[1] != u8'*') {
+            std::size_t size = 1;
+            auto escaped = false;
+            auto terminated = false;
 
-            if (keyword) {
-                const auto highlight = js_token_type_highlight(*keyword);
-                emit(index, id_length, highlight);
+            while (size < rem.length()) {
+                const char8_t c = rem[size];
+
+                if (escaped) {
+                    escaped = false;
+                }
+                else if (c == u8'\\') {
+                    escaped = true;
+                }
+                else if (c == u8'/') {
+                    terminated = true;
+                    ++size;
+                    break;
+                }
+                else if (c == u8'\n') { // Unterminated as newlines aren't allowed in regex.
+                    break;
+                }
+
+                ++size;
             }
-            else {
-                emit(index, id_length, Highlight_Type::id);
-            }
 
-            index += id_length;
-            can_be_regex = false;
-
-            // Certain keywords are followed by expressions where regex can appear.
-            if (keyword) {
-                const auto& code = js_token_type_code(*keyword);
-                static constexpr std::u8string_view expr_keywords[]
-                    = { u8"return", u8"throw", u8"case",       u8"delete", u8"void", u8"typeof",
-                        u8"yield",  u8"await", u8"instanceof", u8"in",     u8"new" };
-
-                for (const auto& kw : expr_keywords) {
-                    if (code == kw) {
-                        can_be_regex = true;
+            if (terminated) {
+                // Match flags after regex i.e. /pattern/gi.
+                while (size < rem.length()) {
+                    const char8_t c = rem[size];
+                    // FIXME: do Unicode decode instead of casting to char32_t
+                    if (is_js_identifier_part(char32_t(c))) {
+                        ++size;
+                    }
+                    else {
                         break;
                     }
                 }
+                emit_and_advance(size, Highlight_Type::string);
+                can_be_regex = false;
+                return true;
             }
-
-            continue;
         }
 
-        if (const std::optional<Token_Type> op
-            = match_operator_or_punctuation(remainder, jsx_state.in_jsx)) {
-            const std::size_t op_length = js_token_type_length(*op);
-            const Highlight_Type op_highlight = js_token_type_highlight(*op);
+        return false;
+    }
 
-            emit(index, op_length, op_highlight);
-            index += op_length;
+    bool expect_numeric_literal()
+    {
+        const Numeric_Result number = match_numeric_literal(remainder());
+        if (!number) {
+            return false;
+        }
+        if (number.erroneous) {
+            emit_and_advance(number.length, Highlight_Type::error);
+        }
+        else {
+            // TODO: more granular output
+            emit_and_advance(number.length, Highlight_Type::number);
+        }
+        can_be_regex = false;
+        return true;
+    }
 
-            // JSX update state.
-            if (jsx_state.in_jsx) {
-                if (*op == Token_Type::jsx_tag_open || *op == Token_Type::jsx_tag_end_open) {
-                    jsx_state.in_jsx_tag = true;
-                }
-            }
+    bool expect_private_identifier()
+    {
+        if (const std::size_t private_id_length = match_private_identifier(remainder())) {
+            emit_and_advance(private_id_length, Highlight_Type::id);
+            can_be_regex = false;
+            return true;
+        }
+        return false;
+    }
 
-            can_be_regex = true;
-            static constexpr Token_Type non_regex_ops[]
-                = { Token_Type::increment,     Token_Type::decrement,   Token_Type::right_paren,
-                    Token_Type::right_bracket, Token_Type::right_brace, Token_Type::plus,
-                    Token_Type::minus };
+    bool expect_symbols()
+    {
+        const std::size_t id_length = match_identifier(remainder());
+        if (id_length == 0) {
+            return false;
+        }
 
-            for (const auto& non_regex_op : non_regex_ops) {
-                if (*op == non_regex_op) {
-                    can_be_regex = false;
+        const std::optional<Token_Type> keyword
+            = js_token_type_by_code(remainder().substr(0, id_length));
+
+        if (keyword) {
+            const auto highlight = js_token_type_highlight(*keyword);
+            emit(index, id_length, highlight);
+        }
+        else {
+            emit(index, id_length, Highlight_Type::id);
+        }
+
+        index += id_length;
+        can_be_regex = false;
+
+        // Certain keywords are followed by expressions where regex can appear.
+        if (keyword) {
+            const auto& code = js_token_type_code(*keyword);
+            static constexpr std::u8string_view expr_keywords[]
+                = { u8"return", u8"throw", u8"case",       u8"delete", u8"void", u8"typeof",
+                    u8"yield",  u8"await", u8"instanceof", u8"in",     u8"new" };
+
+            for (const auto& kw : expr_keywords) {
+                if (code == kw) {
+                    can_be_regex = true;
                     break;
                 }
             }
-
-            continue;
         }
-        // Assume a regex can appear after any other symbol.
-        emit(index, 1, Highlight_Type::sym);
-        index++;
-        can_be_regex = true;
+        return true;
     }
 
-    return true;
-}
+    bool expect_operator_or_punctuation()
+    {
+        const std::optional<Token_Type> op = match_operator_or_punctuation(remainder(), in_jsx);
+        if (!op) {
+            return false;
+        }
+        const std::size_t op_length = js_token_type_length(*op);
+        const Highlight_Type op_highlight = js_token_type_highlight(*op);
+
+        emit_and_advance(op_length, op_highlight);
+
+        // JSX update state.
+        if (in_jsx) {
+            if (*op == Token_Type::jsx_tag_open || *op == Token_Type::jsx_tag_end_open) {
+                in_jsx_tag = true;
+            }
+        }
+
+        can_be_regex = true;
+        static constexpr Token_Type non_regex_ops[]
+            = { Token_Type::increment,     Token_Type::decrement,   Token_Type::right_paren,
+                Token_Type::right_bracket, Token_Type::right_brace, Token_Type::plus,
+                Token_Type::minus };
+
+        for (const auto& non_regex_op : non_regex_ops) {
+            if (*op == non_regex_op) {
+                can_be_regex = false;
+                break;
+            }
+        }
+        return true;
+    }
+};
 
 } // namespace
 
@@ -1072,10 +1134,7 @@ bool highlight_javascript(
     const Highlight_Options& options
 )
 {
-    constexpr js::Jsx_State initial_jsx_state {};
-    return js::highlight_javascript_impl(
-        out, source, 0, source.size(), true, true, initial_jsx_state, options
-    );
+    return js::Highlighter { out, source, options }();
 }
 
 } // namespace ulight
