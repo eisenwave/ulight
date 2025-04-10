@@ -1070,22 +1070,14 @@ struct [[nodiscard]] Highlighter {
         }
 
         index += id_length;
-        can_be_regex = false;
 
+        using enum Token_Type;
+        static constexpr Token_Type expr_keywords[]
+            = { kw_return, kw_throw, kw_case,       kw_delete, kw_void, kw_typeof,
+                kw_yield,  kw_await, kw_instanceof, kw_in,     kw_new };
         // Certain keywords are followed by expressions where regex can appear.
-        if (keyword) {
-            const auto& code = js_token_type_code(*keyword);
-            static constexpr std::u8string_view expr_keywords[]
-                = { u8"return", u8"throw", u8"case",       u8"delete", u8"void", u8"typeof",
-                    u8"yield",  u8"await", u8"instanceof", u8"in",     u8"new" };
+        can_be_regex = keyword && std::ranges::contains(expr_keywords, *keyword);
 
-            for (const auto& kw : expr_keywords) {
-                if (code == kw) {
-                    can_be_regex = true;
-                    break;
-                }
-            }
-        }
         return true;
     }
 
