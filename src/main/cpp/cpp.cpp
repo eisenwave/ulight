@@ -588,17 +588,9 @@ bool feature_in_mask(Token_Type type, std::uint_fast8_t mask)
 }
 
 [[nodiscard]]
-std::size_t
-match_cpp_identifier_except_keywords(std::u8string_view str, std::uint_fast8_t source_mask)
+Highlight_Type usual_fallback_highlight(std::u8string_view id)
 {
-    if (const std::size_t result = cpp::match_identifier(str)) {
-        const std::optional<Token_Type> keyword = cpp_token_type_by_code(str.substr(0, result));
-        if (keyword && feature_in_mask(*keyword, source_mask)) {
-            return 0;
-        }
-        return result;
-    }
-    return 0;
+    return id.ends_with(u8"_t") ? Highlight_Type::id_type_use : Highlight_Type::id;
 }
 
 // Approximately implements highlighting based on C++ tokenization,
@@ -681,7 +673,7 @@ public:
                 || expect_string_literal() //
                 || expect_character_literal() //
                 || expect_pp_number() //
-                || expect_identifier() //
+                || expect_identifier_or_keyword(usual_fallback_highlight) //
                 || expect_preprocessing_op_or_punc() //
                 || expect_non_whitespace();
             ULIGHT_ASSERT(any_matched);
@@ -802,10 +794,9 @@ public:
             if (source[index] == quote_char) {
                 flush_chars();
                 emit_and_advance(1, Highlight_Type::string_delim);
-                if (const std::size_t id_length
-                    = match_cpp_identifier_except_keywords(remainder(), feature_source_mask)) {
-                    emit_and_advance(id_length, Highlight_Type::string_decor);
-                }
+                expect_identifier_or_keyword([](std::u8string_view) {
+                    return Highlight_Type::string_decor;
+                });
                 fresh_line = false;
                 return;
             }
@@ -1002,19 +993,20 @@ public:
         flush_digits();
     }
 
-    bool expect_identifier()
+    bool expect_identifier_or_keyword(Highlight_Type fallback_highlight(std::u8string_view))
     {
-        if (const std::size_t id_length = match_identifier(remainder())) {
-            const std::optional<Token_Type> keyword
-                = cpp_token_type_by_code(remainder().substr(0, id_length));
-            const auto highlight = keyword && feature_in_mask(*keyword, feature_source_mask)
-                ? cpp_token_type_highlight(*keyword)
-                : Highlight_Type::id;
-            emit_and_advance(id_length, highlight);
-            fresh_line = false;
-            return true;
+        const std::size_t id_length = match_identifier(remainder());
+        if (id_length == 0) {
+            return false;
         }
-        return false;
+        const std::u8string_view id = remainder().substr(0, id_length);
+        const std::optional<Token_Type> keyword = cpp_token_type_by_code(id);
+        const auto highlight = keyword && feature_in_mask(*keyword, feature_source_mask)
+            ? cpp_token_type_highlight(*keyword)
+            : fallback_highlight(id);
+        emit_and_advance(id_length, highlight);
+        fresh_line = false;
+        return true;
     }
 
     bool expect_preprocessing_op_or_punc()
