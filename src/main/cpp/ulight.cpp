@@ -3,6 +3,7 @@
 #include <new>
 #include <string_view>
 
+#include "ulight/impl/strings.hpp"
 #include "ulight/ulight.h"
 #include "ulight/ulight.hpp"
 
@@ -25,28 +26,29 @@ ulight::Highlight_Options to_options(ulight_flag flags) noexcept
 }
 
 [[nodiscard]]
-std::string_view html_entity_of(char c)
+std::u8string_view html_entity_of(char8_t c)
 {
     switch (c) {
-    case '&': return "&amp;";
-    case '<': return "&lt;";
-    case '>': return "&gt;";
-    case '\'': return "&apos;";
-    case '"': return "&quot;";
+    case u8'&': return u8"&amp;";
+    case u8'<': return u8"&lt;";
+    case u8'>': return u8"&gt;";
+    case u8'\'': return u8"&apos;";
+    case u8'"': return u8"&quot;";
     default: ULIGHT_DEBUG_ASSERT_UNREACHABLE(u8"We only support a handful of characters.");
     }
 }
 
 void append_html_escaped(Non_Owning_Buffer<char>& out, std::string_view text)
 {
+    constexpr std::u8string_view escaped_chars = u8"<>&";
     while (!text.empty()) {
-        const std::size_t bracket_pos = text.find_first_of("<>&");
+        const std::size_t bracket_pos = text.find_first_of(as_string_view(escaped_chars));
         const auto snippet = text.substr(0, std::min(text.length(), bracket_pos));
         out.append_range(snippet);
         if (bracket_pos == std::string_view::npos) {
             break;
         }
-        out.append_range(html_entity_of(text[bracket_pos]));
+        out.append_range(html_entity_of(char8_t(text[bracket_pos])));
         text = text.substr(bracket_pos + 1);
     }
 }
