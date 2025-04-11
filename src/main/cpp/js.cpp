@@ -947,11 +947,16 @@ struct [[nodiscard]] Highlighter {
     Highlighter sub_highlighter(std::u8string_view sub_source) const
     {
         ULIGHT_ASSERT(index != 0);
+        ULIGHT_ASSERT(!sub_source.empty());
         return Highlighter { out, sub_source, options, false };
     }
 
     void emit(std::size_t begin, std::size_t length, Highlight_Type type)
     {
+        ULIGHT_DEBUG_ASSERT(length != 0);
+        ULIGHT_DEBUG_ASSERT(begin < source.length());
+        ULIGHT_DEBUG_ASSERT(begin + length <= source.length());
+
         const bool coalesce = options.coalescing //
             && !out.empty() //
             && Highlight_Type(out.back().type) == type //
@@ -973,6 +978,7 @@ struct [[nodiscard]] Highlighter {
     void advance(std::size_t amount)
     {
         index += amount;
+        ULIGHT_DEBUG_ASSERT(index <= source.length());
     }
 
     [[nodiscard]]
@@ -1232,7 +1238,7 @@ struct [[nodiscard]] Highlighter {
         emit_and_advance(1, Highlight_Type::sym_brace);
         const std::size_t js_length = braced.length - (braced.is_terminated ? 2 : 1);
 
-        if (js_length > 2) {
+        if (js_length != 0) {
             const std::u8string_view sub_source = source.substr(index, js_length);
             Highlighter sub = sub_highlighter(sub_source);
             sub();
