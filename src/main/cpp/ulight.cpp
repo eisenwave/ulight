@@ -221,6 +221,22 @@ ulight_status error(ulight_state* state, ulight_status status, std::u8string_vie
     return status;
 }
 
+void check_flush_validity(ulight_state* state, std::span<const ulight_token> tokens)
+{
+    const std::string_view source { state->source, state->source_length };
+    for (std::size_t i = 0; i < tokens.size(); ++i) {
+        const auto& t = tokens[i];
+        ULIGHT_ASSERT(t.begin < source.length());
+        ULIGHT_ASSERT(t.begin + t.length <= source.length());
+        if (i + 1 == tokens.size()) {
+            continue;
+        }
+        const auto& next = tokens[i + 1];
+        ULIGHT_ASSERT(t.begin < next.begin);
+        ULIGHT_ASSERT(t.begin + t.length <= next.begin);
+    }
+}
+
 } // namespace
 
 ULIGHT_EXPORT
@@ -334,6 +350,10 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
     std::size_t previous_end = 0;
     auto flush_text = // clang-format off
     [&](const ulight_token* tokens, std::size_t amount) mutable  {
+        #ifndef NDEBUG
+        check_flush_validity(state, {tokens, amount}); 
+        #endif
+
         for (std::size_t i = 0; i < amount; ++i) {
             const auto& t = tokens[i];
             if (t.begin > previous_end) {
