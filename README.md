@@ -1,5 +1,6 @@
-![CMake build status](https://github.com/eisenwave/ulight/actions/workflows/cmake-multi-platform.yml/badge.svg)
-![clang-format build status](https://github.com/eisenwave/ulight/actions/workflows/clang-format.yml/badge.svg)
+![CMake build status][badge-cmake]
+![Emscripten build and deploy to pages][badge-em]
+![clang-format build status][badge-format]
 
 # µlight
 µlight or "u-light" is a zero-dependency, lightweight, and portable syntax highlighter.
@@ -126,3 +127,7 @@ based on how frequently they're used and other metrics.
 One such metric is [Octoverse 2024](https://github.blog/news-insights/octoverse/octoverse-2024/).
 
 You can check the open issues in this repository for planned languages.
+
+[badge-cmake]: https://github.com/eisenwave/ulight/actions/workflows/cmake-multi-platform.yml/badge.svg
+[badge-em]: https://github.com/Eisenwave/ulight/actions/workflows/pages.yml/badge.svg
+[badge-format]: https://github.com/eisenwave/ulight/actions/workflows/clang-format.yml/badge.svg
