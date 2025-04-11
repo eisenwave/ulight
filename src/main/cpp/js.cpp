@@ -26,6 +26,7 @@ namespace js {
 #define ULIGHT_JS_TOKEN_TYPE_FEATURE_SOURCE(id, code, highlight, source) (Feature_Source::source),
 
 namespace {
+
 inline constexpr std::u8string_view token_type_codes[] {
     ULIGHT_JS_TOKEN_ENUM_DATA(ULIGHT_JS_TOKEN_TYPE_U8_CODE)
 };
@@ -43,6 +44,7 @@ inline constexpr Highlight_Type token_type_highlights[] {
 inline constexpr Feature_Source token_type_sources[] {
     ULIGHT_JS_TOKEN_ENUM_DATA(ULIGHT_JS_TOKEN_TYPE_FEATURE_SOURCE)
 };
+
 } // namespace
 
 /// @brief Returns the in-code representation of `type`.
@@ -81,6 +83,31 @@ std::optional<Token_Type> js_token_type_by_code(std::u8string_view code) noexcep
     return Token_Type(result - token_type_codes);
 }
 
+[[nodiscard]]
+bool starts_with_line_terminator(std::u8string_view s)
+{
+    // https://262.ecma-international.org/15.0/index.html#prod-LineTerminator
+    return s.starts_with(u8'\n') //
+        || s.starts_with(u8'\r') //
+        || s.starts_with(u8"\N{LINE SEPARATOR}") //
+        || s.starts_with(u8"\N{PARAGRAPH SEPARATOR}");
+}
+
+[[nodiscard]]
+std::size_t match_line_terminator_sequence(std::u8string_view s)
+{
+    // https://262.ecma-international.org/15.0/index.html#prod-LineTerminatorSequence
+    constexpr std::u8string_view crlf = u8"\r\n";
+    constexpr std::u8string_view ls = u8"\N{LINE SEPARATOR}";
+    constexpr std::u8string_view ps = u8"\N{PARAGRAPH SEPARATOR}";
+
+    return s.starts_with(u8'\n') ? 1
+        : s.starts_with(crlf)    ? crlf.length()
+        : s.starts_with(ls)      ? ls.length()
+        : s.starts_with(ps)      ? ps.length()
+                                 : 0;
+}
+
 std::size_t match_whitespace(std::u8string_view str)
 {
     // https://262.ecma-international.org/15.0/index.html#sec-white-space
@@ -96,12 +123,10 @@ std::size_t match_line_comment(std::u8string_view s) noexcept
         return 0;
     }
 
-    // Skip the '//' prefix
     std::size_t length = 2;
 
-    // Continue until EoL.
     while (length < s.length()) {
-        if (s[length] == u8'\n') {
+        if (starts_with_line_terminator(s.substr(length))) {
             return length;
         }
         ++length;
@@ -128,15 +153,15 @@ Comment_Result match_block_comment(std::u8string_view s) noexcept
     return Comment_Result { .length = s.length(), .is_terminated = false };
 }
 
-std::size_t match_hashbang_comment(std::u8string_view s, bool is_at_start_of_file) noexcept
+std::size_t match_hashbang_comment(std::u8string_view s) noexcept
 {
-    if (!is_at_start_of_file || !s.starts_with(u8"#!")) {
+    if (!s.starts_with(u8"#!")) {
         return 0;
     }
 
-    std::size_t length = 2; // Skip #!
-    while (length < s.length()) { // Until EOL
-        if (s[length] == u8'\n') {
+    std::size_t length = 2;
+    while (length < s.length()) {
+        if (starts_with_line_terminator(s.substr(length))) {
             return length;
         }
         ++length;
@@ -361,21 +386,6 @@ Numeric_Result match_numeric_literal(std::u8string_view str)
 }
 
 namespace {
-
-[[nodiscard]]
-std::size_t match_line_terminator_sequence(std::u8string_view s)
-{
-    // https://262.ecma-international.org/15.0/index.html#prod-LineTerminatorSequence
-    constexpr std::u8string_view crlf = u8"\r\n";
-    constexpr std::u8string_view ls = u8"\N{LINE SEPARATOR}";
-    constexpr std::u8string_view ps = u8"\N{PARAGRAPH SEPARATOR}";
-
-    return s.starts_with(u8'\n') ? 1
-        : s.starts_with(crlf)    ? crlf.length()
-        : s.starts_with(ls)      ? ls.length()
-        : s.starts_with(ps)      ? ps.length()
-                                 : 0;
-}
 
 [[nodiscard]]
 std::size_t match_line_continuation(std::u8string_view str)
@@ -1252,9 +1262,8 @@ struct [[nodiscard]] Highlighter {
 
     bool expect_hashbang_comment()
     {
-        // Hashbang comment (#!...)
-        // note: can appear only at the start of the file
-        const std::size_t hashbang_length = match_hashbang_comment(remainder(), at_start_of_file);
+        // https://262.ecma-international.org/15.0/index.html#sec-hashbang
+        const std::size_t hashbang_length = match_hashbang_comment(remainder());
         if (hashbang_length == 0) {
             return false;
         }
@@ -1267,6 +1276,7 @@ struct [[nodiscard]] Highlighter {
 
     bool expect_line_comment()
     {
+        // https://262.ecma-international.org/15.0/index.html#prod-SingleLineComment
         if (const std::size_t length = match_line_comment(remainder())) {
             highlight_line_comment(length);
             return true;
@@ -1285,6 +1295,7 @@ struct [[nodiscard]] Highlighter {
 
     bool expect_block_comment()
     {
+        // https://262.ecma-international.org/15.0/index.html#prod-MultiLineComment
         if (const Comment_Result block_comment = match_block_comment(remainder())) {
             highlight_block_comment(block_comment);
             return true;

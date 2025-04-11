@@ -152,6 +152,12 @@ Feature_Source js_token_type_source(Token_Type type) noexcept;
 [[nodiscard]]
 std::optional<Token_Type> js_token_type_by_code(std::u8string_view code) noexcept;
 
+[[nodiscard]]
+bool starts_with_line_terminator(std::u8string_view s);
+
+[[nodiscard]]
+std::size_t match_line_terminator_sequence(std::u8string_view s);
+
 /// @brief Matches zero or more characters for which `is_js_whitespace` is `true`.
 [[nodiscard]]
 std::size_t match_whitespace(std::u8string_view str);
@@ -188,8 +194,7 @@ std::size_t match_line_comment(std::u8string_view str) noexcept;
 /// The hashbang comment must appear at the very beginning of the file to be valid.
 /// JavaScript hashbang comments start with #! and are only valid as the first line
 [[nodiscard]]
-std::size_t
-match_hashbang_comment(std::u8string_view str, bool is_at_start_of_file = false) noexcept;
+std::size_t match_hashbang_comment(std::u8string_view str) noexcept;
 
 struct String_Literal_Result {
     std::size_t length;
