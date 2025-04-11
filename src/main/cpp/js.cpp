@@ -1337,12 +1337,15 @@ struct [[nodiscard]] Highlighter {
 
     void highlight_string_literal(const String_Literal_Result& string)
     {
-        ULIGHT_ASSERT(string.length >= 2);
+        ULIGHT_ASSERT(string);
         emit_and_advance(1, Highlight_Type::string_delim);
-        if (string.length > 2) {
-            emit_and_advance(string.length - 2, Highlight_Type::string);
+        const std::size_t content_length = string.length - (string.terminated ? 2 : 1);
+        if (content_length != 0) {
+            emit_and_advance(content_length, Highlight_Type::string);
         }
-        emit_and_advance(1, Highlight_Type::string_delim);
+        if (string.terminated) {
+            emit_and_advance(1, Highlight_Type::string_delim);
+        }
         can_be_regex = false;
     }
 
