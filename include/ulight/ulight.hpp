@@ -21,6 +21,7 @@ enum struct Lang : Underlying {
     cpp = ULIGHT_LANG_CPP,
     css = ULIGHT_LANG_CSS,
     html = ULIGHT_LANG_HTML,
+    javascript = ULIGHT_LANG_JS,
     lua = ULIGHT_LANG_LUA,
     mmml = ULIGHT_LANG_MMML,
     none = ULIGHT_LANG_NONE,

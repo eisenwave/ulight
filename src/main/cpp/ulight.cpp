@@ -92,9 +92,9 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("html", ULIGHT_LANG_HTML),
     make_lang_entry("hxx", ULIGHT_LANG_CPP),
     // make_lang_entry( u8"java", ULIGHT_LANG_java ),
-    // make_lang_entry( u8"javascript", ULIGHT_LANG_javascript ),
-    // make_lang_entry( u8"js", ULIGHT_LANG_javascript ),
-    // make_lang_entry( u8"jsx", ULIGHT_LANG_javascript ),
+    make_lang_entry("javascript", ULIGHT_LANG_JS),
+    make_lang_entry("js", ULIGHT_LANG_JS),
+    make_lang_entry("jsx", ULIGHT_LANG_JS),
     make_lang_entry("lua", ULIGHT_LANG_LUA),
     make_lang_entry("mmml", ULIGHT_LANG_MMML),
     // make_lang_entry( u8"mts", ULIGHT_LANG_typescript ),
@@ -223,6 +223,22 @@ ulight_status error(ulight_state* state, ulight_status status, std::u8string_vie
     return status;
 }
 
+void check_flush_validity(ulight_state* state, std::span<const ulight_token> tokens)
+{
+    const std::string_view source { state->source, state->source_length };
+    for (std::size_t i = 0; i < tokens.size(); ++i) {
+        const auto& t = tokens[i];
+        ULIGHT_ASSERT(t.begin < source.length());
+        ULIGHT_ASSERT(t.begin + t.length <= source.length());
+        if (i + 1 == tokens.size()) {
+            continue;
+        }
+        const auto& next = tokens[i + 1];
+        ULIGHT_ASSERT(t.begin < next.begin);
+        ULIGHT_ASSERT(t.begin + t.length <= next.begin);
+    }
+}
+
 } // namespace
 
 ULIGHT_EXPORT
@@ -249,6 +265,7 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     case ULIGHT_LANG_CSS:
     case ULIGHT_LANG_HTML:
     case ULIGHT_LANG_LUA:
+    case ULIGHT_LANG_JS:
     case ULIGHT_LANG_MMML: break;
     case ULIGHT_LANG_NONE: {
         return error(
@@ -335,6 +352,10 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
     std::size_t previous_end = 0;
     auto flush_text = // clang-format off
     [&](const ulight_token* tokens, std::size_t amount) mutable  {
+        #ifndef NDEBUG
+        check_flush_validity(state, {tokens, amount}); 
+        #endif
+
         for (std::size_t i = 0; i < amount; ++i) {
             const auto& t = tokens[i];
             if (t.begin > previous_end) {

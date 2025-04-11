@@ -47,6 +47,8 @@ typedef enum ulight_lang {
     ULIGHT_LANG_CSS = 5,
     /// @brief HTML.
     ULIGHT_LANG_HTML = 4,
+    /// @brief JavaScript.
+    ULIGHT_LANG_JS = 7,
     /// @brief Lua.
     ULIGHT_LANG_LUA = 3,
     /// @brief MMML (Missing Middle Markup Language).
