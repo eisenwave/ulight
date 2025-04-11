@@ -115,6 +115,7 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("HTML"),
     make_sv("CSS"),
     make_sv("C"),
+    make_sv("JavaScript"),
 };
 // clang-format on
 
