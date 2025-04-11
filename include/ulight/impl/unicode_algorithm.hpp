@@ -51,7 +51,7 @@ template <typename F>
 [[nodiscard]]
 constexpr std::size_t find_if_not(std::u8string_view str, F predicate)
 {
-    return detail::find_if(str, predicate, false, str.length());
+    return detail::find_if(str, predicate, false, std::u8string_view::npos);
 }
 
 /// @brief Like `find_if`, but returns `str.length()` instead of `npos`.
@@ -60,7 +60,7 @@ template <typename F>
 [[nodiscard]]
 constexpr std::size_t length_if(std::u8string_view str, F predicate)
 {
-    return detail::find_if(str, predicate, true, str.length());
+    return detail::find_if(str, predicate, false, str.length());
 }
 
 /// @brief Like `find_if_not`, but returns `str.length()` instead of `npos`.
@@ -69,7 +69,7 @@ template <typename F>
 [[nodiscard]]
 constexpr std::size_t length_if_not(std::u8string_view str, F predicate)
 {
-    return detail::find_if(str, predicate, false, str.length());
+    return detail::find_if(str, predicate, true, str.length());
 }
 
 } // namespace ulight::utf8
