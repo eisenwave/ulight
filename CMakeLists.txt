@@ -66,6 +66,7 @@ if(DEFINED EMSCRIPTEN)
         "-stdlib=libc++"
         "-Os"
 #       "-fno-exceptions"
+        ${WARNING_OPTIONS}
         ${SANITIZER_OPTIONS}
     )
     target_link_options(ulight-wasm PRIVATE
