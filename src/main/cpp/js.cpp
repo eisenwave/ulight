@@ -404,7 +404,7 @@ enum struct Name_Type : Underlying {
     identifier,
     jsx_identifier,
     jsx_attribute_name,
-    jsx_element_name,
+    jsx_element_name
 };
 
 std::size_t match_name(std::u8string_view str, Name_Type type)
@@ -442,6 +442,14 @@ std::size_t match_name(std::u8string_view str, Name_Type type)
     }
 
     return length;
+}
+
+[[nodiscard]]
+std::size_t match_regex_flags(std::u8string_view str)
+{
+    // https://262.ecma-international.org/15.0/index.html#prod-RegularExpressionFlags
+    constexpr auto predicate = [](char32_t c) { return is_js_identifier_part(c); };
+    return utf8::length_if(str, predicate);
 }
 
 } // namespace
@@ -1415,54 +1423,38 @@ struct [[nodiscard]] Highlighter {
 
     bool expect_regex()
     {
-        const std::u8string_view rem = remainder();
+        std::u8string_view rem = remainder();
 
-        if (!can_be_regex || !rem.starts_with(u8'/')) {
+        if (!can_be_regex || !rem.starts_with(u8'/') || rem.starts_with(u8"/*")
+            || rem.starts_with(u8"//")) {
             return false;
         }
 
-        if (rem.length() > 1 && rem[1] != u8'/' && rem[1] != u8'*') {
-            std::size_t size = 1;
-            auto escaped = false;
-            auto terminated = false;
+        rem.remove_prefix(1);
 
-            while (size < rem.length()) {
-                const char8_t c = rem[size];
+        auto escaped = false;
 
-                if (escaped) {
-                    escaped = false;
-                }
-                else if (c == u8'\\') {
-                    escaped = true;
-                }
-                else if (c == u8'/') {
-                    terminated = true;
-                    ++size;
-                    break;
-                }
-                else if (c == u8'\n') { // Unterminated as newlines aren't allowed in
-                                        // regex.
-                    break;
-                }
+        for (std::size_t size = 0; size < rem.length(); ++size) {
+            const char8_t c = rem[size];
 
-                ++size;
+            if (escaped) {
+                escaped = false;
             }
-
-            if (terminated) {
-                // Match flags after regex i.e. /pattern/gi.
-                while (size < rem.length()) {
-                    const char8_t c = rem[size];
-                    // FIXME: do Unicode decode instead of casting to char32_t
-                    if (is_js_identifier_part(char32_t(c))) {
-                        ++size;
-                    }
-                    else {
-                        break;
-                    }
-                }
+            else if (c == u8'\\') {
+                escaped = true;
+            }
+            else if (c == u8'/') {
+                emit_and_advance(1, Highlight_Type::string_delim);
                 emit_and_advance(size, Highlight_Type::string);
+                emit_and_advance(1, Highlight_Type::string_delim);
+                if (const std::size_t regex_flags = match_regex_flags(rem.substr(size + 1))) {
+                    emit_and_advance(regex_flags, Highlight_Type::string_decor);
+                }
                 can_be_regex = false;
                 return true;
+            }
+            else if (starts_with_line_terminator(rem.substr(size))) {
+                break;
             }
         }
 
