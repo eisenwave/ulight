@@ -313,12 +313,12 @@ Numeric_Result match_numeric_literal(std::u8string_view str)
         result.erroneous |= result.prefix != 0;
         result.fractional = 1;
 
-        const auto [fractional_digits, fractional_error] = match_digits(str.substr(length));
+        const auto [fractional_digits, fractional_error] = match_digits(str.substr(length + 1));
         result.fractional += fractional_digits;
         result.erroneous |= fractional_digits == 0;
         result.erroneous |= fractional_error;
 
-        if (result.prefix == 0 && result.integer == 0 && !is_ascii_digit(str[length])) {
+        if (result.prefix == 0 && result.integer == 0 && !is_ascii_digit(str[length + 1])) {
             return {};
         }
         length += result.fractional;
@@ -1368,7 +1368,7 @@ struct [[nodiscard]] Highlighter {
                     consume_substitution_content();
                     if (index < source.length()) {
                         ULIGHT_ASSERT(source[index] == u8'}');
-                        emit_and_advance(1, Highlight_Type::sym_brace);
+                        emit_and_advance(1, Highlight_Type::escape);
                     }
                     // Otherwise, we have an unterminated substitution.
                     continue;
