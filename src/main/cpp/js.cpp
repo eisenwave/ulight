@@ -5,6 +5,7 @@
 #include <string_view>
 #include <vector>
 
+#include "ulight/impl/html.hpp"
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/assert.hpp"
@@ -147,90 +148,73 @@ std::size_t match_hashbang_comment(std::u8string_view s, bool is_at_start_of_fil
 String_Literal_Result match_string_literal(std::u8string_view str)
 {
     // https://262.ecma-international.org/15.0/index.html#sec-literals-string-literals
-    if (str.empty()) {
+    if (!str.starts_with(u8'\'') && !str.starts_with(u8'"')) {
         return {};
     }
 
-    if (str[0] == u8'`') {
-        std::size_t length = 1;
-        bool escaped = false;
-        bool has_substitution = false;
+    const char8_t quote = str[0];
+    std::size_t length = 1;
+    bool escaped = false;
 
-        while (length < str.length()) {
-            const char8_t c = str[length];
+    while (length < str.length()) {
+        const char8_t c = str[length];
 
-            if (escaped) {
-                escaped = false;
-            }
-            else if (c == u8'\\') {
-                escaped = true;
-            }
-            else if (c == u8'`') {
-                return String_Literal_Result { .length = length + 1,
-                                               .is_template_literal = true,
-                                               .terminated = true,
-                                               .has_substitution = has_substitution };
-            }
-            else if (c == u8'$' && length + 1 < str.length() && str[length + 1] == u8'{') {
-                has_substitution = true;
-                const std::size_t subst_length = match_template_substitution(str.substr(length));
-                if (subst_length == 0) { // Unterminated.
-                    return String_Literal_Result { .length = str.length(),
-                                                   .is_template_literal = true,
-                                                   .terminated = false,
-                                                   .has_substitution = true };
-                }
-                length += subst_length;
-                continue;
-            }
-
-            ++length;
+        if (escaped) {
+            escaped = false;
+        }
+        else if (c == u8'\\') {
+            escaped = true;
+        }
+        else if (c == quote) {
+            return String_Literal_Result { .length = length + 1, .terminated = true };
+        }
+        else if (c == u8'\n') {
+            return String_Literal_Result { .length = length, .terminated = false };
         }
 
-        // Unterminated template literal.
-        return String_Literal_Result { .length = length,
-                                       .is_template_literal = true,
-                                       .terminated = false,
-                                       .has_substitution = has_substitution };
+        ++length;
     }
 
-    if (str[0] == u8'"' || str[0] == u8'\'') {
-        const char8_t quote = str[0];
-        std::size_t length = 1;
-        bool escaped = false;
+    return String_Literal_Result { .length = length, .terminated = false };
+}
 
-        while (length < str.length()) {
-            const char8_t c = str[length];
+#if 0
+String_Literal_Result match_template(std::u8string_view str)
+{
+    // https://262.ecma-international.org/15.0/index.html#prod-Template
+    if (!str.starts_with(u8'`')) {
+        return {};
+    }
 
-            if (escaped) {
-                escaped = false;
-            }
-            else if (c == u8'\\') {
-                escaped = true;
-            }
-            else if (c == quote) {
-                return String_Literal_Result { .length = length + 1,
-                                               .is_template_literal = false,
-                                               .terminated = true,
-                                               .has_substitution = false };
-            }
-            else if (c == u8'\n') {
-                return String_Literal_Result { .length = length,
-                                               .is_template_literal = false,
-                                               .terminated = false,
-                                               .has_substitution = false };
-            }
+    std::size_t length = 1;
+    bool escaped = false;
 
-            ++length;
+    while (length < str.length()) {
+        const char8_t c = str[length];
+
+        if (escaped) {
+            escaped = false;
+        }
+        else if (c == u8'\\') {
+            escaped = true;
+        }
+        else if (c == u8'`') {
+            return String_Literal_Result { .length = length + 1, .terminated = true };
+        }
+        else if (c == u8'$' && length + 1 < str.length() && str[length + 1] == u8'{') {
+            const std::size_t subst_length = match_template_substitution(str.substr(length));
+            if (subst_length == 0) { // Unterminated.
+                return String_Literal_Result { .length = str.length(), .terminated = false };
+            }
+            length += subst_length;
+            continue;
         }
 
-        return String_Literal_Result { .length = length,
-                                       .is_template_literal = false,
-                                       .terminated = false,
-                                       .has_substitution = false };
+        ++length;
     }
 
-    return {};
+    // Unterminated template literal.
+    return String_Literal_Result { .length = length, .terminated = false };
 }
 
 std::size_t match_template_substitution(std::u8string_view str)
@@ -276,6 +260,7 @@ std::size_t match_template_substitution(std::u8string_view str)
     }
     return brace_level == 0 ? length : 0; // the closing brace is found if brace_level is 0.
 }
+#endif
 
 Digits_Result match_digits(std::u8string_view str, int base)
 {
@@ -375,7 +360,44 @@ Numeric_Result match_numeric_literal(std::u8string_view str)
     return result;
 }
 
-std::size_t match_identifier(std::u8string_view str)
+namespace {
+
+[[nodiscard]]
+std::size_t match_line_terminator_sequence(std::u8string_view s)
+{
+    // https://262.ecma-international.org/15.0/index.html#prod-LineTerminatorSequence
+    constexpr std::u8string_view crlf = u8"\r\n";
+    constexpr std::u8string_view ls = u8"\N{LINE SEPARATOR}";
+    constexpr std::u8string_view ps = u8"\N{PARAGRAPH SEPARATOR}";
+
+    return s.starts_with(u8'\n') ? 1
+        : s.starts_with(crlf)    ? crlf.length()
+        : s.starts_with(ls)      ? ls.length()
+        : s.starts_with(ps)      ? ps.length()
+                                 : 0;
+}
+
+[[nodiscard]]
+std::size_t match_line_continuation(std::u8string_view str)
+{
+    // https://262.ecma-international.org/15.0/index.html#prod-LineContinuation
+    if (!str.starts_with(u8'\\')) {
+        return 0;
+    }
+    if (const std::size_t terminator = match_line_terminator_sequence(str.substr(1))) {
+        return terminator + 1;
+    }
+    return 0;
+}
+
+enum struct Name_Type : Underlying {
+    identifier,
+    jsx_identifier,
+    jsx_attribute_name,
+    jsx_element_name,
+};
+
+std::size_t match_name(std::u8string_view str, Name_Type type)
 {
     // https://262.ecma-international.org/15.0/index.html#sec-names-and-keywords
     if (str.empty()) {
@@ -387,16 +409,55 @@ std::size_t match_identifier(std::u8string_view str)
         return 0;
     }
 
-    auto length = static_cast<std::size_t>(first_units);
+    const auto is_part = [&](char32_t c) {
+        if (is_js_identifier_part(c)) {
+            return true;
+        }
+        switch (type) {
+        case Name_Type::identifier: return false;
+        case Name_Type::jsx_identifier: return c == U'-';
+        case Name_Type::jsx_attribute_name: return c == U'-' || c == U':';
+        case Name_Type::jsx_element_name: return c == U'-' || c == U':' || c == U'.';
+        }
+        ULIGHT_DEBUG_ASSERT_UNREACHABLE();
+    };
+
+    auto length = std::size_t(first_units);
     while (length < str.length()) {
         const auto [code_point, units] = utf8::decode_and_length_or_throw(str.substr(length));
-        if (!is_js_identifier_part(code_point)) {
+        if (!is_part(code_point)) {
             break;
         }
-        length += static_cast<std::size_t>(units);
+        length += std::size_t(units);
     }
 
     return length;
+}
+
+} // namespace
+
+std::size_t match_identifier(std::u8string_view str)
+{
+    // https://262.ecma-international.org/15.0/index.html#sec-names-and-keywords
+    return match_name(str, Name_Type::identifier);
+}
+
+std::size_t match_jsx_identifier(std::u8string_view str)
+{
+    // https://facebook.github.io/jsx/#prod-JSXIdentifier
+    return match_name(str, Name_Type::jsx_identifier);
+}
+
+std::size_t match_jsx_element_name(std::u8string_view str)
+{
+    // https://facebook.github.io/jsx/#prod-JSXElementName
+    return match_name(str, Name_Type::jsx_element_name);
+}
+
+std::size_t match_jsx_attribute_name(std::u8string_view str)
+{
+    // https://facebook.github.io/jsx/#prod-JSXAttributeName
+    return match_name(str, Name_Type::jsx_attribute_name);
 }
 
 std::size_t match_private_identifier(std::u8string_view str)
@@ -406,45 +467,359 @@ std::size_t match_private_identifier(std::u8string_view str)
         return 0;
     }
 
-    const std::size_t id_length = match_identifier(str.substr(1)); // Skip '#'.
-    if (id_length == 0) {
-        return 0;
-    }
-
-    return 1 + id_length; // '#' + <identifier> length
+    const std::size_t id_length = match_identifier(str.substr(1));
+    return id_length == 0 ? 0 : 1 + id_length;
 }
 
-std::size_t match_jsx_element_name(std::u8string_view str)
+namespace {
+
+struct Whitespace_Comment_Consumer {
+    virtual void whitespace(std::size_t str) = 0;
+    virtual void block_comment(Comment_Result comment) = 0;
+    virtual void line_comment(std::size_t comment) = 0;
+};
+
+struct Counting_WSC_Consumer : virtual Whitespace_Comment_Consumer {
+    std::size_t length = 0;
+
+    void whitespace(std::size_t str) final
+    {
+        length += str;
+    }
+    void block_comment(Comment_Result comment) final
+    {
+        length += comment.length;
+    }
+    void line_comment(std::size_t comment) final
+    {
+        length += comment;
+    }
+};
+
+void match_whitespace_comment_sequence(Whitespace_Comment_Consumer& out, std::u8string_view str)
 {
-    // https://facebook.github.io/jsx/#prod-JSXElementName
-    if (str.empty()) {
-        return 0;
+    while (!str.empty()) {
+        if (const std::size_t w = match_whitespace(str)) {
+            out.whitespace(w);
+            str.remove_prefix(w);
+            continue;
+        }
+        if (const Comment_Result b = match_block_comment(str)) {
+            out.block_comment(b);
+            str.remove_prefix(b.length);
+            continue;
+        }
+        if (const std::size_t l = match_line_comment(str)) {
+            out.line_comment(l);
+            str.remove_prefix(l);
+            continue;
+        }
+        break;
     }
+}
 
-    const auto [first_char, first_units] = utf8::decode_and_length_or_throw(str);
-    if (!is_js_identifier_start(first_char)) {
-        return 0;
+[[nodiscard]]
+std::size_t match_whitespace_comment_sequence(std::u8string_view str)
+{
+    Counting_WSC_Consumer out;
+    match_whitespace_comment_sequence(out, str);
+    return out.length;
+}
+
+} // namespace
+
+[[nodiscard]]
+JSX_Braced_Result match_jsx_braced(std::u8string_view str)
+{
+    // https://facebook.github.io/jsx/#prod-JSXSpreadAttribute
+    if (!str.starts_with(u8'{')) {
+        return {};
     }
+    std::size_t length = 1;
+    std::size_t level = 1;
 
-    auto length = std::size_t(first_units);
     while (length < str.length()) {
-        const auto [code_point, units] = utf8::decode_and_length_or_throw(str.substr(length));
-        if (!is_jsx_tag_name_part(code_point)) {
+        if (const std::size_t skip_length = match_whitespace_comment_sequence(str.substr(length))) {
+            length += skip_length;
+        }
+        switch (str[length]) {
+        case u8'{': {
+            ++level;
+            ++length;
             break;
         }
-        length += std::size_t(units);
+        case u8'}': {
+            ++length;
+            if (--level == 0) {
+                return { .length = length, .is_terminated = true };
+            }
+            break;
+        }
+        case u8'\'':
+        case u8'"': {
+            const String_Literal_Result s = match_string_literal(str.substr(length));
+            length += s ? s.length : 1;
+            break;
+        }
+        default: {
+            ++length;
+        }
+        }
+    }
+    return { .length = length, .is_terminated = false };
+}
+
+namespace {
+
+struct JSX_Tag_Consumer : virtual Whitespace_Comment_Consumer {
+    virtual void done(JSX_Type) = 0;
+    virtual void advance(std::size_t amount) = 0;
+    virtual void opening_symbol() = 0;
+    virtual void element_name(std::size_t name) = 0;
+    virtual void closing_symbol() = 0;
+    virtual void attribute_name(std::size_t name) = 0;
+    virtual void attribute_equals() = 0;
+    virtual void string_literal(String_Literal_Result r) = 0;
+    virtual void braced(JSX_Braced_Result braced) = 0;
+};
+
+struct Counting_JSX_Tag_Consumer final : JSX_Tag_Consumer, Counting_WSC_Consumer {
+    JSX_Type type {};
+
+    void done(JSX_Type t) final
+    {
+        type = t;
+    }
+    void advance(std::size_t amount) final
+    {
+        length += amount;
+    }
+    void opening_symbol() final
+    {
+        ++length;
+    }
+    void element_name(std::size_t name) final
+    {
+        length += name;
+    }
+    void attribute_name(std::size_t name) final
+    {
+        length += name;
+    }
+    void closing_symbol() final
+    {
+        ++length;
+    }
+    void attribute_equals() final
+    {
+        ++length;
+    }
+    void string_literal(String_Literal_Result r) final
+    {
+        length += r.length;
+    }
+    void braced(JSX_Braced_Result braced) final
+    {
+        length += braced.length;
+    }
+};
+
+struct Matching_JSX_Tag_Consumer final : JSX_Tag_Consumer {
+    JSX_Tag_Consumer& out;
+    std::u8string_view& str;
+
+    Matching_JSX_Tag_Consumer(JSX_Tag_Consumer& out, std::u8string_view& str)
+        : out { out }
+        , str { str }
+    {
     }
 
-    return length;
-}
+    void done(JSX_Type type) final
+    {
+        out.done(type);
+    }
+    void whitespace(std::size_t w) final
+    {
+        out.whitespace(w);
+        str.remove_prefix(w);
+    }
+    void block_comment(Comment_Result comment) final
+    {
+        out.block_comment(comment);
+        str.remove_prefix(comment.length);
+    }
+    void line_comment(std::size_t l) final
+    {
+        out.line_comment(l);
+        str.remove_prefix(l);
+    }
+    void advance(std::size_t amount) final
+    {
+        out.advance(amount);
+        str.remove_prefix(amount);
+    }
+    void opening_symbol() final
+    {
+        out.opening_symbol();
+        str.remove_prefix(1);
+    }
+    void closing_symbol() final
+    {
+        out.closing_symbol();
+        str.remove_prefix(1);
+    }
+    void element_name(std::size_t name) final
+    {
+        out.element_name(name);
+        str.remove_prefix(name);
+    }
+    void attribute_name(std::size_t name) final
+    {
+        out.attribute_name(name);
+        str.remove_prefix(name);
+    }
+    void attribute_equals() final
+    {
+        out.attribute_equals();
+        str.remove_prefix(1);
+    }
+    void string_literal(String_Literal_Result r) final
+    {
+        out.string_literal(r);
+        str.remove_prefix(r.length);
+    }
+    void braced(JSX_Braced_Result braced) final
+    {
+        out.braced(braced);
+        str.remove_prefix(braced.length);
+    }
+};
 
-std::size_t match_jsx_attribute_name(std::u8string_view str)
+enum struct JSX_Tag_Subset : bool {
+    all,
+    non_closing,
+};
+
+bool match_jsx_tag_impl(
+    JSX_Tag_Consumer& consumer,
+    std::u8string_view str,
+    JSX_Tag_Subset subset = JSX_Tag_Subset::all
+)
 {
-    // https://facebook.github.io/jsx/#prod-JSXAttributeName
-    return match_jsx_element_name(str);
+    // https://facebook.github.io/jsx/#prod-JSXElement
+    // https://facebook.github.io/jsx/#prod-JSXFragment
+    if (!str.starts_with(u8'<')) {
+        return {};
+    }
+
+    Matching_JSX_Tag_Consumer out { consumer, str };
+
+    out.opening_symbol();
+    match_whitespace_comment_sequence(out, str);
+
+    if (str.starts_with(u8'>')) {
+        out.closing_symbol();
+        out.done(JSX_Type::fragment_opening);
+        return true;
+    }
+    bool closing = false;
+    if (str.starts_with(u8'/')) {
+        if (subset == JSX_Tag_Subset::non_closing) {
+            return false;
+        }
+        closing = true;
+        out.closing_symbol();
+        match_whitespace_comment_sequence(out, str);
+        if (str.starts_with(u8'>')) {
+            out.closing_symbol();
+            out.done(JSX_Type::fragment_closing);
+            return true;
+        }
+    }
+    if (const std::size_t id_length = match_jsx_element_name(str)) {
+        out.element_name(id_length);
+    }
+
+    while (!str.empty()) {
+        match_whitespace_comment_sequence(out, str);
+        if (str.starts_with(u8'>')) {
+            out.closing_symbol();
+            out.done(closing ? JSX_Type::closing : JSX_Type::opening);
+            return true;
+        }
+        if (str.starts_with(u8"/>")) {
+            if (closing) {
+                return false;
+            }
+            out.closing_symbol();
+            out.closing_symbol();
+            out.done(JSX_Type::self_closing);
+            return true;
+        }
+        // https://facebook.github.io/jsx/#prod-JSXAttributes
+        if (const JSX_Braced_Result spread = match_jsx_braced(str)) {
+            if (!spread.is_terminated) {
+                return false;
+            }
+            out.braced(spread);
+            continue;
+        }
+        if (const std::size_t attr_name_length = match_jsx_attribute_name(str)) {
+            // https://facebook.github.io/jsx/#prod-JSXAttributes
+            out.attribute_name(attr_name_length);
+            match_whitespace_comment_sequence(out, str);
+            if (!str.starts_with(u8'=')) {
+                continue;
+            }
+            out.attribute_equals();
+            match_whitespace_comment_sequence(out, str);
+            // https://facebook.github.io/jsx/#prod-JSXAttributeValue
+            if (const String_Literal_Result s = match_string_literal(str)) {
+                out.string_literal(s);
+                continue;
+            }
+            if (const JSX_Braced_Result b = match_jsx_braced(str)) {
+                if (!b.is_terminated) {
+                    return false;
+                }
+                out.braced(b);
+                continue;
+            }
+            // Technically, JSX allows for elements and fragments to appear as
+            // attribute values.
+            // However, this would require recursive parsing at this point,
+            // and we currently don't support it.
+            //
+            // It looks like other highlighters such as the VSCode highlighter also
+            // don't support this behavior.
+        }
+        break;
+    }
+
+    return false;
 }
 
-std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str, bool js_or_jsx)
+[[nodiscard]]
+JSX_Tag_Result
+match_jsx_tag_impl(std::u8string_view str, JSX_Tag_Subset subset = JSX_Tag_Subset::all)
+{
+    Counting_JSX_Tag_Consumer out;
+    if (match_jsx_tag_impl(out, str, subset)) {
+        return { out.length, out.type };
+    }
+    return {};
+}
+
+} // namespace
+
+JSX_Tag_Result match_jsx_tag(std::u8string_view str)
+{
+    return match_jsx_tag_impl(str);
+}
+
+namespace {
+
+std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str)
 {
     using enum Token_Type;
 
@@ -452,7 +827,6 @@ std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str, 
         return {};
     }
 
-    const bool is_jsx = js_or_jsx;
     switch (str[0]) {
     case u8'!':
         return str.starts_with(u8"!==") ? strict_not_equals
@@ -486,24 +860,12 @@ std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str, 
 
     case u8'.': return str.starts_with(u8"...") ? ellipsis : dot;
 
-    case u8'/':
-        if (is_jsx) {
-            return str.starts_with(u8"/>") ? jsx_tag_self_close : divide;
-        }
-        else {
-            return str.starts_with(u8"/=") ? divide_equal : divide;
-        }
+    case u8'/': return str.starts_with(u8"/=") ? divide_equal : divide;
 
     case u8':': return colon;
     case u8';': return semicolon;
 
     case u8'<': {
-        if (is_jsx) {
-            return str.starts_with(u8"</>") ? jsx_fragment_close
-                : str.starts_with(u8"<>")   ? jsx_fragment_open
-                : str.starts_with(u8"</")   ? jsx_tag_end_open
-                                            : jsx_tag_open;
-        }
         return str.starts_with(u8"<<=") ? left_shift_equal
             : str.starts_with(u8"<<")   ? left_shift
             : str.starts_with(u8"<=")   ? less_equal
@@ -511,9 +873,6 @@ std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str, 
     }
 
     case u8'=': {
-        if (is_jsx) {
-            return jsx_attr_equals;
-        }
         return str.starts_with(u8"===") ? strict_equals
             : str.starts_with(u8"==")   ? equals
             : str.starts_with(u8"=>")   ? arrow
@@ -521,9 +880,6 @@ std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str, 
     }
 
     case u8'>': {
-        if (is_jsx) {
-            return jsx_tag_close;
-        }
         return str.starts_with(u8">>>=") ? unsigned_right_shift_equal
             : str.starts_with(u8">>>")   ? unsigned_right_shift
             : str.starts_with(u8">>=")   ? right_shift_equal
@@ -559,6 +915,8 @@ std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str, 
     }
 }
 
+} // namespace
+
 namespace {
 
 /// @brief  Common JS and JSX highlighter implementation.
@@ -569,9 +927,6 @@ struct [[nodiscard]] Highlighter {
     bool can_be_regex = true;
     bool at_start_of_file;
 
-    bool in_jsx = false;
-    bool in_jsx_tag = false;
-    bool in_jsx_attr_value = false;
     int jsx_depth = 0;
     std::size_t index = 0;
 
@@ -612,7 +967,12 @@ struct [[nodiscard]] Highlighter {
     void emit_and_advance(std::size_t length, Highlight_Type type)
     {
         emit(index, length, type);
-        index += length;
+        advance(length);
+    }
+
+    void advance(std::size_t amount)
+    {
+        index += amount;
     }
 
     [[nodiscard]]
@@ -633,19 +993,12 @@ struct [[nodiscard]] Highlighter {
                     continue;
                 }
             }
-            if (expect_line_comment() || expect_block_comment()) {
-                continue;
-            }
 
-            if (!in_jsx && is_at_jsx_begin()) {
-                in_jsx = true;
-                in_jsx_tag = true;
-                in_jsx_attr_value = false;
-                jsx_depth = 1;
-            }
-
-            if (expect_jsx() || //
+            if (expect_line_comment() || //
+                expect_block_comment() || //
+                expect_jsx_in_js() || //
                 expect_string_literal() || //
+                expect_template() || //
                 expect_regex() || //
                 expect_numeric_literal() || //
                 expect_private_identifier() || //
@@ -653,178 +1006,242 @@ struct [[nodiscard]] Highlighter {
                 expect_operator_or_punctuation()) {
                 continue;
             }
-
-            // Assume a regex can appear after any other symbol.
-            emit(index, 1, Highlight_Type::sym);
-            ++index;
-            can_be_regex = true;
+            consume_error();
         }
 
         return true;
     }
 
-    [[nodiscard]]
-    bool is_at_jsx_begin() const
+    void consume_error()
     {
-        const std::u8string_view rem = remainder();
-        if (rem.length() < 2 || rem[0] != u8'<') {
-            return false;
-        }
-        // Fragment opening <> or <Tag
-        // FIXME: do Unicode decode instead of casting to char32_t
-        if (rem[1] == u8'>' || is_js_identifier_start(char32_t(rem[1]))) {
-            return true;
-        }
-        // Fragment closing </> or </Tag
-        // FIXME: do Unicode decode instead of casting to char32_t
-        return rem.length() > 2 && rem[1] == u8'/'
-            && (is_js_identifier_start(char32_t(rem[2])) || rem[2] == u8'>');
+        emit_and_advance(1, Highlight_Type::error);
+        can_be_regex = true;
     }
 
-    bool expect_jsx()
+    void consume_substitution_content()
     {
-        if (!in_jsx) {
+        ULIGHT_ASSERT(!at_start_of_file);
+
+        int brace_level = 0;
+        while (index < source.length()) {
+            if (source[index] == u8'{') {
+                ++brace_level;
+                emit_and_advance(1, Highlight_Type::sym_brace);
+                continue;
+            }
+            if (source[index] == u8'}') {
+                if (--brace_level < 0) {
+                    return;
+                }
+                emit_and_advance(1, Highlight_Type::sym_brace);
+                continue;
+            }
+
+            if (expect_whitespace() || //
+                expect_line_comment() || //
+                expect_block_comment() || //
+                expect_jsx_in_js() || //
+                expect_string_literal() || //
+                expect_template() || //
+                expect_regex() || //
+                expect_numeric_literal() || //
+                expect_private_identifier() || //
+                expect_symbols() || //
+                expect_operator_or_punctuation()) {
+                continue;
+            }
+            consume_error();
+        }
+    }
+
+    bool expect_jsx_in_js()
+    {
+        // JSX parsing is a bit insane.
+        // In short, we first trial-parse some JSX tag, say, "<div class='abc'>".
+        // This requires arbitrary lookahead.
+        // Only once we've successfully parsed a tag, we consider it to be a JSX tag.
+        // Otherwise, we fall back onto regular JS semantics,
+        // and consider "<" to be the less-than operator instead.
+        //
+        // Furthermore, we ignore closing tags at the beginning.
+
+        const std::u8string_view rem = source.substr(index);
+        const JSX_Tag_Result opening = match_jsx_tag_impl(rem, JSX_Tag_Subset::non_closing);
+        if (!opening) {
             return false;
         }
-        const std::u8string_view rem = source.substr(index);
-        if (in_jsx_tag && rem[0] == u8'>') {
-            emit_and_advance(1, Highlight_Type::sym_punc);
-            in_jsx_tag = false;
-            return true;
+        consume_jsx_tag();
+        if (opening.type != JSX_Type::self_closing) {
+            const bool is_opening
+                = opening.type == JSX_Type::opening || opening.type == JSX_Type::fragment_opening;
+            ULIGHT_ASSERT(is_opening);
+            consume_jsx_children_and_closing_tag();
         }
-        if (in_jsx_tag && rem.length() > 1 && rem[0] == u8'/' && rem[1] == u8'>') {
-            emit_and_advance(2, Highlight_Type::sym_punc);
-            in_jsx_tag = false;
-            in_jsx = false;
-            jsx_depth = 0;
-            return true;
+        can_be_regex = true;
+        return true;
+    }
+
+    void consume_jsx_tag()
+    {
+        struct Highlighter_As_Consumer : JSX_Tag_Consumer {
+            Highlighter& self;
+            Highlighter_As_Consumer(Highlighter& self)
+                : self { self }
+            {
+            }
+
+            void done(JSX_Type) final { }
+            void whitespace(std::size_t w) final
+            {
+                self.advance(w);
+            }
+            void block_comment(Comment_Result comment) final
+            {
+                self.highlight_block_comment(comment);
+            }
+            void line_comment(std::size_t l) final
+            {
+                self.highlight_line_comment(l);
+            }
+            void advance(std::size_t amount) final
+            {
+                self.advance(amount);
+            }
+            void opening_symbol() final
+            {
+                self.emit_and_advance(1, Highlight_Type::sym_punc);
+            }
+            void closing_symbol() final
+            {
+                self.emit_and_advance(1, Highlight_Type::sym_punc);
+            }
+            void element_name(std::size_t name) final
+            {
+                self.emit_and_advance(name, Highlight_Type::markup_tag);
+            }
+            void attribute_name(std::size_t name) final
+            {
+                self.emit_and_advance(name, Highlight_Type::markup_tag);
+            }
+            void attribute_equals() final
+            {
+                self.emit_and_advance(1, Highlight_Type::sym_punc);
+            }
+            void string_literal(String_Literal_Result r) final
+            {
+                self.highlight_string_literal(r);
+            }
+            void braced(JSX_Braced_Result braced) final
+            {
+                ULIGHT_ASSERT(braced.is_terminated && braced.length >= 2);
+                self.highlight_jsx_braced(braced);
+            }
+
+        } out { *this };
+
+        match_jsx_tag_impl(out, source.substr(index));
+    }
+
+    void consume_jsx_children_and_closing_tag()
+    {
+        // https://facebook.github.io/jsx/#prod-JSXChildren
+        int depth = 0;
+        std::u8string_view rem = remainder();
+        while (!rem.empty()) {
+            // https://facebook.github.io/jsx/#prod-JSXText
+            const std::size_t safe_length = rem.find_first_of(u8"&{}<>");
+            if (safe_length == std::u8string_view::npos) {
+                advance(rem.length());
+                break;
+            }
+            advance(safe_length);
+            rem.remove_prefix(safe_length);
+
+            switch (rem[0]) {
+            case u8'&': {
+                // https://facebook.github.io/jsx/#prod-HTMLCharacterReference
+                if (const std::size_t ref = html::match_character_reference(rem)) {
+                    emit_and_advance(ref, Highlight_Type::escape);
+                    rem.remove_prefix(ref);
+                }
+                else {
+                    advance(1);
+                    rem.remove_prefix(1);
+                }
+                continue;
+            }
+            case u8'<': {
+                // https://facebook.github.io/jsx/#prod-JSXElement
+                const JSX_Tag_Result tag = match_jsx_tag(rem);
+                if (!tag) {
+                    emit_and_advance(1, Highlight_Type::error);
+                    rem.remove_prefix(1);
+                    continue;
+                }
+                consume_jsx_tag();
+                rem.remove_prefix(tag.length);
+                if (tag.type == JSX_Type::opening || tag.type == JSX_Type::fragment_opening) {
+                    ++depth;
+                }
+                if (tag.type == JSX_Type::closing || tag.type == JSX_Type::fragment_closing) {
+                    if (--depth < 0) {
+                        return;
+                    }
+                }
+                continue;
+            }
+            case u8'>': {
+                // Stray ">".
+                // This should have been part of a tag.
+                emit_and_advance(1, Highlight_Type::error);
+                rem.remove_prefix(1);
+                continue;
+            }
+            case u8'{': {
+                // https://facebook.github.io/jsx/#prod-JSXChild
+                const JSX_Braced_Result braced = match_jsx_braced(rem);
+                if (braced) {
+                    highlight_jsx_braced(braced);
+                    rem.remove_prefix(braced.length);
+                }
+                else {
+                    emit_and_advance(1, Highlight_Type::error);
+                    rem.remove_prefix(1);
+                }
+                continue;
+            }
+            case u8'}': {
+                // Stray "}".
+                // This should have been part of a braced child expression.
+                emit_and_advance(1, Highlight_Type::error);
+                rem.remove_prefix(1);
+                continue;
+            }
+            default: ULIGHT_ASSERT_UNREACHABLE();
+            }
         }
-        if (!in_jsx_tag && rem.length() > 1 && rem[0] == u8'<' && rem[1] == u8'/') {
-            if (const std::size_t tag_end = rem.find(u8'>', 2); tag_end != std::string_view::npos) {
-                emit(index, 2, Highlight_Type::markup_tag); // </
-                if (tag_end > 2) {
-                    emit(index + 2, tag_end - 2, Highlight_Type::id);
-                }
+        // Unterminated JSX child content.
+        // This isn't really valid code, but it doesn't matter for syntax highlighting.
+    }
 
-                emit(index + tag_end, 1, Highlight_Type::markup_tag); // >
+    void highlight_jsx_braced(const JSX_Braced_Result& braced)
+    {
+        ULIGHT_ASSERT(braced);
+        ULIGHT_ASSERT(source[index] == u8'{');
 
-                index += tag_end + 1;
-                jsx_depth--;
+        emit_and_advance(1, Highlight_Type::sym_brace);
+        const std::size_t js_length = braced.length - (braced.is_terminated ? 2 : 1);
 
-                if (jsx_depth <= 0) {
-                    in_jsx = false;
-                }
-
-                return true;
-            }
+        if (js_length > 2) {
+            const std::u8string_view sub_source = source.substr(index, js_length);
+            Highlighter sub = sub_highlighter(sub_source);
+            sub();
+            ULIGHT_ASSERT(sub.index == js_length);
+            advance(js_length);
         }
-        else if (in_jsx_tag && rem[0] == u8'{') {
-            emit_and_advance(1, Highlight_Type::escape);
-
-            int brace_level = 1;
-            std::size_t brace_pos = index;
-
-            while (brace_pos < source.length() && brace_level > 0) {
-                if (source[brace_pos] == u8'{') {
-                    brace_level++;
-                }
-                else if (source[brace_pos] == u8'}') {
-                    brace_level--;
-                }
-                brace_pos++;
-            }
-
-            if (brace_level == 0) {
-                if (brace_pos - 1 > index) {
-                    sub_highlighter(source.substr(index, brace_pos - 1 - index))();
-                }
-
-                emit(brace_pos - 1, 1, Highlight_Type::escape);
-                index = brace_pos;
-                return true;
-            }
+        if (braced.is_terminated) {
+            emit_and_advance(1, Highlight_Type::sym_brace);
         }
-        else if (!in_jsx_tag && rem[0] == u8'{') {
-            emit(index, 1, Highlight_Type::escape);
-            index += 1;
-
-            int brace_level = 1;
-            std::size_t brace_pos = index;
-            while (brace_pos < source.length() && brace_level > 0) {
-                if (source[brace_pos] == u8'{') {
-                    brace_level++;
-                }
-                else if (source[brace_pos] == u8'}') {
-                    brace_level--;
-                }
-                brace_pos++;
-            }
-
-            if (brace_level == 0) {
-                if (brace_pos - 1 > index) {
-                    sub_highlighter(source.substr(index, brace_pos - 1 - index))();
-                }
-
-                emit(brace_pos - 1, 1, Highlight_Type::escape);
-                index = brace_pos;
-                return true;
-            }
-        }
-
-        if (in_jsx_tag) {
-            if (const std::size_t tag_name_length = match_jsx_element_name(rem)) {
-                emit_and_advance(tag_name_length, Highlight_Type::markup_tag);
-                return true;
-            }
-            if (const std::size_t attr_name_length = match_jsx_attribute_name(rem)) {
-                emit_and_advance(attr_name_length, Highlight_Type::markup_attr);
-                return true;
-            }
-            if (rem[0] == u8'=') {
-                emit_and_advance(1, Highlight_Type::sym_punc);
-                in_jsx_attr_value = true;
-                return true;
-            }
-        }
-
-        // JSX str literal as attr val.
-        if (in_jsx_tag && in_jsx_attr_value
-            && (rem[0] == u8'"' || rem[0] == u8'\'' || rem[0] == u8'`')) {
-            const String_Literal_Result string = match_string_literal(rem);
-            if (string) {
-                emit(index, 1, Highlight_Type::string_delim);
-
-                if (string.length > 2) {
-                    emit(
-                        index + 1, string.length - (string.terminated ? 2 : 1),
-                        Highlight_Type::string
-                    );
-                }
-
-                if (string.terminated) {
-                    emit(index + string.length - 1, 1, Highlight_Type::string_delim);
-                }
-
-                index += string.length;
-                in_jsx_attr_value = false;
-                return true;
-            }
-        }
-
-        // JSX txt content.
-        if (!in_jsx_tag) {
-            std::size_t next_special = rem.find_first_of(u8"<{");
-            if (next_special == std::string_view::npos) {
-                next_special = rem.length();
-            }
-
-            if (next_special > 0) {
-                emit(index, next_special, Highlight_Type::string);
-                index += next_special;
-                return true;
-            }
-        }
-        return false;
     }
 
     bool expect_whitespace()
@@ -846,29 +1263,39 @@ struct [[nodiscard]] Highlighter {
         emit(index, 2, Highlight_Type::comment_delimiter); // #!
         emit(index + 2, hashbang_length - 2, Highlight_Type::comment);
         index += hashbang_length;
-        at_start_of_file = false;
         return true;
     }
 
     bool expect_line_comment()
     {
-        const std::size_t length = match_line_comment(remainder());
-        if (length == 0) {
-            return false;
+        if (const std::size_t length = match_line_comment(remainder())) {
+            highlight_line_comment(length);
+            return true;
         }
-        emit(index, 2, Highlight_Type::comment_delimiter); // //
-        emit(index + 2, length - 2, Highlight_Type::comment);
-        index += length;
+        return false;
+    }
+
+    void highlight_line_comment(std::size_t length)
+    {
+        emit_and_advance(2, Highlight_Type::comment_delimiter); // //
+        if (length > 2) {
+            emit_and_advance(length - 2, Highlight_Type::comment);
+        }
         can_be_regex = true; // After a comment, a regex can appear.
-        return true;
     }
 
     bool expect_block_comment()
     {
-        const Comment_Result block_comment = match_block_comment(remainder());
-        if (!block_comment) {
-            return false;
+        if (const Comment_Result block_comment = match_block_comment(remainder())) {
+            highlight_block_comment(block_comment);
+            return true;
         }
+        return false;
+    }
+
+    void highlight_block_comment(const Comment_Result& block_comment)
+    {
+        ULIGHT_DEBUG_ASSERT(block_comment);
         emit(index, 2, Highlight_Type::comment_delimiter); // /*
         emit(
             index + 2, block_comment.length - 2 - (block_comment.is_terminated ? 2 : 0),
@@ -877,103 +1304,110 @@ struct [[nodiscard]] Highlighter {
         if (block_comment.is_terminated) {
             emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delimiter); // */
         }
-        index += block_comment.length;
+        advance(block_comment.length);
         can_be_regex = true; // a regex can appear after a comment
-        return true;
     }
 
     bool expect_string_literal()
     {
-        const String_Literal_Result string = match_string_literal(remainder());
-        if (!string) {
-            return false;
-        }
-        if (!string.is_template_literal) {
-            emit_and_advance(string.length, Highlight_Type::string);
-            can_be_regex = false;
+        if (const String_Literal_Result string = match_string_literal(remainder())) {
+            highlight_string_literal(string);
             return true;
         }
+        return false;
+    }
 
-        std::size_t pos = index;
-
-        // Opening backtick
-        emit(pos, 1, Highlight_Type::string);
-        pos += 1;
-
-        std::size_t content_end = index + string.length;
-        if (string.terminated) {
-            content_end -= 1; // Exclude closing backtick
+    void highlight_string_literal(const String_Literal_Result& string)
+    {
+        ULIGHT_ASSERT(string.length >= 2);
+        emit_and_advance(1, Highlight_Type::string_delim);
+        if (string.length > 2) {
+            emit_and_advance(string.length - 2, Highlight_Type::string);
         }
-
-        while (pos < content_end) {
-            const std::u8string_view template_part = source.substr(pos, content_end - pos);
-            const std::size_t next_subst = template_part.find(u8"${");
-            if (next_subst == std::string_view::npos) {
-                emit(pos, content_end - pos, Highlight_Type::string);
-                pos = content_end;
-            }
-            else {
-                if (next_subst > 0) {
-                    emit(pos, next_subst, Highlight_Type::string);
-                }
-
-                pos += next_subst; // Start of substitution.
-                emit(pos, 2, Highlight_Type::escape);
-                pos += 2;
-
-                int brace_level = 1;
-                std::size_t subst_pos = pos;
-                while (subst_pos < content_end && brace_level > 0) {
-                    const String_Literal_Result nested_string
-                        = match_string_literal(source.substr(subst_pos, content_end - subst_pos));
-                    if (nested_string) {
-                        emit(subst_pos, nested_string.length, Highlight_Type::string);
-                        subst_pos += nested_string.length;
-                        continue;
-                    }
-
-                    if (source[subst_pos] == u8'{') {
-                        brace_level++;
-                    }
-                    else if (source[subst_pos] == u8'}') {
-                        brace_level--;
-
-                        if (brace_level == 0) {
-                            if (subst_pos > pos) {
-                                sub_highlighter(source.substr(index, subst_pos - pos))();
-                            }
-                            emit(subst_pos, 1, Highlight_Type::escape); // Emit "}" as escape
-                            pos = subst_pos + 1;
-                            break;
-                        }
-                    }
-
-                    subst_pos++;
-                }
-
-                if (brace_level > 0) {
-                    // For unterminated template expressions, highlight with id
-                    emit(pos, content_end - pos, Highlight_Type::id);
-                    pos = content_end;
-                }
-            }
-        }
-
-        if (string.terminated) { // Closing backtick
-            emit(content_end, 1, Highlight_Type::string);
-        }
-
-        index += string.length;
-
+        emit_and_advance(1, Highlight_Type::string_delim);
         can_be_regex = false;
-        return true;
+    }
+
+    bool expect_template()
+    {
+        // https://262.ecma-international.org/15.0/index.html#sec-template-literal-lexical-components
+        if (remainder().starts_with(u8'`')) {
+            consume_template();
+            return true;
+        }
+        return false;
+    }
+
+    void consume_template()
+    {
+        // https://262.ecma-international.org/15.0/index.html#sec-template-literal-lexical-components
+        ULIGHT_ASSERT(remainder().starts_with(u8'`'));
+        emit_and_advance(1, Highlight_Type::string_delim);
+
+        std::size_t chars = 0;
+        const auto flush_chars = [&] {
+            if (chars != 0) {
+                emit(index - chars, chars, Highlight_Type::string);
+                chars = 0;
+            }
+        };
+
+        while (index < source.length()) {
+            const std::u8string_view rem = remainder();
+
+            switch (rem[0]) {
+            case u8'`': {
+                flush_chars();
+                emit_and_advance(1, Highlight_Type::string_delim);
+                return;
+            }
+            case u8'$': {
+                if (rem.starts_with(u8"${")) {
+                    flush_chars();
+                    emit_and_advance(2, Highlight_Type::escape);
+                    consume_substitution_content();
+                    if (index < source.length()) {
+                        ULIGHT_ASSERT(source[index] == u8'}');
+                        emit_and_advance(1, Highlight_Type::sym_brace);
+                    }
+                    // Otherwise, we have an unterminated substitution.
+                    continue;
+                }
+                advance(1);
+                ++chars;
+                continue;
+            }
+            case u8'\\': {
+                if (const std::size_t c = match_line_continuation(rem)) {
+                    ULIGHT_ASSERT(c > 1);
+                    flush_chars();
+                    emit_and_advance(1, Highlight_Type::escape);
+                    advance(c - 1);
+                    chars += c - 1;
+                    continue;
+                }
+                // TODO: there are other escape sequence, and these should be highlighted
+                advance(1);
+                ++chars;
+                continue;
+            }
+            default: {
+                advance(1);
+                ++chars;
+                continue;
+            }
+            }
+        }
+
+        flush_chars();
+        // Unterminated template.
     }
 
     bool expect_regex()
     {
         const std::u8string_view rem = remainder();
 
-        if (in_jsx || !can_be_regex || !rem.starts_with(u8'/')) {
+        if (!can_be_regex || !rem.starts_with(u8'/')) {
             return false;
         }
 
@@ -996,7 +1430,8 @@ struct [[nodiscard]] Highlighter {
                     ++size;
                     break;
                 }
-                else if (c == u8'\n') { // Unterminated as newlines aren't allowed in regex.
+                else if (c == u8'\n') { // Unterminated as newlines aren't allowed in
+                                        // regex.
                     break;
                 }
 
@@ -1083,7 +1518,7 @@ struct [[nodiscard]] Highlighter {
 
     bool expect_operator_or_punctuation()
     {
-        const std::optional<Token_Type> op = match_operator_or_punctuation(remainder(), in_jsx);
+        const std::optional<Token_Type> op = match_operator_or_punctuation(remainder());
         if (!op) {
             return false;
         }
@@ -1091,13 +1526,6 @@ struct [[nodiscard]] Highlighter {
         const Highlight_Type op_highlight = js_token_type_highlight(*op);
 
         emit_and_advance(op_length, op_highlight);
-
-        // JSX update state.
-        if (in_jsx) {
-            if (*op == Token_Type::jsx_tag_open || *op == Token_Type::jsx_tag_end_open) {
-                in_jsx_tag = true;
-            }
-        }
 
         can_be_regex = true;
         static constexpr Token_Type non_regex_ops[]

@@ -47,24 +47,17 @@ enum struct Feature_Source : Underlying {
     F(ellipsis, "...", sym_op, js_jsx)                                                             \
     F(divide, "/", sym_op, js)                                                                     \
     F(divide_equal, "/=", sym_op, js)                                                              \
-    F(jsx_tag_self_close, "/>", markup_tag, jsx)                                                   \
     F(colon, ":", sym_op, js_jsx)                                                                  \
     F(semicolon, ";", sym_punc, js_jsx)                                                            \
-    F(less_than, "<", sym_op, js)                                                                  \
-    F(jsx_tag_open, "<", markup_tag, jsx)                                                          \
-    F(jsx_tag_end_open, "</", markup_tag, jsx)                                                     \
-    F(jsx_fragment_close, "</>", markup_tag, jsx)                                                  \
+    F(less_than, "<", sym_op, js_jsx)                                                              \
     F(left_shift, "<<", sym_op, js)                                                                \
     F(left_shift_equal, "<<=", sym_op, js)                                                         \
     F(less_equal, "<=", sym_op, js)                                                                \
-    F(jsx_fragment_open, "<>", markup_tag, jsx)                                                    \
     F(assignment, "=", sym_op, js)                                                                 \
-    F(jsx_attr_equals, "=", markup_attr, jsx)                                                      \
     F(equals, "==", sym_op, js)                                                                    \
     F(strict_equals, "===", sym_op, js)                                                            \
     F(arrow, "=>", sym_op, js)                                                                     \
     F(greater_than, ">", sym_op, js)                                                               \
-    F(jsx_tag_close, ">", markup_tag, jsx)                                                         \
     F(greater_equal, ">=", sym_op, js)                                                             \
     F(right_shift, ">>", sym_op, js)                                                               \
     F(right_shift_equal, ">>=", sym_op, js)                                                        \
@@ -159,20 +152,6 @@ Feature_Source js_token_type_source(Token_Type type) noexcept;
 [[nodiscard]]
 std::optional<Token_Type> js_token_type_by_code(std::u8string_view code) noexcept;
 
-/// @brief Determines if the token type is from a particular source
-[[nodiscard]]
-constexpr bool is_js_feature(Feature_Source source)
-{
-    return source == Feature_Source::js || source == Feature_Source::js_jsx;
-}
-
-/// @brief Determines if the token type is JSX
-[[nodiscard]]
-constexpr bool is_jsx_feature(Feature_Source source)
-{
-    return source == Feature_Source::jsx || source == Feature_Source::js_jsx;
-}
-
 /// @brief Matches zero or more characters for which `is_js_whitespace` is `true`.
 [[nodiscard]]
 std::size_t match_whitespace(std::u8string_view str);
@@ -214,21 +193,28 @@ match_hashbang_comment(std::u8string_view str, bool is_at_start_of_file = false)
 
 struct String_Literal_Result {
     std::size_t length;
-    bool is_template_literal;
     bool terminated;
-    bool has_substitution; // For template literals with ${...}.
 
     [[nodiscard]]
     constexpr explicit operator bool() const noexcept
     {
         return length != 0;
     }
+
+    [[nodiscard]]
+    friend constexpr bool operator==(String_Literal_Result, String_Literal_Result)
+        = default;
 };
 
 /// @brief Matches a JavaScript string literal at the start of `str`.
-/// Handles both quoted strings ("" or '') and template literals (``)
 [[nodiscard]]
 String_Literal_Result match_string_literal(std::u8string_view str);
+
+#if 0
+/// @brief Matches a JavaScript template literal at the start of `str`.
+[[nodiscard]]
+String_Literal_Result match_template(std::u8string_view str);
+#endif
 
 /// @brief Matches a JavaScript template literal substitution at the start of `str`.
 /// Returns the position after the closing } if found.
@@ -299,6 +285,11 @@ Numeric_Result match_numeric_literal(std::u8string_view str);
 [[nodiscard]]
 std::size_t match_identifier(std::u8string_view str);
 
+/// @brief Like `match_identifier`, but also accepts identifiers that contain `-`
+/// anywhere but the first character.
+[[nodiscard]]
+std::size_t match_jsx_identifier(std::u8string_view str);
+
 /// @brief Matches a JavaScript private identifier (starting with #) at the start of `str`
 /// and returns its length.
 /// If none could be matched, returns zero.
@@ -308,6 +299,66 @@ std::size_t match_private_identifier(std::u8string_view str);
 /// @brief Matches a JavaScript operator or punctuation at the start of `str`.
 [[nodiscard]]
 std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str, bool js_or_jsx);
+
+enum struct JSX_Type : Underlying {
+    /// @brief JSXOpeningElement, e.g. `<div>`.
+    opening,
+    /// @brief JSXClosingElement, e.g. `</div>`.
+    closing,
+    /// @brief JSXSelfCLosingElement, e.g. `<br/>`.
+    self_closing,
+    /// @brief Start of JSXFragment, e.g. `<>`.
+    fragment_opening,
+    /// @brief End of JSXFragment, e.g. `</>`.
+    fragment_closing,
+};
+
+[[nodiscard]]
+constexpr std::size_t jsx_type_prefix_length(JSX_Type type)
+{
+    return type == JSX_Type::closing || type == JSX_Type::fragment_closing ? 2 : 1;
+}
+
+[[nodiscard]]
+constexpr std::size_t jsx_type_suffix_length(JSX_Type type)
+{
+    return type == JSX_Type::self_closing ? 2 : 1;
+}
+
+[[nodiscard]]
+constexpr bool jsx_type_is_closing(JSX_Type type)
+{
+    return type == JSX_Type::closing || type == JSX_Type::fragment_closing;
+}
+
+struct JSX_Tag_Result {
+    std::size_t length;
+    JSX_Type type;
+
+    [[nodiscard]]
+    constexpr explicit operator bool() const
+    {
+        return length != 0;
+    }
+
+    [[nodiscard]]
+    friend constexpr bool operator==(JSX_Tag_Result, JSX_Tag_Result)
+        = default;
+};
+
+/// @brief Matches a some kind of JSX element or fragment tag at the start of `str`.
+/// Note that because JSX elements are specified on top of the non-lexical grammar,
+/// comments and whitespace can be added anywhere with no effect,
+/// leading to more permissive syntax than HTML.
+///
+/// For example, `<br /* comment *//>` is a valid self-closing element.
+[[nodiscard]]
+JSX_Tag_Result match_jsx_tag(std::u8string_view str);
+
+using JSX_Braced_Result = Comment_Result;
+
+[[nodiscard]]
+JSX_Braced_Result match_jsx_braced(std::u8string_view str);
 
 /// @brief Matches a JSX tag name at the start of the string
 [[nodiscard]]
