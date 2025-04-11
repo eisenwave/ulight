@@ -88,6 +88,9 @@ TEST(JS, match_jsx_tag)
     EXPECT_EQ(match_jsx_tag(u8"<div { ... spread } >"), JSX_Tag_Result(21, JSX_Type::opening));
     EXPECT_EQ(match_jsx_tag(u8"<div {{}} > "), JSX_Tag_Result(11, JSX_Type::opening));
     EXPECT_EQ(match_jsx_tag(u8"<div {'}'}> "), JSX_Tag_Result(11, JSX_Type::opening));
+    EXPECT_EQ(
+        match_jsx_tag(u8"<div id={computeValue()}></div>"), JSX_Tag_Result(25, JSX_Type::opening)
+    );
 
     EXPECT_EQ(match_jsx_tag(u8"<div a={stuff}>"), JSX_Tag_Result(15, JSX_Type::opening));
 
