@@ -943,14 +943,6 @@ struct [[nodiscard]] Highlighter {
     {
     }
 
-    [[nodiscard]]
-    Highlighter sub_highlighter(std::u8string_view sub_source) const
-    {
-        ULIGHT_ASSERT(index != 0);
-        ULIGHT_ASSERT(!sub_source.empty());
-        return Highlighter { out, sub_source, options, false };
-    }
-
     void emit(std::size_t begin, std::size_t length, Highlight_Type type)
     {
         ULIGHT_DEBUG_ASSERT(length != 0);
@@ -1024,7 +1016,12 @@ struct [[nodiscard]] Highlighter {
         can_be_regex = true;
     }
 
-    void consume_substitution_content()
+    /// @brief Consumes braced JS code.
+    /// This is used both for matching braced JS code in JSX, like in `<div id={get_id()}>`,
+    /// and for template literals in regular JS.
+    ///
+    /// The closing brace is not consumed.
+    void consume_js_before_closing_brace()
     {
         ULIGHT_ASSERT(!at_start_of_file);
 
@@ -1239,11 +1236,7 @@ struct [[nodiscard]] Highlighter {
         const std::size_t js_length = braced.length - (braced.is_terminated ? 2 : 1);
 
         if (js_length != 0) {
-            const std::u8string_view sub_source = source.substr(index, js_length);
-            Highlighter sub = sub_highlighter(sub_source);
-            sub();
-            ULIGHT_ASSERT(sub.index == js_length);
-            advance(js_length);
+            consume_js_before_closing_brace();
         }
         if (braced.is_terminated) {
             emit_and_advance(1, Highlight_Type::sym_brace);
@@ -1371,7 +1364,7 @@ struct [[nodiscard]] Highlighter {
                 if (rem.starts_with(u8"${")) {
                     flush_chars();
                     emit_and_advance(2, Highlight_Type::escape);
-                    consume_substitution_content();
+                    consume_js_before_closing_brace();
                     if (index < source.length()) {
                         ULIGHT_ASSERT(source[index] == u8'}');
                         emit_and_advance(1, Highlight_Type::escape);
