@@ -386,7 +386,7 @@ Escape_Result match_escape_sequence(std::u8string_view str)
             str.data() + 2, str.data() + std::min(str.length(), 6uz),
             [](char8_t c) { return is_ascii_hex_digit(c); }
         );
-        return { .length = 6, .type = Escape_Type::universal, .erroneous = end - str.begin() != 6 };
+        return { .length = 6, .type = Escape_Type::universal, .erroneous = end - str.data() != 6 };
     }
     case u8'U': {
         const auto* const end = std::ranges::find_if_not(
