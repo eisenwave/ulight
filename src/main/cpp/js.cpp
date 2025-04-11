@@ -419,7 +419,7 @@ std::size_t match_name(std::u8string_view str, Name_Type type)
         case Name_Type::jsx_attribute_name: return c == U'-' || c == U':';
         case Name_Type::jsx_element_name: return c == U'-' || c == U':' || c == U'.';
         }
-        ULIGHT_DEBUG_ASSERT_UNREACHABLE();
+        ULIGHT_DEBUG_ASSERT_UNREACHABLE(u8"Invalid Name_Type.");
     };
 
     auto length = std::size_t(first_units);
