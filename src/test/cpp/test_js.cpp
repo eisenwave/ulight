@@ -41,6 +41,16 @@ TEST(JS, match_numeric_literal)
         (Numeric_Result { .length = 8, .prefix = 2, .integer = 5, .suffix = 1 })
     );
 
+    EXPECT_EQ(match_numeric_literal(u8".5"), (Numeric_Result { .length = 2, .fractional = 2 }));
+    EXPECT_EQ(
+        match_numeric_literal(u8"0.5"),
+        (Numeric_Result { .length = 3, .integer = 1, .fractional = 2 })
+    );
+    EXPECT_EQ(
+        match_numeric_literal(u8"9.99"),
+        (Numeric_Result { .length = 4, .integer = 1, .fractional = 3 })
+    );
+
     EXPECT_EQ(
         match_numeric_literal(u8"0E"),
         (Numeric_Result { .length = 2, .integer = 1, .exponent = 1, .erroneous = true })
