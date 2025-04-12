@@ -696,10 +696,11 @@ public:
     bool expect_line_comment()
     {
         if (const std::size_t line_comment_length = match_line_comment(remainder())) {
-            emit(index, 2, Highlight_Type::comment_delim);
-            emit(index + 2, line_comment_length - 2, Highlight_Type::comment);
+            emit_and_advance(2, Highlight_Type::comment_delim);
+            if (line_comment_length > 2) {
+                emit_and_advance(line_comment_length - 2, Highlight_Type::comment);
+            }
             fresh_line = true;
-            advance(line_comment_length);
             return true;
         }
         return false;
@@ -710,7 +711,10 @@ public:
         if (const Comment_Result block_comment = match_block_comment(remainder())) {
             const std::size_t terminator_length = 2 * std::size_t(block_comment.is_terminated);
             emit(index, 2, Highlight_Type::comment_delim); // /*
-            emit(index + 2, block_comment.length - 2 - terminator_length, Highlight_Type::comment);
+            const std::size_t content_length = block_comment.length - 2 - terminator_length;
+            if (content_length != 0) {
+                emit(index + 2, content_length, Highlight_Type::comment);
+            }
             if (block_comment.is_terminated) {
                 emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delim); // */
             }
@@ -876,7 +880,10 @@ public:
             emit_and_advance(d_char_sequence_length + 2, Highlight_Type::string_delim);
             return;
         }
-        emit_and_advance(raw_length, Highlight_Type::string);
+        // Unterminated raw string, possibly empty in the case of trailing R"(
+        if (raw_length != 0) {
+            emit_and_advance(raw_length, Highlight_Type::string);
+        }
     }
 
     bool expect_pp_number()
