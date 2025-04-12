@@ -83,6 +83,48 @@ std::optional<Token_Type> js_token_type_by_code(std::u8string_view code) noexcep
     return Token_Type(result - token_type_codes);
 }
 
+namespace {
+
+[[nodiscard]]
+constexpr bool js_token_type_is_expr_keyword(Token_Type type)
+{
+    switch (type) {
+        using enum Token_Type;
+    case kw_return:
+    case kw_throw:
+    case kw_case:
+    case kw_delete:
+    case kw_void:
+    case kw_typeof:
+    case kw_yield:
+    case kw_await:
+    case kw_instanceof:
+    case kw_in:
+    case kw_new: return true;
+    default: return false;
+    }
+}
+
+[[nodiscard]]
+constexpr bool js_token_type_cannot_precede_regex(Token_Type type)
+{
+    // TODO: investigate what the proper set here is, or whether it even makes sense for us
+    //       to attempt handling these rules properly.
+    switch (type) {
+        using enum Token_Type;
+    case increment:
+    case decrement:
+    case right_paren:
+    case right_bracket:
+    case right_brace:
+    case plus:
+    case minus: return true;
+    default: return false;
+    }
+}
+
+} // namespace
+
 [[nodiscard]]
 bool starts_with_line_terminator(std::u8string_view s)
 {
@@ -929,27 +971,52 @@ std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str)
 
 namespace {
 
+/// @brief The JS tokenizer is context-sensitive.
+/// A lot of that has to do with avoiding recursion when parsing the contents of template literals,
+/// and some of it has to do with allowing RegularExpressionLiteral and Hashbang only in
+/// some contexts.
+///
+/// `hashbang_or_regex` is only used at the start of the file.
+/// From that point on, the decision is based on whether a regex literal can appear in the
+/// context-free grammar.
+enum struct Input_Element : Underlying {
+    // https://262.ecma-international.org/15.0/index.html#prod-InputElementHashbangOrRegExp
+    hashbang_or_regex,
+    // https://262.ecma-international.org/15.0/index.html#prod-InputElementRegExp
+    regex,
+    // https://262.ecma-international.org/15.0/index.html#prod-InputElementDiv
+    div,
+};
+
+[[nodiscard]]
+constexpr bool input_element_has_hashbang(Input_Element goal)
+{
+    return goal == Input_Element::hashbang_or_regex;
+}
+
+[[nodiscard]]
+constexpr bool input_element_has_regex(Input_Element goal)
+{
+    return goal == Input_Element::hashbang_or_regex || goal == Input_Element::regex;
+}
+
 /// @brief  Common JS and JSX highlighter implementation.
 struct [[nodiscard]] Highlighter {
     Non_Owning_Buffer<Token>& out;
     std::u8string_view source;
     const Highlight_Options& options;
-    bool can_be_regex = true;
-    bool at_start_of_file;
+    Input_Element input_element = Input_Element::hashbang_or_regex;
 
-    int jsx_depth = 0;
     std::size_t index = 0;
 
     Highlighter(
         Non_Owning_Buffer<Token>& out,
         std::u8string_view source,
-        const Highlight_Options& options,
-        bool is_at_start_of_file = true
+        const Highlight_Options& options
     )
         : out { out }
         , source { source }
         , options { options }
-        , at_start_of_file { is_at_start_of_file }
     {
     }
 
@@ -992,38 +1059,9 @@ struct [[nodiscard]] Highlighter {
     bool operator()()
     {
         while (index < source.length()) {
-            if (expect_whitespace()) {
-                continue;
-            }
-            if (at_start_of_file) {
-                at_start_of_file = false;
-                if (expect_hashbang_comment()) {
-                    continue;
-                }
-            }
-
-            if (expect_line_comment() || //
-                expect_block_comment() || //
-                expect_jsx_in_js() || //
-                expect_string_literal() || //
-                expect_template() || //
-                expect_regex() || //
-                expect_numeric_literal() || //
-                expect_private_identifier() || //
-                expect_symbols() || //
-                expect_operator_or_punctuation()) {
-                continue;
-            }
-            consume_error();
+            consume_token();
         }
-
         return true;
-    }
-
-    void consume_error()
-    {
-        emit_and_advance(1, Highlight_Type::error);
-        can_be_regex = true;
     }
 
     /// @brief Consumes braced JS code.
@@ -1033,13 +1071,13 @@ struct [[nodiscard]] Highlighter {
     /// The closing brace is not consumed.
     void consume_js_before_closing_brace()
     {
-        ULIGHT_ASSERT(!at_start_of_file);
-
+        input_element = Input_Element::regex;
         int brace_level = 0;
         while (index < source.length()) {
             if (source[index] == u8'{') {
                 ++brace_level;
                 emit_and_advance(1, Highlight_Type::sym_brace);
+                input_element = Input_Element::regex;
                 continue;
             }
             if (source[index] == u8'}') {
@@ -1047,24 +1085,37 @@ struct [[nodiscard]] Highlighter {
                     return;
                 }
                 emit_and_advance(1, Highlight_Type::sym_brace);
+                input_element = Input_Element::div;
                 continue;
             }
 
-            if (expect_whitespace() || //
-                expect_line_comment() || //
-                expect_block_comment() || //
-                expect_jsx_in_js() || //
-                expect_string_literal() || //
-                expect_template() || //
-                expect_regex() || //
-                expect_numeric_literal() || //
-                expect_private_identifier() || //
-                expect_symbols() || //
-                expect_operator_or_punctuation()) {
-                continue;
-            }
-            consume_error();
+            consume_token();
         }
+    }
+
+    void consume_token()
+    {
+        if (expect_whitespace() || //
+            expect_hashbang_comment() || //
+            expect_line_comment() || //
+            expect_block_comment() || //
+            expect_jsx_in_js() || //
+            expect_string_literal() || //
+            expect_template() || //
+            expect_regex() || //
+            expect_numeric_literal() || //
+            expect_private_identifier() || //
+            expect_symbols() || //
+            expect_operator_or_punctuation()) {
+            return;
+        }
+        consume_error();
+    }
+
+    void consume_error()
+    {
+        emit_and_advance(1, Highlight_Type::error);
+        input_element = Input_Element::regex;
     }
 
     bool expect_jsx_in_js()
@@ -1090,7 +1141,7 @@ struct [[nodiscard]] Highlighter {
             ULIGHT_ASSERT(is_opening);
             consume_jsx_children_and_closing_tag();
         }
-        can_be_regex = true;
+        input_element = Input_Element::div;
         return true;
     }
 
@@ -1263,6 +1314,10 @@ struct [[nodiscard]] Highlighter {
     bool expect_hashbang_comment()
     {
         // https://262.ecma-international.org/15.0/index.html#sec-hashbang
+        if (!input_element_has_hashbang(input_element)) {
+            return false;
+        }
+
         const std::size_t hashbang_length = match_hashbang_comment(remainder());
         if (hashbang_length == 0) {
             return false;
@@ -1290,7 +1345,7 @@ struct [[nodiscard]] Highlighter {
         if (length > 2) {
             emit_and_advance(length - 2, Highlight_Type::comment);
         }
-        can_be_regex = true; // After a comment, a regex can appear.
+        input_element = Input_Element::regex;
     }
 
     bool expect_block_comment()
@@ -1315,7 +1370,7 @@ struct [[nodiscard]] Highlighter {
             emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delimiter); // */
         }
         advance(block_comment.length);
-        can_be_regex = true; // a regex can appear after a comment
+        input_element = Input_Element::regex;
     }
 
     bool expect_string_literal()
@@ -1338,7 +1393,7 @@ struct [[nodiscard]] Highlighter {
         if (string.terminated) {
             emit_and_advance(1, Highlight_Type::string_delim);
         }
-        can_be_regex = false;
+        input_element = Input_Element::div;
     }
 
     bool expect_template()
@@ -1372,6 +1427,7 @@ struct [[nodiscard]] Highlighter {
             case u8'`': {
                 flush_chars();
                 emit_and_advance(1, Highlight_Type::string_delim);
+                input_element = Input_Element::div;
                 return;
             }
             case u8'$': {
@@ -1418,10 +1474,14 @@ struct [[nodiscard]] Highlighter {
 
     bool expect_regex()
     {
+        // https://262.ecma-international.org/15.0/index.html#sec-literals-regular-expression-literals
+        if (!input_element_has_regex(input_element)) {
+            return false;
+        }
+
         std::u8string_view rem = remainder();
 
-        if (!can_be_regex || !rem.starts_with(u8'/') || rem.starts_with(u8"/*")
-            || rem.starts_with(u8"//")) {
+        if (!rem.starts_with(u8'/') || rem.starts_with(u8"/*") || rem.starts_with(u8"//")) {
             return false;
         }
 
@@ -1445,7 +1505,7 @@ struct [[nodiscard]] Highlighter {
                 if (const std::size_t regex_flags = match_regex_flags(rem.substr(size + 1))) {
                     emit_and_advance(regex_flags, Highlight_Type::string_decor);
                 }
-                can_be_regex = false;
+                input_element = Input_Element::div;
                 return true;
             }
             else if (starts_with_line_terminator(rem.substr(size))) {
@@ -1469,7 +1529,7 @@ struct [[nodiscard]] Highlighter {
             // TODO: more granular output
             emit_and_advance(number.length, Highlight_Type::number);
         }
-        can_be_regex = false;
+        input_element = Input_Element::div;
         return true;
     }
 
@@ -1477,7 +1537,7 @@ struct [[nodiscard]] Highlighter {
     {
         if (const std::size_t private_id_length = match_private_identifier(remainder())) {
             emit_and_advance(private_id_length, Highlight_Type::id);
-            can_be_regex = false;
+            input_element = Input_Element::div;
             return true;
         }
         return false;
@@ -1492,23 +1552,17 @@ struct [[nodiscard]] Highlighter {
 
         const std::optional<Token_Type> keyword
             = js_token_type_by_code(remainder().substr(0, id_length));
-
-        if (keyword) {
-            const auto highlight = js_token_type_highlight(*keyword);
-            emit(index, id_length, highlight);
-        }
-        else {
-            emit(index, id_length, Highlight_Type::id);
+        if (!keyword) {
+            emit_and_advance(id_length, Highlight_Type::id);
+            input_element = Input_Element::div;
+            return true;
         }
 
-        index += id_length;
+        const Highlight_Type highlight = js_token_type_highlight(*keyword);
+        emit_and_advance(id_length, highlight);
 
-        using enum Token_Type;
-        static constexpr Token_Type expr_keywords[]
-            = { kw_return, kw_throw, kw_case,       kw_delete, kw_void, kw_typeof,
-                kw_yield,  kw_await, kw_instanceof, kw_in,     kw_new };
-        // Certain keywords are followed by expressions where regex can appear.
-        can_be_regex = keyword && std::ranges::contains(expr_keywords, *keyword);
+        input_element
+            = js_token_type_is_expr_keyword(*keyword) ? Input_Element::regex : Input_Element::div;
 
         return true;
     }
@@ -1523,19 +1577,9 @@ struct [[nodiscard]] Highlighter {
         const Highlight_Type op_highlight = js_token_type_highlight(*op);
 
         emit_and_advance(op_length, op_highlight);
+        input_element
+            = js_token_type_cannot_precede_regex(*op) ? Input_Element::div : Input_Element::regex;
 
-        can_be_regex = true;
-        static constexpr Token_Type non_regex_ops[]
-            = { Token_Type::increment,     Token_Type::decrement,   Token_Type::right_paren,
-                Token_Type::right_bracket, Token_Type::right_brace, Token_Type::plus,
-                Token_Type::minus };
-
-        for (const auto& non_regex_op : non_regex_ops) {
-            if (*op == non_regex_op) {
-                can_be_regex = false;
-                break;
-            }
-        }
         return true;
     }
 };
