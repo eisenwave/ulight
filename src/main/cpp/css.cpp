@@ -515,7 +515,9 @@ public:
                 flush();
                 const std::size_t escape_length = match_escaped_code_point(remainder.substr(1)) + 1;
                 emit_and_advance(escape_length, Highlight_Type::escape);
+                continue;
             }
+            ++length;
         }
         flush();
     }
