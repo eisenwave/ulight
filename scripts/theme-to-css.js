@@ -167,7 +167,7 @@ function jsonValueToCssDeclarations(path, key, value) {
         }
         return key === "background" ?
             [`background-color: ${value};`, `border-color: ${value};`]
-            : [`color: ${value}`];
+            : [`color: ${value};`];
     }
     return Object.entries(value)
         .map(([property, value]) => `${property}: ${value};`);
