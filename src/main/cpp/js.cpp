@@ -432,16 +432,8 @@ std::size_t match_name(std::u8string_view str, Name_Type type)
         ULIGHT_DEBUG_ASSERT_UNREACHABLE(u8"Invalid Name_Type.");
     };
 
-    auto length = std::size_t(first_units);
-    while (length < str.length()) {
-        const auto [code_point, units] = utf8::decode_and_length_or_throw(str.substr(length));
-        if (!is_part(code_point)) {
-            break;
-        }
-        length += std::size_t(units);
-    }
-
-    return length;
+    return std::size_t(first_units)
+        + utf8::length_if(str.substr(std::size_t(first_units)), is_part);
 }
 
 [[nodiscard]]
