@@ -352,10 +352,8 @@ private:
                 // No matter what, a backslash followed by a directive name character forms a
                 // directive because the remaining arguments and the block are optional.
                 // I.e. we can break with certainty despite only having examined one character.
-                const std::expected<utf8::Code_Point_And_Length, utf8::Error_Code> next_point
-                    = utf8::decode_and_length(remainder);
-                ULIGHT_ASSERT(next_point);
-                if (is_mmml_directive_name_character(next_point->code_point)) {
+                const auto [next_point, _] = utf8::decode_and_length_or_throw(remainder);
+                if (!is_ascii_digit(next_point) && is_mmml_directive_name_character(next_point)) {
                     break;
                 }
                 continue;
