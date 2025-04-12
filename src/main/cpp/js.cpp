@@ -1323,7 +1323,7 @@ struct [[nodiscard]] Highlighter {
             return false;
         }
 
-        emit(index, 2, Highlight_Type::comment_delimiter); // #!
+        emit(index, 2, Highlight_Type::comment_delim); // #!
         emit(index + 2, hashbang_length - 2, Highlight_Type::comment);
         index += hashbang_length;
         return true;
@@ -1341,7 +1341,7 @@ struct [[nodiscard]] Highlighter {
 
     void highlight_line_comment(std::size_t length)
     {
-        emit_and_advance(2, Highlight_Type::comment_delimiter); // //
+        emit_and_advance(2, Highlight_Type::comment_delim); // //
         if (length > 2) {
             emit_and_advance(length - 2, Highlight_Type::comment);
         }
@@ -1361,13 +1361,13 @@ struct [[nodiscard]] Highlighter {
     void highlight_block_comment(const Comment_Result& block_comment)
     {
         ULIGHT_DEBUG_ASSERT(block_comment);
-        emit(index, 2, Highlight_Type::comment_delimiter); // /*
+        emit(index, 2, Highlight_Type::comment_delim); // /*
         emit(
             index + 2, block_comment.length - 2 - (block_comment.is_terminated ? 2 : 0),
             Highlight_Type::comment
         );
         if (block_comment.is_terminated) {
-            emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delimiter); // */
+            emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delim); // */
         }
         advance(block_comment.length);
         input_element = Input_Element::regex;
