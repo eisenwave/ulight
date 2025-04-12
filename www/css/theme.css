@@ -21,6 +21,9 @@
 [data-ulight-theme=light-ulight] h-[data-h^=err] {
     color: #ff0000;
 }
+[data-ulight-theme=light-ulight] h-[data-h^=esc] {
+    color: #94b500;
+}
 [data-ulight-theme=light-ulight] h-[data-h^=id] {
     color: #000000;
 }
@@ -115,10 +118,22 @@
     color: #c80032;
 }
 [data-ulight-theme=light-ulight] h-[data-h^=num] {
-    color: #367c2a;
+    color: #1d51a1;
+}
+[data-ulight-theme=light-ulight] h-[data-h^=num_deco] {
+    color: #032354;
+}
+[data-ulight-theme=light-ulight] h-[data-h^=num_dlim] {
+    color: #032354;
 }
 [data-ulight-theme=light-ulight] h-[data-h^=str] {
     color: #367c2a;
+}
+[data-ulight-theme=light-ulight] h-[data-h^=str_deco] {
+    color: #2b5403;
+}
+[data-ulight-theme=light-ulight] h-[data-h^=str_dlim] {
+    color: #2b5403;
 }
 [data-ulight-theme=light-ulight] h-[data-h^=sym] {
     color: #000000;
@@ -156,6 +171,9 @@
 }
 [data-ulight-theme=dark-ulight] h-[data-h^=err] {
     color: #ff0000;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=esc] {
+    color: #edc385;
 }
 [data-ulight-theme=dark-ulight] h-[data-h^=id] {
     color: #cccccc;
@@ -251,10 +269,22 @@
     color: #ff5a82;
 }
 [data-ulight-theme=dark-ulight] h-[data-h^=num] {
-    color: #98d48e;
+    color: #8cbade;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=num_deco] {
+    color: #669dd9;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=num_dlim] {
+    color: #669dd9;
 }
 [data-ulight-theme=dark-ulight] h-[data-h^=str] {
-    color: #98d48e;
+    color: #cf9e7e;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=str_deco] {
+    color: #db8d7b;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=str_dlim] {
+    color: #db8d7b;
 }
 [data-ulight-theme=dark-ulight] h-[data-h^=sym] {
     color: #ffffff;

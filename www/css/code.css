@@ -18,6 +18,9 @@
     h-[data-h^=err] {
         color: #ff0000;
     }
+    h-[data-h^=esc] {
+        color: #94b500;
+    }
     h-[data-h^=id] {
         color: #000000;
     }
@@ -112,10 +115,22 @@
         color: #c80032;
     }
     h-[data-h^=num] {
-        color: #367c2a;
+        color: #1d51a1;
+    }
+    h-[data-h^=num_deco] {
+        color: #032354;
+    }
+    h-[data-h^=num_dlim] {
+        color: #032354;
     }
     h-[data-h^=str] {
         color: #367c2a;
+    }
+    h-[data-h^=str_deco] {
+        color: #2b5403;
+    }
+    h-[data-h^=str_dlim] {
+        color: #2b5403;
     }
     h-[data-h^=sym] {
         color: #000000;
@@ -150,6 +165,9 @@
     }
     h-[data-h^=err] {
         color: #ff0000;
+    }
+    h-[data-h^=esc] {
+        color: #edc385;
     }
     h-[data-h^=id] {
         color: #cccccc;
@@ -245,10 +263,22 @@
         color: #ff5a82;
     }
     h-[data-h^=num] {
-        color: #98d48e;
+        color: #8cbade;
+    }
+    h-[data-h^=num_deco] {
+        color: #669dd9;
+    }
+    h-[data-h^=num_dlim] {
+        color: #669dd9;
     }
     h-[data-h^=str] {
-        color: #98d48e;
+        color: #cf9e7e;
+    }
+    h-[data-h^=str_deco] {
+        color: #db8d7b;
+    }
+    h-[data-h^=str_dlim] {
+        color: #db8d7b;
     }
     h-[data-h^=sym] {
         color: #ffffff;
