@@ -472,7 +472,10 @@ public:
         while (const cpp::Comment_Result block_comment = cpp::match_block_comment(remainder)) {
             const std::size_t terminator_length = 2 * std::size_t(block_comment.is_terminated);
             emit(index, 2, Highlight_Type::comment_delim); // /*
-            emit(index + 2, block_comment.length - 2 - terminator_length, Highlight_Type::comment);
+            const std::size_t content_length = block_comment.length - 2 - terminator_length;
+            if (content_length != 0) {
+                emit(index + 2, content_length, Highlight_Type::comment);
+            }
             if (block_comment.is_terminated) {
                 emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delim); // */
             }
