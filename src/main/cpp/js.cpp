@@ -1323,9 +1323,10 @@ struct [[nodiscard]] Highlighter {
             return false;
         }
 
-        emit(index, 2, Highlight_Type::comment_delim); // #!
-        emit(index + 2, hashbang_length - 2, Highlight_Type::comment);
-        index += hashbang_length;
+        emit_and_advance(2, Highlight_Type::comment_delim); // #!
+        if (hashbang_length > 2) {
+            emit_and_advance(hashbang_length - 2, Highlight_Type::comment);
+        }
         return true;
     }
 
