@@ -147,7 +147,14 @@ TEST_F(Highlight_Test, file_tests)
     }
 }
 
-TEST_F(Highlight_Test, fuzz_single_ascii_char)
+[[nodiscard]]
+std::string_view lang_display_name(ulight_lang lang)
+{
+    const auto i = std::size_t(lang);
+    return { ulight_lang_display_names[i].text, ulight_lang_display_names[i].length };
+}
+
+TEST_F(Highlight_Test, exhaustive_one_char)
 {
     Token token_buffer[16];
     char8_t source;
@@ -156,8 +163,6 @@ TEST_F(Highlight_Test, fuzz_single_ascii_char)
     for (int i = 1; i < int(ULIGHT_LANG_COUNT); ++i) {
         bool lang_success = true;
         const auto lang = ulight_lang(i);
-        const std::string_view lang_name { ulight_lang_display_names[i].text,
-                                           ulight_lang_display_names[i].length };
         const std::string_view source_view { reinterpret_cast<const char*>(&source), 1 };
 
         State state;
@@ -177,8 +182,8 @@ TEST_F(Highlight_Test, fuzz_single_ascii_char)
             source = i;
             const Status status = state.source_to_tokens();
             if (status != Status::ok && status != Status::bad_code) {
-                success = false;
-                std::cout << ansi::h_red << "FAIL: " << ansi::reset << lang_name //
+                lang_success = false;
+                std::cout << ansi::h_red << "FAIL: " << ansi::reset << lang_display_name(lang) //
                           << ", for" << " U+00" << std::hex << int(source) << std::dec;
                 if (!is_html_ascii_control(source)) {
                     std::cout << " '" << source_view << '\'';
@@ -188,7 +193,52 @@ TEST_F(Highlight_Test, fuzz_single_ascii_char)
         }
 
         if (lang_success) {
-            std::cout << ansi::h_green << "OK: " << ansi::reset << lang_name << '\n';
+            std::cout << ansi::h_green << "OK: " << ansi::reset << lang_display_name(lang) << '\n';
+        }
+        else {
+            success = false;
+        }
+    }
+    ASSERT_TRUE(success);
+}
+
+TEST_F(Highlight_Test, exhaustive_three_chars)
+{
+    Token token_buffer[16];
+    char8_t source[3];
+
+    bool success = true;
+    for (int i = 1; i < int(ULIGHT_LANG_COUNT); ++i) {
+        bool lang_success = true;
+        const auto lang = ulight_lang(i);
+        const std::string_view source_view { reinterpret_cast<const char*>(&source),
+                                             std::size(source) };
+
+        State state;
+        state.set_source(source_view);
+        state.set_lang(lang);
+        state.set_token_buffer(token_buffer);
+        state.on_flush_tokens(Constant<[](Token*, std::size_t amount) { //
+            ULIGHT_ASSERT(amount <= sizeof(source));
+        }> {});
+
+        for (std::size_t i = 0; i < 1uz << 21; ++i) {
+            source[0] = (i >> 0) & 0x7f;
+            source[1] = (i >> 7) & 0x7f;
+            source[2] = (i >> 14) & 0x7f;
+
+            const Status status = state.source_to_tokens();
+            if (status != Status::ok && status != Status::bad_code) {
+                lang_success = false;
+                std::cout << ansi::h_red << "FAIL: " //
+                          << ansi::reset << lang_display_name(lang) //
+                          << ": " << state.get_error_string() << "\n";
+                break;
+            }
+        }
+
+        if (lang_success) {
+            std::cout << ansi::h_green << "OK: " << ansi::reset << lang_display_name(lang) << '\n';
         }
         else {
             success = false;
