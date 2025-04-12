@@ -450,7 +450,7 @@ private:
     {
         constexpr std::size_t sequence_length = 2;
 
-        if (m_pos + sequence_length < m_source.size() //
+        if (m_pos + sequence_length <= m_source.size() //
             && m_source[m_pos] == u8'\\' //
             && is_mmml_escapeable(char8_t(m_source[m_pos + 1]))) //
         {
