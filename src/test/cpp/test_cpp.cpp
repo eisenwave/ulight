@@ -30,6 +30,7 @@ TEST(Cpp, match_pp_number)
 
     EXPECT_EQ(match_pp_number(u8"100'000"), 7);
     EXPECT_EQ(match_pp_number(u8"0xff'ffuz"), 9);
+    EXPECT_EQ(match_pp_number(u8"0xff'"), 4);
 
     EXPECT_EQ(match_pp_number(u8"0E"), 2);
 

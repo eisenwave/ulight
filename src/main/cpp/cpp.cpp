@@ -269,8 +269,9 @@ std::size_t match_pp_number(const std::u8string_view str)
         case u8'\'': {
             if (length + 1 < str.size() && is_cpp_ascii_identifier_continue(str[length + 1])) {
                 length += 2;
+                break;
             }
-            break;
+            return length;
         }
         case u8'e':
         case u8'E':
