@@ -125,6 +125,7 @@ std::size_t match_newline_escape(std::u8string_view str) noexcept
 
 } // namespace
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 std::size_t match_line_comment(std::u8string_view s) noexcept
 {
     if (!s.starts_with(u8"//")) {
