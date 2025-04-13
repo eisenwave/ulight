@@ -887,6 +887,39 @@ constexpr bool is_jsx_tag_name_part(char32_t c)
     return is_js_identifier_part(c) || c == U'-' || c == U':' || c == U'.';
 }
 
+// BASH ============================================================================================
+
+[[nodiscard]]
+constexpr bool is_bash_blank(char8_t c)
+{
+    // https://www.gnu.org/software/bash/manual/bash.html#Definitions-1
+    return c == u8' ' || c == u8'\t';
+}
+
+[[nodiscard]]
+constexpr bool is_bash_blank(char32_t c)
+{
+    // https://www.gnu.org/software/bash/manual/bash.html#Definitions-1
+    return c == U' ' || c == U'\t';
+}
+
+[[nodiscard]]
+constexpr bool is_bash_metacharacter(char8_t c)
+{
+    // https://www.gnu.org/software/bash/manual/bash.html#index-metacharacter
+    return is_bash_blank(c) //
+        || c == u8'|' || c == u8'&' || c == u8';' //
+        || c == u8'(' || c == u8')' //
+        || c == u8'<' || c == u8'>';
+}
+
+[[nodiscard]]
+constexpr bool is_bash_metacharacter(char32_t c)
+{
+    // https://www.gnu.org/software/bash/manual/bash.html#index-metacharacter
+    return is_ascii(c) && is_bash_metacharacter(char8_t(c));
+}
+
 } // namespace ulight
 
 #endif

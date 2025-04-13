@@ -77,6 +77,7 @@ consteval ulight_string_view make_sv(std::string_view name)
 // clang-format off
 ULIGHT_EXPORT
 constexpr ulight_lang_entry ulight_lang_list[] {
+    make_lang_entry("bash", ULIGHT_LANG_BASH),
     make_lang_entry("c", ULIGHT_LANG_C),
     make_lang_entry("c++", ULIGHT_LANG_CPP),
     make_lang_entry("cc", ULIGHT_LANG_CPP),
@@ -101,6 +102,8 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     // make_lang_entry( u8"ts", ULIGHT_LANG_typescript ),
     // make_lang_entry( u8"tsx", ULIGHT_LANG_typescript ),
     // make_lang_entry( u8"typescript", ULIGHT_LANG_typescript ),
+    make_lang_entry("sh", ULIGHT_LANG_BASH),
+    make_lang_entry("zsh", ULIGHT_LANG_BASH),
 };
 
 ULIGHT_EXPORT
@@ -116,6 +119,7 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("CSS"),
     make_sv("C"),
     make_sv("JavaScript"),
+    make_sv("Bash")
 };
 // clang-format on
 
@@ -277,6 +281,7 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
         return error(state, ULIGHT_STATUS_BAD_BUFFER, u8"flush_tokens must not be null.");
     }
     switch (state->lang) {
+    case ULIGHT_LANG_BASH:
     case ULIGHT_LANG_C:
     case ULIGHT_LANG_CPP:
     case ULIGHT_LANG_CSS:

@@ -64,6 +64,12 @@ bool highlight_javascript(
     std::pmr::memory_resource* memory,
     const Highlight_Options& options = {}
 );
+bool highlight_bash(
+    Non_Owning_Buffer<Token>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource* memory,
+    const Highlight_Options& options = {}
+);
 
 inline Status highlight(
     Non_Owning_Buffer<Token>& out,
@@ -95,6 +101,8 @@ inline Status highlight(
         return to_result(highlight_c(out, source, memory, options));
     case Lang::javascript: //
         return to_result(highlight_javascript(out, source, memory, options));
+    case Lang::bash: //
+        return to_result(highlight_bash(out, source, memory, options));
     default: //
         return Status::bad_lang;
     }
