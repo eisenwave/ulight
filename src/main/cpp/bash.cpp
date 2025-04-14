@@ -10,8 +10,47 @@
 namespace ulight {
 namespace bash {
 
+namespace {
+
+constexpr std::u8string_view token_type_codes[] {
+    ULIGHT_BASH_TOKEN_ENUM_DATA(ULIGHT_BASH_TOKEN_CODE8)
+};
+
+static_assert(std::ranges::is_sorted(token_type_codes));
+
+// clang-format off
+constexpr unsigned char token_type_lengths[] {
+    ULIGHT_BASH_TOKEN_ENUM_DATA(ULIGHT_BASH_TOKEN_LENGTH)
+};
+// clang-format on
+
+constexpr Highlight_Type token_type_highlights[] {
+    ULIGHT_BASH_TOKEN_ENUM_DATA(ULIGHT_BASH_TOKEN_HIGHLIGHT_TYPE)
+};
+
+[[nodiscard]] [[maybe_unused]]
+std::u8string_view token_type_code(Token_Type type)
+{
+    return token_type_codes[std::size_t(type)];
+}
+
+[[nodiscard]] [[maybe_unused]]
+std::size_t token_type_length(Token_Type type)
+{
+    return token_type_lengths[std::size_t(type)];
+}
+
+[[nodiscard]] [[maybe_unused]]
+Highlight_Type token_type_highlight(Token_Type type)
+{
+    return token_type_highlights[std::size_t(type)];
+}
+
+} // namespace
+
 String_Result match_single_quoted_string(std::u8string_view str)
 {
+    // https://www.gnu.org/software/bash/manual/bash.html#Single-Quotes
     if (!str.starts_with(u8'\'')) {
         return {};
     }
@@ -70,38 +109,14 @@ std::optional<Token_Type> match_operator(std::u8string_view str)
 
 namespace {
 
-// https://www.gnu.org/software/bash/manual/bash.html#Reserved-Words
-// clang-format off
-constexpr std::u8string_view reserved_words[] {
-    u8"!",
-    u8"[[",
-    u8"]]",
-    u8"case",
-    u8"coproc",
-    u8"do",
-    u8"done",
-    u8"elif",
-    u8"else",
-    u8"esac",
-    u8"fi",
-    u8"for",
-    u8"function",
-    u8"if",
-    u8"in",
-    u8"select",
-    u8"then",
-    u8"time",
-    u8"until",
-    u8"while",
-    u8"{",
-    u8"}",
-};
-// clang-format on
-
-static_assert(std::ranges::is_sorted(reserved_words));
-
 struct Highlighter {
 private:
+    enum struct Context : Underlying {
+        file,
+        parameter_sub,
+        command_sub,
+    };
+
     Non_Owning_Buffer<Token>& out;
     std::u8string_view remainder;
     const Highlight_Options& options;
@@ -123,6 +138,13 @@ public:
     }
 
     bool operator()()
+    {
+        consume_commands(Context::file);
+        return true;
+    }
+
+private:
+    void consume_commands(Context context)
     {
         while (!remainder.empty()) {
             switch (remainder[0]) {
@@ -154,13 +176,37 @@ public:
                 in_command = false;
                 continue;
             }
+            case u8'$':
+            case u8'|':
+            case u8'&':
+            case u8';':
+            case u8'(':
+            case u8'<':
+            case u8'>': {
+                const std::optional<Token_Type> op = match_operator(remainder);
+                ULIGHT_ASSERT(op);
+                emit_and_advance(token_type_length(*op), Highlight_Type::sym_op);
+                continue;
+            }
+            case u8')': {
+                emit_and_advance(1, Highlight_Type::sym_parens);
+                if (context == Context::command_sub) {
+                    return;
+                }
+                continue;
+            }
+            case u8'}': {
+                if (context == Context::parameter_sub) {
+                    emit_and_advance(1, Highlight_Type::escape);
+                    return;
+                }
+                emit_and_advance(1, Highlight_Type::sym_brace);
+                continue;
+            }
             }
         }
-
-        return true;
     }
 
-private:
     void consume_escape_character()
     {
         if (remainder.starts_with(u8"\\\n")) {
@@ -182,6 +228,46 @@ private:
         }
         if (string.terminated) {
             emit_and_advance(1, Highlight_Type::string_delim);
+        }
+    }
+
+    void consume_double_quoted_string()
+    {
+        std::size_t chars = 0;
+        const auto flush_chars = [&] {
+            if (chars != 0) {
+                emit_and_advance(chars, Highlight_Type::string);
+                chars = 0;
+            }
+        };
+
+        for (; chars < remainder.length(); ++chars) {
+            if (remainder[chars] == u8'\"') {
+                flush_chars();
+                emit_and_advance(1, Highlight_Type::string_delim);
+                return;
+            }
+            if (remainder[chars] == u8'$') {
+                flush_chars();
+                consume_substitution();
+            }
+        }
+        flush_chars();
+    }
+
+    void consume_substitution()
+    {
+        ULIGHT_ASSERT(remainder.starts_with(u8'$'));
+        if (remainder.size() < 2) {
+            emit_and_advance(1, Highlight_Type::sym);
+        }
+        const char8_t next = remainder[1];
+        emit_and_advance(2, Highlight_Type::escape);
+        if (next == u8'{') {
+            consume_commands(Context::parameter_sub);
+        }
+        else if (next == u8'(') {
+            consume_commands(Context::command_sub);
         }
     }
 
