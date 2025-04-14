@@ -100,6 +100,8 @@ constexpr Flag operator|(Flag x, Flag y) noexcept
     F(id_module_decl, "id-module-decl", "id_mod_decl", ULIGHT_HL_ID_MODULE_DECL)                   \
     F(id_label, "id-label", "id_labl", ULIGHT_HL_ID_LABEL)                                         \
     F(id_label_decl, "id-label-decl", "id_labl_decl", ULIGHT_HL_ID_LABEL_DECL)                     \
+    F(id_parameter, "id-parameter", "id_para", ULIGHT_HL_ID_PARAMETER)                             \
+    F(id_argument, "id-argument", "id_arg", ULIGHT_HL_ID_ARGUMENT)                                 \
     F(keyword, "keyword", "kw", ULIGHT_HL_KEYWORD)                                                 \
     F(keyword_control, "keyword-control", "kw_ctrl", ULIGHT_HL_KEYWORD_CONTROL)                    \
     F(keyword_type, "keyword-type", "kw_type", ULIGHT_HL_KEYWORD_TYPE)                             \
@@ -145,7 +147,9 @@ constexpr Flag operator|(Flag x, Flag y) noexcept
     F(sym_parens, "sym-parens", "sym_par", ULIGHT_HL_SYM_PARENS)                                   \
     F(sym_square, "sym-square", "sym_sqr", ULIGHT_HL_SYM_SQUARE)                                   \
     F(sym_brace, "sym-brace", "sym_brac", ULIGHT_HL_SYM_BRACE)                                     \
-    F(sym_op, "sym-op", "sym_op", ULIGHT_HL_SYM_OP)
+    F(sym_op, "sym-op", "sym_op", ULIGHT_HL_SYM_OP)                                                \
+    F(command, "command", "cmd", ULIGHT_HL_COMMAND)                                                \
+    F(command_builtin, "command-builtin", "cmd_builtin", ULIGHT_HL_COMMAND_BUILTIN)
 
 // NOLINTNEXTLINE(bugprone-macro-parentheses)
 #define ULIGHT_HIGHLIGHT_TYPE_ENUMERATOR(id, long_str, short_str, initializer) id = initializer,
