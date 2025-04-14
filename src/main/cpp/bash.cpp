@@ -117,13 +117,19 @@ private:
         command_sub,
     };
 
+    enum struct State : Underlying {
+        command,
+        argument,
+        normal,
+    };
+
     Non_Owning_Buffer<Token>& out;
     std::u8string_view remainder;
     const Highlight_Options& options;
 
     const std::size_t source_length = remainder.size();
     std::size_t index = 0;
-    bool in_command = false;
+    State state = State::command;
 
 public:
     Highlighter(
@@ -169,14 +175,18 @@ private:
             case u8'\t': {
                 const std::size_t length = match_blank(remainder);
                 advance(length);
+                state = State::argument;
                 continue;
             }
             case u8'\n': {
                 advance(1);
-                in_command = false;
+                state = State::command;
                 continue;
             }
-            case u8'$':
+            case u8'$': {
+                consume_substitution();
+                continue;
+            }
             case u8'|':
             case u8'&':
             case u8';':
@@ -203,7 +213,40 @@ private:
                 emit_and_advance(1, Highlight_Type::sym_brace);
                 continue;
             }
+            default: {
+                consume_word();
+                continue;
             }
+            }
+        }
+    }
+
+    void consume_word()
+    {
+        std::size_t length = 0;
+        for (; length < remainder.length(); ++length) {
+            if (is_bash_unquoted_terminator(remainder[length])) {
+                break;
+            }
+        }
+        ULIGHT_ASSERT(length != 0);
+        switch (state) {
+        case State::command: {
+            emit_and_advance(length, Highlight_Type::command);
+            state = State::normal;
+            break;
+        }
+        case State::argument: {
+            const auto highlight = remainder.starts_with(u8'-') ? Highlight_Type::id_argument
+                                                                : Highlight_Type::string;
+            emit_and_advance(length, highlight);
+            state = State::normal;
+            break;
+        }
+        default: {
+            emit_and_advance(length, Highlight_Type::string);
+            break;
+        }
         }
     }
 
