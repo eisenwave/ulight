@@ -890,6 +890,18 @@ constexpr bool is_jsx_tag_name_part(char32_t c)
 // BASH ============================================================================================
 
 [[nodiscard]]
+constexpr bool is_bash_whitespace(char8_t c)
+{
+    return c == u8' ' || c == u8'\t' || c == u8'\v' || c == u8'\r' || c == u8'\n';
+}
+
+[[nodiscard]]
+constexpr bool is_bash_whitespace(char32_t c)
+{
+    return c == U' ' || c == U'\t' || c == U'\v' || c == U'\r' || c == U'\n';
+}
+
+[[nodiscard]]
 constexpr bool is_bash_blank(char8_t c)
 {
     // https://www.gnu.org/software/bash/manual/bash.html#Definitions-1
@@ -918,6 +930,26 @@ constexpr bool is_bash_metacharacter(char32_t c)
 {
     // https://www.gnu.org/software/bash/manual/bash.html#index-metacharacter
     return is_ascii(c) && is_bash_metacharacter(char8_t(c));
+}
+
+/// @brief Returns `true` if `c` is a character that ends a sequence of unquoted characters that
+/// comprise a single argument for the highlighter.
+///
+/// Any characters not in this set would form a contiguous word.
+/// Notably, `/` and `.` are not in this set, so `./path/to` form a word,
+/// and are highlighted as one token.
+[[nodiscard]]
+constexpr bool is_bash_unquoted_terminator(char8_t c)
+{
+    return is_bash_whitespace(c) //
+        || is_bash_metacharacter(c) //
+        || c == u8'\\' || c == u8'$' || c == u8'\'' || c == u8'"';
+}
+
+[[nodiscard]]
+constexpr bool is_bash_unquoted_terminator(char32_t c)
+{
+    return is_ascii(c) && is_bash_unquoted_terminator(char8_t(c));
 }
 
 } // namespace ulight
