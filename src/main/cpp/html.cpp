@@ -268,6 +268,7 @@ struct Highlighter {
 private:
     Non_Owning_Buffer<Token>& out;
     std::u8string_view remainder;
+    std::pmr::memory_resource* memory;
     Highlight_Options options;
 
     const std::size_t source_length = remainder.length();
@@ -277,10 +278,12 @@ public:
     Highlighter(
         Non_Owning_Buffer<Token>& out,
         std::u8string_view source,
+        std::pmr::memory_resource* memory,
         const Highlight_Options& options
     )
         : out { out }
         , remainder { source }
+        , memory { memory }
         , options { options }
     {
     }
@@ -382,7 +385,7 @@ public:
         if (!comment) {
             return false;
         }
-        emit_and_advance(index, comment_prefix.length(), Highlight_Type::comment_delimiter);
+        emit_and_advance(index, comment_prefix.length(), Highlight_Type::comment_delim);
         comment.length -= comment_prefix.length();
 
         if (comment.terminated) {
@@ -391,7 +394,7 @@ public:
                     index, comment.length - comment_suffix.length(), Highlight_Type::comment
                 );
             }
-            emit_and_advance(index, comment_suffix.length(), Highlight_Type::comment_delimiter);
+            emit_and_advance(index, comment_suffix.length(), Highlight_Type::comment_delim);
         }
         else if (comment.length != 0) {
             emit_and_advance(index, comment.length, Highlight_Type::comment);
@@ -446,22 +449,50 @@ public:
         }
         if (equals_ascii_ignore_case(name, script_tag)) {
             const std::size_t js_length = match_raw_text(remainder, script_tag);
-            // TODO: do nested language highlighting for JavaScript here
-            if (js_length != 0) {
-                advance(js_length);
-            }
+            consume_nested_language(Lang::javascript, js_length);
             return true;
         }
         if (equals_ascii_ignore_case(name, style_tag)) {
             const std::size_t css_length = match_raw_text(remainder, style_tag);
-            // TODO: do nested language highlighting for CSS here
-            if (css_length != 0) {
-                advance(css_length);
-            }
+            consume_nested_language(Lang::css, css_length);
             return true;
         }
 
         return true;
+    }
+
+    void consume_nested_language(Lang lang, std::size_t length)
+    {
+        ULIGHT_ASSERT(lang == Lang::css || lang == Lang::javascript);
+        if (length == 0) {
+            return;
+        }
+        Token nested_tokens[1024];
+        Non_Owning_Buffer<Token> sub = sub_buffer(nested_tokens);
+        const std::u8string_view nested_source = remainder.substr(0, length);
+
+        if (lang == Lang::css) {
+            highlight_css(sub, nested_source, memory, options);
+        }
+        else {
+            highlight_javascript(sub, nested_source, memory, options);
+        }
+        sub.flush();
+
+        advance(length);
+    }
+
+    [[nodiscard]]
+    Non_Owning_Buffer<Token> sub_buffer(std::span<Token> data)
+    {
+        constexpr auto flush = +[](void* this_pointer, Token* tokens, std::size_t amount) {
+            auto& self = *static_cast<Highlighter*>(this_pointer);
+            for (std::size_t i = 0; i < amount; ++i) {
+                tokens[i].begin += self.index;
+            }
+            self.out.append_range(std::span<const Token> { tokens, amount });
+        };
+        return { data.data(), data.size(), this, flush };
     }
 
     bool expect_attribute()
@@ -594,11 +625,11 @@ public:
 bool highlight_html( //
     Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
-    std::pmr::memory_resource*,
+    std::pmr::memory_resource* memory,
     const Highlight_Options& options
 )
 {
-    return html::Highlighter { out, source, options }();
+    return html::Highlighter { out, source, memory, options }();
 }
 
 } // namespace ulight

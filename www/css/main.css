@@ -1,18 +1,30 @@
+:root {
+    --light-text-rgb: 0, 0, 0;
+    --light-text: rgb(var(--light-text-rgb));
+    --light-background: white;
+    --light-deep-background: rgb(240, 240, 240);
+
+    --dark-text-rgb: 231, 231, 231;
+    --dark-text: rgb(var(--dark-text-rgb));
+    --dark-background: rgb(40, 40, 40);
+    --dark-deep-background: rgb(24, 24, 24);
+}
+
 @media (prefers-color-scheme: light) {
     :root {
-        --text-rgb: 0, 0, 0;
-        --text: rgb(var(--text-rgb));
-        --background: white;
-        --deep-background: rgb(240, 240, 240);
+        --text-rgb: var(--light-text-rgb);
+        --text: var(--light-text);
+        --background: var(--light-background);
+        --deep-background: var(--light-deep-background);
     }
 }
 
 @media not (prefers-color-scheme: light) {
     :root {
-        --text-rgb: 231, 231, 231;
-        --text: rgb(var(--text-rgb));
-        --background: rgb(32, 32, 32);
-        --deep-background: rgb(24, 24, 24);
+        --text-rgb: var(--dark-text-rgb);
+        --text: var(--dark-text);
+        --background: var(--dark-background);
+        --deep-background: var(--dark-deep-background);
     }
 
     a:link {

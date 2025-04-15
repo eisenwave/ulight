@@ -6,7 +6,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(LLVM_WARNING_OPTIONS -Wall -Wimplicit-fallthrough -Wpedantic -Wextra -Wconversion -Wmissing-declarations -Wno-bit-int-extension)
+set(LLVM_WARNING_OPTIONS -Wall -Wimplicit-fallthrough -Wpedantic -Wextra -Wconversion -Wmissing-declarations -Wno-bit-int-extension -Wno-trigraphs)
 
 # Normally, this is OFF,
 # but in rare instances, bugs are very hard to track down,
@@ -22,7 +22,7 @@ if(DEFINED EMSCRIPTEN)
         set(SANITIZER_OPTIONS "-fsanitize=address,undefined")
     endif()
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(WARNING_OPTIONS -Wall -Wimplicit-fallthrough -Wpedantic -Wextra -Wconversion -Wmissing-declarations)
+    set(WARNING_OPTIONS -Wall -Wimplicit-fallthrough -Wpedantic -Wextra -Wconversion -Wmissing-declarations -Wno-trigraphs)
     if (ASAN_ENABLED)
         set(SANITIZER_OPTIONS "-fsanitize=address,undefined")
     endif()
@@ -44,6 +44,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/cpp.cpp
     src/main/cpp/css.cpp
     src/main/cpp/html.cpp
+    src/main/cpp/js.cpp
     src/main/cpp/lua.cpp
     src/main/cpp/mmml.cpp
     src/main/cpp/parse_utils.cpp
@@ -65,6 +66,7 @@ if(DEFINED EMSCRIPTEN)
         "-stdlib=libc++"
         "-Os"
 #       "-fno-exceptions"
+        ${WARNING_OPTIONS}
         ${SANITIZER_OPTIONS}
     )
     target_link_options(ulight-wasm PRIVATE
@@ -125,7 +127,9 @@ else(NOT DEFINED EMSCRIPTEN)
         src/test/cpp/test_css.cpp
         src/test/cpp/test_highlight.cpp
         src/test/cpp/test_html.cpp
+        src/test/cpp/test_js.cpp
         src/test/cpp/test_unicode.cpp
+        src/test/cpp/test_unicode_algorithm.cpp
         src/test/cpp/test_nasm.cpp
     )
 
