@@ -105,27 +105,42 @@ std::size_t match_identifier(std::u8string_view str)
 
 std::optional<Token_Type> match_operator(std::u8string_view str)
 {
+    using enum Token_Type;
     if (str.empty()) {
         return {};
     }
     switch (str[0]) {
-    case u8'|': return str.starts_with(u8"||") ? Token_Type::pipe_pipe : Token_Type::pipe;
+    case u8'!': return exclamation;
     case u8'&':
-        return str.starts_with(u8"&&") ? Token_Type::amp_amp
-            : str.starts_with(u8"&>>") ? Token_Type::amp_greater_greater
-            : str.starts_with(u8"&>")  ? Token_Type::amp_greater
-                                       : Token_Type::amp;
+        return str.starts_with(u8"&&") ? amp_amp
+            : str.starts_with(u8"&>>") ? amp_greater_greater
+            : str.starts_with(u8"&>")  ? amp_greater
+                                       : amp;
+    case u8'(': return left_parens;
+    case u8')': return right_parens;
+    case u8'*': return plus;
+    case u8'-': return minus;
+    case u8':': return colon;
+    case u8';': return semicolon;
     case u8'<':
-        return str.starts_with(u8"<<<") ? Token_Type::less_less_less
-            : str.starts_with(u8"<<")   ? Token_Type::less_less
-            : str.starts_with(u8"<&")   ? Token_Type::less_amp
-            : str.starts_with(u8"<>")   ? Token_Type::less_greater
-                                        : Token_Type::less;
+        return str.starts_with(u8"<<<") ? less_less_less
+            : str.starts_with(u8"<<")   ? less_less
+            : str.starts_with(u8"<&")   ? less_amp
+            : str.starts_with(u8"<>")   ? less_greater
+                                        : less;
+    case u8'=': return equal;
     case u8'>':
-        return str.starts_with(u8">>") ? Token_Type::greater_greater
-            : str.starts_with(u8">&")  ? Token_Type::greater_amp
-                                       : Token_Type::greater;
-    case u8';': return Token_Type::semicolon;
+        return str.starts_with(u8">>") ? greater_greater
+            : str.starts_with(u8">&")  ? greater_amp
+                                       : greater;
+    case u8'?': return question;
+    case u8'@': return at;
+    case u8'[': return str.starts_with(u8"[[") ? left_square_square : left_square;
+    case u8']': return str.starts_with(u8"]]") ? right_square_square : right_square;
+    case u8'{': return left_brace;
+    case u8'|': return str.starts_with(u8"||") ? pipe_pipe : pipe;
+    case u8'}': return right_brace;
+    case u8'~': return tilde;
     default: break;
     }
     return {};
