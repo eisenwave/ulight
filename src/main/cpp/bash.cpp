@@ -146,6 +146,7 @@ private:
         in_command,
         before_argument,
         in_argument,
+        parameter_sub,
     };
 
     Non_Owning_Buffer<Token>& out;
@@ -220,7 +221,7 @@ private:
                     consume_substitution();
                 }
                 else {
-                    consume_word();
+                    consume_word(context);
                 }
                 continue;
             }
@@ -236,10 +237,11 @@ private:
                 continue;
             }
             case u8')': {
-                emit_and_advance(1, Highlight_Type::sym_parens);
                 if (context == Context::command_sub) {
+                    emit_and_advance(1, Highlight_Type::escape);
                     return;
                 }
+                emit_and_advance(1, Highlight_Type::sym_parens);
                 continue;
             }
             case u8'}': {
@@ -251,18 +253,20 @@ private:
                 continue;
             }
             default: {
-                consume_word();
+                consume_word(context);
                 continue;
             }
             }
         }
     }
 
-    void consume_word()
+    void consume_word(Context context)
     {
         std::size_t length = 0;
         for (; length < remainder.length(); ++length) {
-            if (is_bash_unquoted_terminator(remainder[length])) {
+            if (is_bash_unquoted_terminator(remainder[length])
+                || starts_with_substitution(remainder.substr(length))
+                || (context == Context::parameter_sub && remainder[length] == u8'}')) {
                 break;
             }
         }
@@ -283,6 +287,10 @@ private:
         }
         case State::in_argument: {
             emit_and_advance(length, Highlight_Type::string);
+            break;
+        }
+        case State::parameter_sub: {
+            emit_and_advance(length, Highlight_Type::id_var);
             break;
         }
         }
@@ -338,20 +346,28 @@ private:
 
     void consume_substitution()
     {
-        ULIGHT_ASSERT(remainder.size() >= 2 && !remainder.starts_with(u8'$'));
+        ULIGHT_ASSERT(remainder.size() >= 2 && remainder.starts_with(u8'$'));
         const char8_t next = remainder[1];
         if (next == u8'{') {
             emit_and_advance(2, Highlight_Type::escape);
+            state = State::parameter_sub;
             consume_commands(Context::parameter_sub);
             return;
         }
         if (next == u8'(') {
             emit_and_advance(2, Highlight_Type::escape);
+            state = State::before_command;
             consume_commands(Context::command_sub);
             return;
         }
         if (const std::size_t id = match_identifier(remainder.substr(1))) {
             emit_and_advance(id + 1, Highlight_Type::escape);
+            if (state == State::before_command) {
+                state = State::in_command;
+            }
+            else if (state == State::before_argument) {
+                state = State::in_argument;
+            }
             return;
         }
         ULIGHT_ASSERT_UNREACHABLE(u8"No substitution to consume.");

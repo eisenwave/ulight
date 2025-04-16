@@ -971,7 +971,7 @@ constexpr bool is_bash_unquoted_terminator(char8_t c)
 {
     return is_bash_whitespace(c) //
         || is_bash_metacharacter(c) //
-        || c == u8'\\' || c == u8'$' || c == u8'\'' || c == u8'"';
+        || c == u8'\\' || c == u8'\'' || c == u8'"';
 }
 
 [[nodiscard]]
