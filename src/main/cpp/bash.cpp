@@ -330,7 +330,7 @@ private:
             }
         };
 
-        for (; chars < remainder.length(); ++chars) {
+        for (; chars < remainder.length();) {
             if (remainder[chars] == u8'\"') {
                 flush_chars();
                 emit_and_advance(1, Highlight_Type::string_delim);
@@ -339,6 +339,9 @@ private:
             if (starts_with_substitution(remainder.substr(chars))) {
                 flush_chars();
                 consume_substitution();
+            }
+            else {
+                ++chars;
             }
         }
         flush_chars();
