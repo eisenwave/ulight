@@ -211,6 +211,8 @@ private:
                 }
                 continue;
             }
+            case u8'\v':
+            case u8'\r':
             case u8'\n': {
                 advance(1);
                 state = State::before_command;
