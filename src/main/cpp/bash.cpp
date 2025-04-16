@@ -274,12 +274,12 @@ private:
         switch (state) {
         case State::before_command:
         case State::in_command: {
-            emit_and_advance(length, Highlight_Type::command);
+            emit_and_advance(length, Highlight_Type::shell_command);
             state = State::in_command;
             break;
         }
         case State::before_argument: {
-            const auto highlight = remainder.starts_with(u8'-') ? Highlight_Type::id_argument
+            const auto highlight = remainder.starts_with(u8'-') ? Highlight_Type::shell_option
                                                                 : Highlight_Type::string;
             emit_and_advance(length, highlight);
             state = State::in_argument;
