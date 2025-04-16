@@ -358,10 +358,13 @@ typedef enum ulight_highlight_type {
     // -------------------------------------------------------------------------
 
     /// @brief A command in a shell or build system.
-    ULIGHT_HL_COMMAND = 0xd0,
+    ULIGHT_HL_SHELL_COMMAND = 0xd0,
     /// @brief A builtin command in a shell or build system,
     /// such as `echo` in Bash or `add_executable` in CMake.
-    ULIGHT_HL_COMMAND_BUILTIN = 0xd1,
+    ULIGHT_HL_SHELL_COMMAND_BUILTIN = 0xd1,
+    /// @brief An option in a shell command,
+    /// such as `-r` in `rm -r`.
+    ULIGHT_HL_SHELL_OPTION = 0xd2,
 
     // 0xe0..0xff Unused
     // -------------------------------------------------------------------------

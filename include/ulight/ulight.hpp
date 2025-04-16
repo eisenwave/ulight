@@ -148,8 +148,10 @@ constexpr Flag operator|(Flag x, Flag y) noexcept
     F(sym_square, "sym-square", "sym_sqr", ULIGHT_HL_SYM_SQUARE)                                   \
     F(sym_brace, "sym-brace", "sym_brac", ULIGHT_HL_SYM_BRACE)                                     \
     F(sym_op, "sym-op", "sym_op", ULIGHT_HL_SYM_OP)                                                \
-    F(command, "command", "cmd", ULIGHT_HL_COMMAND)                                                \
-    F(command_builtin, "command-builtin", "cmd_builtin", ULIGHT_HL_COMMAND_BUILTIN)
+    F(shell_command, "shell-command", "sh_cmd", ULIGHT_HL_SHELL_COMMAND)                           \
+    F(shell_command_builtin, "shell-command-builtin", "sh_cmd_bltn",                               \
+      ULIGHT_HL_SHELL_COMMAND_BUILTIN)                                                             \
+    F(shell_option, "shell-option", "sh-opt", ULIGHT_HL_SHELL_OPTION)
 
 // NOLINTNEXTLINE(bugprone-macro-parentheses)
 #define ULIGHT_HIGHLIGHT_TYPE_ENUMERATOR(id, long_str, short_str, initializer) id = initializer,
