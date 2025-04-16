@@ -932,6 +932,34 @@ constexpr bool is_bash_metacharacter(char32_t c)
     return is_ascii(c) && is_bash_metacharacter(char8_t(c));
 }
 
+[[nodiscard]]
+constexpr bool is_bash_identifier_start(char8_t c)
+{
+    // https://www.gnu.org/software/bash/manual/bash.html#index-name
+    return is_ascii_alpha(c) || c == u8'_';
+}
+
+[[nodiscard]]
+constexpr bool is_bash_identifier_start(char32_t c)
+{
+    // https://www.gnu.org/software/bash/manual/bash.html#index-name
+    return is_ascii_alpha(c) || c == U'_';
+}
+
+[[nodiscard]]
+constexpr bool is_bash_identifier(char8_t c)
+{
+    // https://www.gnu.org/software/bash/manual/bash.html#index-name
+    return is_ascii_alphanumeric(c) || c == u8'_';
+}
+
+[[nodiscard]]
+constexpr bool is_bash_identifier(char32_t c)
+{
+    // https://www.gnu.org/software/bash/manual/bash.html#index-name
+    return is_ascii_alphanumeric(c) || c == U'_';
+}
+
 /// @brief Returns `true` if `c` is a character that ends a sequence of unquoted characters that
 /// comprise a single argument for the highlighter.
 ///
