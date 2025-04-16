@@ -105,6 +105,12 @@ std::size_t match_blank(std::u8string_view str);
 [[nodiscard]]
 std::size_t match_word(std::u8string_view str);
 
+[[nodiscard]]
+bool starts_with_substitution(std::u8string_view str);
+
+[[nodiscard]]
+std::size_t match_identifier(std::u8string_view str);
+
 } // namespace ulight::bash
 
 #endif
