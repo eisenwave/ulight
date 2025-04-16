@@ -74,9 +74,33 @@ std::size_t match_comment(std::u8string_view str)
 std::size_t match_blank(std::u8string_view str)
 {
     const auto predicate = [](char8_t c) { return is_bash_blank(c); };
-    const auto* const data_end = str.end();
-    const auto* const end = std::ranges::find_if_not(str, predicate);
-    return std::size_t(data_end - end);
+    const auto* const data_end = str.data() + str.size();
+    const auto* const end = std::ranges::find_if_not(str.data(), data_end, predicate);
+    return std::size_t(end - str.data());
+}
+
+bool starts_with_substitution(std::u8string_view str)
+{
+    return str.length() >= 2 //
+        && str[0] == u8'$' //
+        && (str[1] == u8'{' || str[1] == u8'(' || is_bash_identifier_start(str[1]));
+}
+
+std::size_t match_identifier(std::u8string_view str)
+{
+    if (str.empty()) {
+        return 0;
+    }
+    if (!is_bash_identifier_start(str[0])) {
+        return 0;
+    }
+    std::size_t length = 1;
+    for (; length < str.length(); ++length) {
+        if (!is_bash_identifier(str[length])) {
+            return length;
+        }
+    }
+    return length;
 }
 
 std::optional<Token_Type> match_operator(std::u8string_view str)
@@ -118,9 +142,10 @@ private:
     };
 
     enum struct State : Underlying {
-        command,
-        argument,
-        normal,
+        before_command,
+        in_command,
+        before_argument,
+        in_argument,
     };
 
     Non_Owning_Buffer<Token>& out;
@@ -129,7 +154,7 @@ private:
 
     const std::size_t source_length = remainder.size();
     std::size_t index = 0;
-    State state = State::command;
+    State state = State::before_command;
 
 public:
     Highlighter(
@@ -163,6 +188,11 @@ private:
                 highlight_string(string);
                 continue;
             }
+            case u8'"': {
+                emit_and_advance(1, Highlight_Type::string_delim);
+                consume_double_quoted_string();
+                continue;
+            }
             case u8'#': {
                 const std::size_t length = match_comment(remainder);
                 emit_and_advance(1, Highlight_Type::comment_delim);
@@ -175,16 +205,23 @@ private:
             case u8'\t': {
                 const std::size_t length = match_blank(remainder);
                 advance(length);
-                state = State::argument;
+                if (state == State::in_command || state == State::in_argument) {
+                    state = State::before_argument;
+                }
                 continue;
             }
             case u8'\n': {
                 advance(1);
-                state = State::command;
+                state = State::before_command;
                 continue;
             }
             case u8'$': {
-                consume_substitution();
+                if (starts_with_substitution(remainder)) {
+                    consume_substitution();
+                }
+                else {
+                    consume_word();
+                }
                 continue;
             }
             case u8'|':
@@ -231,19 +268,20 @@ private:
         }
         ULIGHT_ASSERT(length != 0);
         switch (state) {
-        case State::command: {
+        case State::before_command:
+        case State::in_command: {
             emit_and_advance(length, Highlight_Type::command);
-            state = State::normal;
+            state = State::in_command;
             break;
         }
-        case State::argument: {
+        case State::before_argument: {
             const auto highlight = remainder.starts_with(u8'-') ? Highlight_Type::id_argument
                                                                 : Highlight_Type::string;
             emit_and_advance(length, highlight);
-            state = State::normal;
+            state = State::in_argument;
             break;
         }
-        default: {
+        case State::in_argument: {
             emit_and_advance(length, Highlight_Type::string);
             break;
         }
@@ -290,7 +328,7 @@ private:
                 emit_and_advance(1, Highlight_Type::string_delim);
                 return;
             }
-            if (remainder[chars] == u8'$') {
+            if (starts_with_substitution(remainder.substr(chars))) {
                 flush_chars();
                 consume_substitution();
             }
@@ -300,18 +338,23 @@ private:
 
     void consume_substitution()
     {
-        ULIGHT_ASSERT(remainder.starts_with(u8'$'));
-        if (remainder.size() < 2) {
-            emit_and_advance(1, Highlight_Type::sym);
-        }
+        ULIGHT_ASSERT(remainder.size() >= 2 && !remainder.starts_with(u8'$'));
         const char8_t next = remainder[1];
-        emit_and_advance(2, Highlight_Type::escape);
         if (next == u8'{') {
+            emit_and_advance(2, Highlight_Type::escape);
             consume_commands(Context::parameter_sub);
+            return;
         }
-        else if (next == u8'(') {
+        if (next == u8'(') {
+            emit_and_advance(2, Highlight_Type::escape);
             consume_commands(Context::command_sub);
+            return;
         }
+        if (const std::size_t id = match_identifier(remainder.substr(1))) {
+            emit_and_advance(id + 1, Highlight_Type::escape);
+            return;
+        }
+        ULIGHT_ASSERT_UNREACHABLE(u8"No substitution to consume.");
     }
 
     void emit(std::size_t begin, std::size_t length, Highlight_Type type)
