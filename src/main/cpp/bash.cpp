@@ -83,7 +83,7 @@ bool starts_with_substitution(std::u8string_view str)
 {
     return str.length() >= 2 //
         && str[0] == u8'$' //
-        && (str[1] == u8'{' || str[1] == u8'(' || is_bash_identifier_start(str[1]));
+        && is_bash_parameter_substitution_start(str[1]);
 }
 
 std::size_t match_identifier(std::u8string_view str)
@@ -353,13 +353,19 @@ private:
                 emit_and_advance(1, Highlight_Type::string_delim);
                 return;
             }
+            if (remainder[chars] == u8'\\' //
+                && chars + 1 < remainder.length() //
+                && is_bash_escapable_in_double_quotes(remainder[chars + 1])) {
+                flush_chars();
+                emit_and_advance(2, Highlight_Type::escape);
+                continue;
+            }
             if (starts_with_substitution(remainder.substr(chars))) {
                 flush_chars();
                 consume_substitution();
+                continue;
             }
-            else {
-                ++chars;
-            }
+            ++chars;
         }
         flush_chars();
     }
@@ -380,14 +386,24 @@ private:
             consume_commands(Context::command_sub);
             return;
         }
-        if (const std::size_t id = match_identifier(remainder.substr(1))) {
-            emit_and_advance(id + 1, Highlight_Type::escape);
+
+        const auto update_state = [&] {
             if (state == State::before_command) {
                 state = State::in_command;
             }
             else if (state == State::before_argument) {
                 state = State::in_argument;
-            }
+            };
+        };
+
+        if (is_bash_special_parameter(next)) {
+            emit_and_advance(2, Highlight_Type::escape);
+            update_state();
+            return;
+        }
+        if (const std::size_t id = match_identifier(remainder.substr(1))) {
+            emit_and_advance(id + 1, Highlight_Type::escape);
+            update_state();
             return;
         }
         ULIGHT_ASSERT_UNREACHABLE(u8"No substitution to consume.");
