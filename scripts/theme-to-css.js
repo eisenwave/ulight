@@ -35,6 +35,8 @@ const longNameToShort = {
     "id-module-decl": "id_mod_decl",
     "id-label": "id_labl",
     "id-label-decl": "id_labl_decl",
+    "id-parameter": "id_para",
+    "id-argument": "id_arg",
     "keyword": "kw",
     "keyword-control": "kw_ctrl",
     "keyword-type": "kw_type",
@@ -71,6 +73,9 @@ const longNameToShort = {
     "sym-square": "sym_sqr",
     "sym-brace": "sym_brac",
     "sym-op": "sym_op",
+    "shell-command": "sh_cmd",
+    "shell-command-builtin": "sh_cmd_bltn",
+    "shell-option": "sh-opt"
 };
 
 const variants = ["light", "dark"];

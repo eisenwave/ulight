@@ -24,8 +24,14 @@
     h-[data-h^=id] {
         color: #000000;
     }
+    h-[data-h^=id_arg] {
+        color: #5c477e;
+    }
     h-[data-h^=id_fun] {
         color: #853e7a;
+    }
+    h-[data-h^=id_para] {
+        color: #5c477e;
     }
     h-[data-h^=id_type] {
         color: #0050c8;
@@ -172,8 +178,14 @@
     h-[data-h^=id] {
         color: #cccccc;
     }
+    h-[data-h^=id_arg] {
+        color: #a4c4de;
+    }
     h-[data-h^=id_fun] {
         color: #ffdc9c;
+    }
+    h-[data-h^=id_para] {
+        color: #a4c4de;
     }
     h-[data-h^=id_type] {
         color: #4fb0ff;
@@ -270,6 +282,12 @@
     }
     h-[data-h^=num_dlim] {
         color: #669dd9;
+    }
+    h-[data-h^=sh_cmd] {
+        color: #ff5a82;
+    }
+    h-[data-h^=sh-opt] {
+        color: #a4c4de;
     }
     h-[data-h^=str] {
         color: #cf9e7e;

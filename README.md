@@ -108,6 +108,7 @@ and a stable numeric ID whose value can be found in `include/ulight.h`.
 
 | Display name | Short names | `ulight_lang` |
 | ------------ | ----------- | ------------- |
+| Bash | `bash`, `sh`, `zsh` | `ULIGHT_LANG_BASH` |
 | C | `c`, `h` | `ULIGHT_LANG_C` |
 | C++ | `c++`, `cc`, `cplusplus`, `cpp`, `cxx`, `h++`, `hpp` | `ULIGHT_LANG_CPP` |
 | CSS | `css` | `ULIGHT_LANG_CSS` |

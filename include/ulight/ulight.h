@@ -40,11 +40,13 @@ typedef struct ulight_string_view {
 enum {
     /// @brief The amount of unique languages supported,
     /// including `ULIGHT_LANG_NONE`.
-    ULIGHT_LANG_COUNT = 8
+    ULIGHT_LANG_COUNT = 9
 };
 
 /// @brief A language supported by ulight for syntax highlighting.
 typedef enum ulight_lang {
+    /// @brief Bourne Again SHell.
+    ULIGHT_LANG_BASH = 8,
     /// @brief C.
     ULIGHT_LANG_C = 6,
     /// @brief C++.
@@ -239,22 +241,28 @@ typedef enum ulight_highlight_type {
     /// an identifier in the declaration of a label,
     /// like in `label: while (true)`.
     ULIGHT_HL_ID_LABEL_DECL = 0x4f,
+    /// @brief In coding languages, a (function) parameter.
+    ULIGHT_HL_ID_PARAMETER = 0x50,
+    /// @brief In coding languages,
+    /// a named argument/designator,
+    /// like in `{ .x = 0 }` in C++ or in `f(x = 3)` in Python.
+    ULIGHT_HL_ID_ARGUMENT = 0x51,
 
     /// @brief In coding languages, a keyword, like `import`.
-    ULIGHT_HL_KEYWORD = 0x50,
+    ULIGHT_HL_KEYWORD = 0x60,
     /// @brief In coding languages, a keyword that directs control flow, like `if`.
-    ULIGHT_HL_KEYWORD_CONTROL = 0x51,
+    ULIGHT_HL_KEYWORD_CONTROL = 0x61,
     /// @brief In coding languages, a keyword that specifies a type, like `int`.
-    ULIGHT_HL_KEYWORD_TYPE = 0x52,
+    ULIGHT_HL_KEYWORD_TYPE = 0x62,
     /// @brief In coding languages, a keyword that represents an operator, like `and`.
-    ULIGHT_HL_KEYWORD_OP = 0x53,
+    ULIGHT_HL_KEYWORD_OP = 0x63,
 
     /// @brief In languages with attribute syntax, the attribute content
-    ULIGHT_HL_ATTR = 0x60,
+    ULIGHT_HL_ATTR = 0x70,
     /// @brief In languages with attribute syntax, the attribute delimiters
-    ULIGHT_HL_ATTR_DELIM = 0x61,
+    ULIGHT_HL_ATTR_DELIM = 0x71,
 
-    // 0x80..0x8f Unidiff highlighting
+    // 0x80..0x87 Unidiff highlighting
     // -------------------------------------------------------------------------
 
     /// @brief In unidiff, a heading (`--- from-file`, `+++ to-file`).
@@ -267,6 +275,9 @@ typedef enum ulight_highlight_type {
     ULIGHT_HL_DIFF_DELETION = 0x83,
     /// @brief In unidiff, an insertion line.
     ULIGHT_HL_DIFF_INSERTION = 0x84,
+
+    // 0x88..0x8a Unused
+    // -------------------------------------------------------------------------
 
     // 0x90..0xaf Markup-specific highlighting
     // -------------------------------------------------------------------------
@@ -342,6 +353,21 @@ typedef enum ulight_highlight_type {
     ULIGHT_HL_SYM_BRACE = 0xc6,
     /// @brief Operators like `+` in languages where they have special meaning.
     ULIGHT_HL_SYM_OP = 0xc7,
+
+    // 0xd0..0xdf Shell languages, build systems, etc.
+    // -------------------------------------------------------------------------
+
+    /// @brief A command in a shell or build system.
+    ULIGHT_HL_SHELL_COMMAND = 0xd0,
+    /// @brief A builtin command in a shell or build system,
+    /// such as `echo` in Bash or `add_executable` in CMake.
+    ULIGHT_HL_SHELL_COMMAND_BUILTIN = 0xd1,
+    /// @brief An option in a shell command,
+    /// such as `-r` in `rm -r`.
+    ULIGHT_HL_SHELL_OPTION = 0xd2,
+
+    // 0xe0..0xff Unused
+    // -------------------------------------------------------------------------
 
 } ulight_highlight_type;
 

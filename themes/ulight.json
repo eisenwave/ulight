@@ -32,6 +32,8 @@
         "id-var": "#5c477e",
         "id-function": "#853e7a",
         "id-type": "#0050c8",
+        "id-parameter": "#5c477e",
+        "id-argument": "#5c477e",
         "attr": "#966c1c",
         "sym": "#000000",
         "sym-punc": "#646464",
@@ -132,6 +134,8 @@
         "id-var": "#a4c4de",
         "id-function": "#ffdc9c",
         "id-type": "#4fb0ff",
+        "id-parameter": "#a4c4de",
+        "id-argument": "#a4c4de",
         "attr": "#ea91d4",
         "sym": "#ffffff",
         "sym-punc": "#a0a0a0",
@@ -202,6 +206,8 @@
             "font-weight": "bold",
             "font-style": "italic",
             "text-decoration": "underline line-through"
-        }
+        },
+        "shell-command": "#ff5a82",
+        "shell-option": "#a4c4de"
     }
 }

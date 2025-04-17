@@ -27,8 +27,14 @@
 [data-ulight-theme=light-ulight] h-[data-h^=id] {
     color: #000000;
 }
+[data-ulight-theme=light-ulight] h-[data-h^=id_arg] {
+    color: #5c477e;
+}
 [data-ulight-theme=light-ulight] h-[data-h^=id_fun] {
     color: #853e7a;
+}
+[data-ulight-theme=light-ulight] h-[data-h^=id_para] {
+    color: #5c477e;
 }
 [data-ulight-theme=light-ulight] h-[data-h^=id_type] {
     color: #0050c8;
@@ -178,8 +184,14 @@
 [data-ulight-theme=dark-ulight] h-[data-h^=id] {
     color: #cccccc;
 }
+[data-ulight-theme=dark-ulight] h-[data-h^=id_arg] {
+    color: #a4c4de;
+}
 [data-ulight-theme=dark-ulight] h-[data-h^=id_fun] {
     color: #ffdc9c;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=id_para] {
+    color: #a4c4de;
 }
 [data-ulight-theme=dark-ulight] h-[data-h^=id_type] {
     color: #4fb0ff;
@@ -277,6 +289,12 @@
 [data-ulight-theme=dark-ulight] h-[data-h^=num_dlim] {
     color: #669dd9;
 }
+[data-ulight-theme=dark-ulight] h-[data-h^=sh_cmd] {
+    color: #ff5a82;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=sh-opt] {
+    color: #a4c4de;
+}
 [data-ulight-theme=dark-ulight] h-[data-h^=str] {
     color: #cf9e7e;
 }
@@ -306,6 +324,9 @@
 [data-ulight-theme=dark-vs].ulight-code, [data-ulight-theme=dark-vs].ulight-code-block {
     color: #d4d4d4;
 }
+[data-ulight-theme=dark-vs] h-[data-h^=bool] {
+    color: #569cd6;
+}
 [data-ulight-theme=dark-vs] h-[data-h^=cmt] {
     color: #6a9955;
 }
@@ -317,6 +338,9 @@
 }
 [data-ulight-theme=dark-vs] h-[data-h^=err] {
     color: #f44747;
+}
+[data-ulight-theme=dark-vs] h-[data-h^=id] {
+    color: #d4d4d4;
 }
 [data-ulight-theme=dark-vs] h-[data-h^=kw] {
     color: #569cd6;
@@ -405,6 +429,9 @@
 [data-ulight-theme=dark-vs] h-[data-h^=mk_ulin_strk] {
     text-decoration: underline line-through;
 }
+[data-ulight-theme=dark-vs] h-[data-h^=null] {
+    color: #569cd6;
+}
 [data-ulight-theme=dark-vs] h-[data-h^=num] {
     color: #b5cea8;
 }
@@ -423,6 +450,9 @@
 [data-ulight-theme=dark-vs] h-[data-h^=sym_sqr] {
     color: #ffd700;
 }
+[data-ulight-theme=dark-vs] h-[data-h^=this] {
+    color: #569cd6;
+}
 [data-ulight-theme=dark-vs] h-[data-h^=val] {
     color: #b5cea8;
 }
@@ -433,6 +463,9 @@
 }
 [data-ulight-theme=dark-vs-plus].ulight-code, [data-ulight-theme=dark-vs-plus].ulight-code-block {
     color: #d4d4d4;
+}
+[data-ulight-theme=dark-vs-plus] h-[data-h^=bool] {
+    color: #569cd6;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=cmt] {
     color: #6a9955;
@@ -449,11 +482,20 @@
 [data-ulight-theme=dark-vs-plus] h-[data-h^=esc] {
     color: #d7ba7d;
 }
+[data-ulight-theme=dark-vs-plus] h-[data-h^=id] {
+    color: #d4d4d4;
+}
+[data-ulight-theme=dark-vs-plus] h-[data-h^=id_arg] {
+    color: #9cdcfe;
+}
 [data-ulight-theme=dark-vs-plus] h-[data-h^=id_cons] {
     color: #4fc1ff;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=id_labl] {
     color: #c8c8c8;
+}
+[data-ulight-theme=dark-vs-plus] h-[data-h^=id_para] {
+    color: #9cdcfe;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=id_type] {
     color: #4ec9b0;
@@ -551,8 +593,17 @@
 [data-ulight-theme=dark-vs-plus] h-[data-h^=mk_ulin_strk] {
     text-decoration: underline line-through;
 }
+[data-ulight-theme=dark-vs-plus] h-[data-h^=null] {
+    color: #569cd6;
+}
 [data-ulight-theme=dark-vs-plus] h-[data-h^=num] {
     color: #b5cea8;
+}
+[data-ulight-theme=dark-vs-plus] h-[data-h^=sh_cmd] {
+    color: #d7ba7d;
+}
+[data-ulight-theme=dark-vs-plus] h-[data-h^=sh-opt] {
+    color: #569cd6;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=str] {
     color: #ce9178;
@@ -568,6 +619,9 @@
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=sym_sqr] {
     color: #ffd700;
+}
+[data-ulight-theme=dark-vs-plus] h-[data-h^=this] {
+    color: #569cd6;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=val] {
     color: #b5cea8;

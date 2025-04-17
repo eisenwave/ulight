@@ -15,11 +15,17 @@
         "number": "#b5cea8",
         "string": "#ce9178",
         "escape": "#d7ba7d",
+        "null": "#569cd6",
+        "bool": "#569cd6",
+        "this": "#569cd6",
         "macro": "#569cd6",
+        "id": "#d4d4d4",
         "id-var": "#9cdcfe",
         "id-const": "#4fc1ff",
         "id-type": "#4ec9b0",
         "id-label": "#c8c8c8",
+        "id-parameter": "#9cdcfe",
+        "id-argument": "#9cdcfe",
         "keyword": "#569cd6",
         "keyword-control": "#c586c0",
         "keyword-op": "#d4d4d4",
@@ -98,6 +104,8 @@
         "sym": "d4d4d4",
         "sym-parens": "#ffd700",
         "sym-square": "#ffd700",
-        "sym-brace": "#ffd700"
+        "sym-brace": "#ffd700",
+        "shell-command": "#d7ba7d",
+        "shell-option": "#569cd6"
     }
 }
