@@ -5,7 +5,6 @@
 #include <string_view>
 #include <vector>
 
-#include "ulight/impl/html.hpp"
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/assert.hpp"
@@ -14,7 +13,8 @@
 #include "ulight/impl/unicode.hpp"
 #include "ulight/impl/unicode_algorithm.hpp"
 
-#include "ulight/impl/js.hpp"
+#include "ulight/impl/lang/html.hpp"
+#include "ulight/impl/lang/js.hpp"
 #include "ulight/impl/lang/js_chars.hpp"
 
 namespace ulight {

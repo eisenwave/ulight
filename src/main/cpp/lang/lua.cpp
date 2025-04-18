@@ -10,9 +10,9 @@
 #include "ulight/impl/highlight.hpp"
 #include "ulight/ulight.hpp"
 
-#include "ulight/impl/lua.hpp"
 #include "ulight/impl/unicode.hpp"
 
+#include "ulight/impl/lang/lua.hpp"
 #include "ulight/impl/lang/lua_chars.hpp"
 
 namespace ulight {

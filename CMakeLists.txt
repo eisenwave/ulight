@@ -40,14 +40,15 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 set(LIBRARY_SOURCES
-    src/main/cpp/bash.cpp
+    src/main/cpp/lang/bash.cpp
+    src/main/cpp/lang/cpp.cpp
+    src/main/cpp/lang/css.cpp
+    src/main/cpp/lang/js.cpp
+    src/main/cpp/lang/lua.cpp
+    src/main/cpp/lang/mmml.cpp
+    src/main/cpp/lang/html.cpp
+
     src/main/cpp/chars.cpp
-    src/main/cpp/cpp.cpp
-    src/main/cpp/css.cpp
-    src/main/cpp/html.cpp
-    src/main/cpp/js.cpp
-    src/main/cpp/lua.cpp
-    src/main/cpp/mmml.cpp
     src/main/cpp/parse_utils.cpp
     src/main/cpp/ulight.cpp
 )

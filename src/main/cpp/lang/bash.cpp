@@ -5,7 +5,7 @@
 
 #include "ulight/impl/highlight.hpp"
 
-#include "ulight/impl/bash.hpp"
+#include "ulight/impl/lang/bash.hpp"
 #include "ulight/impl/lang/bash_chars.hpp"
 
 namespace ulight {

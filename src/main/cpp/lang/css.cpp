@@ -10,10 +10,10 @@
 #include "ulight/impl/strings.hpp"
 #include "ulight/impl/unicode.hpp"
 
-#include "ulight/impl/cpp.hpp"
-#include "ulight/impl/css.hpp"
-#include "ulight/impl/html.hpp"
+#include "ulight/impl/lang/cpp.hpp"
+#include "ulight/impl/lang/css.hpp"
 #include "ulight/impl/lang/css_chars.hpp"
+#include "ulight/impl/lang/html.hpp"
 
 namespace ulight {
 namespace css {

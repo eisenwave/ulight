@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "ulight/impl/html.hpp"
+#include "ulight/impl/lang/html.hpp"
 
 namespace ulight::html {
 namespace {

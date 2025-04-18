@@ -19,6 +19,7 @@
 namespace ulight {
 namespace {
 
+namespace fs = std::filesystem;
 using ulight::as_string_view;
 
 [[nodiscard]]
@@ -33,13 +34,13 @@ struct Highlight_Test : testing::Test {
     std::vector<char8_t> source;
 
     [[nodiscard]]
-    bool load_code(const std::filesystem::path& path)
+    bool load_code(const fs::path& path)
     {
         return load_utf8_file_or_error(source, path.c_str());
     }
 
     [[nodiscard]]
-    bool load_expectations(const std::filesystem::path& path)
+    bool load_expectations(const fs::path& path)
     {
         return load_utf8_file_or_error(expected, path.c_str());
     }
@@ -53,16 +54,19 @@ struct Highlight_Test : testing::Test {
 };
 
 [[nodiscard]]
-std::vector<std::filesystem::path> paths_in_directory(const std::filesystem::path& directory)
+std::vector<fs::path> paths_in_directory(const fs::path& directory)
 {
+    constexpr auto is_regular_file
+        = [](const fs::directory_entry& entry) { return entry.is_regular_file(); };
+    constexpr auto to_path = [](const fs::directory_entry& entry) -> auto& { return entry.path(); };
+
     // TODO: replace with std::from_range once supported
-    std::filesystem::directory_iterator iterator(directory);
-    std::vector<std::filesystem::path> result;
-    const auto paths_view = iterator
-        | std::views::transform([](const std::filesystem::directory_entry& entry) -> auto& {
-                                return entry.path();
-                            });
-    std::ranges::copy(paths_view, std::back_inserter(result));
+    fs::recursive_directory_iterator iterator(directory);
+    std::vector<fs::path> result;
+    std::ranges::copy(
+        iterator | std::views::filter(is_regular_file) | std::views::transform(to_path),
+        std::back_inserter(result)
+    );
     return result;
 }
 
@@ -71,19 +75,19 @@ TEST_F(Highlight_Test, file_tests)
     Token token_buffer[4096];
     char text_buffer[8192];
 
-    static const std::filesystem::path directory { "test/highlight" };
-    ASSERT_TRUE(std::filesystem::is_directory(directory));
+    static const fs::path directory { "test/highlight" };
+    ASSERT_TRUE(fs::is_directory(directory));
 
-    std::vector<std::filesystem::path> paths = paths_in_directory(directory);
+    std::vector<fs::path> paths = paths_in_directory(directory);
     std::ranges::sort(paths);
 
     for (const auto& input_path : paths) {
         const std::u8string extension = input_path.extension().generic_u8string();
         ASSERT_TRUE(extension.size() > 1);
 
-        std::filesystem::path expectations_path = input_path;
+        fs::path expectations_path = input_path;
         expectations_path += ".html";
-        const bool has_expectations = std::filesystem::is_regular_file(expectations_path);
+        const bool has_expectations = fs::is_regular_file(expectations_path);
 
         const std::u8string_view lang_name = std::u8string_view(extension).substr(1);
         const Lang lang = get_lang(lang_name);

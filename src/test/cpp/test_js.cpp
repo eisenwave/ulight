@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "ulight/impl/js.hpp"
+#include "ulight/impl/lang/js.hpp"
 
 namespace ulight::js {
 

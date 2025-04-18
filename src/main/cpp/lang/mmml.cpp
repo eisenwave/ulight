@@ -13,8 +13,8 @@
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/unicode.hpp"
 
+#include "ulight/impl/lang/mmml.hpp"
 #include "ulight/impl/lang/mmml_chars.hpp"
-#include "ulight/impl/mmml.hpp"
 
 namespace ulight {
 
