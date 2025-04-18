@@ -18,6 +18,27 @@
 [data-ulight-theme=light-ulight] h-[data-h^=cmt_dlim] {
     font-style: normal;
 }
+[data-ulight-theme=light-ulight] h-[data-h^=diff_eq] {
+    color: #000000;
+}
+[data-ulight-theme=light-ulight] h-[data-h^=diff_del] {
+    color: #b31d28;
+    background-color: #ffeef0;
+}
+[data-ulight-theme=light-ulight] h-[data-h^=diff_head] {
+    color: #777777;
+}
+[data-ulight-theme=light-ulight] h-[data-h^=diff_head_hunk] {
+    color: #5c477e;
+}
+[data-ulight-theme=light-ulight] h-[data-h^=diff_ins] {
+    color: #22863a;
+    background-color: #f0fff4;
+}
+[data-ulight-theme=light-ulight] h-[data-h^=diff_mod] {
+    color: #7a680d;
+    background-color: #fffdee;
+}
 [data-ulight-theme=light-ulight] h-[data-h^=err] {
     color: #ff0000;
 }
@@ -175,6 +196,27 @@
 [data-ulight-theme=dark-ulight] h-[data-h^=cmt_dlim] {
     font-style: normal;
 }
+[data-ulight-theme=dark-ulight] h-[data-h^=diff_eq] {
+    color: #e7e7e7;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=diff_del] {
+    color: #ffdcd7;
+    background-color: #67060c;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=diff_head] {
+    color: #777777;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=diff_head_hunk] {
+    color: #edc385;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=diff_ins] {
+    color: #aff5b4;
+    background-color: #033a16;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=diff_mod] {
+    color: #fff4d7;
+    background-color: #674d06;
+}
 [data-ulight-theme=dark-ulight] h-[data-h^=err] {
     color: #ff0000;
 }
@@ -330,11 +372,20 @@
 [data-ulight-theme=dark-vs] h-[data-h^=cmt] {
     color: #6a9955;
 }
+[data-ulight-theme=dark-vs] h-[data-h^=diff_eq] {
+    color: #e7e7e7;
+}
 [data-ulight-theme=dark-vs] h-[data-h^=diff_del] {
     color: #ce9178;
 }
+[data-ulight-theme=dark-vs] h-[data-h^=diff_head] {
+    color: #569cd6;
+}
 [data-ulight-theme=dark-vs] h-[data-h^=diff_ins] {
     color: #b5cea8;
+}
+[data-ulight-theme=dark-vs] h-[data-h^=diff_mod] {
+    color: #569cd6;
 }
 [data-ulight-theme=dark-vs] h-[data-h^=err] {
     color: #f44747;
@@ -470,11 +521,20 @@
 [data-ulight-theme=dark-vs-plus] h-[data-h^=cmt] {
     color: #6a9955;
 }
+[data-ulight-theme=dark-vs-plus] h-[data-h^=diff_eq] {
+    color: #e7e7e7;
+}
 [data-ulight-theme=dark-vs-plus] h-[data-h^=diff_del] {
     color: #ce9178;
 }
+[data-ulight-theme=dark-vs-plus] h-[data-h^=diff_head] {
+    color: #569cd6;
+}
 [data-ulight-theme=dark-vs-plus] h-[data-h^=diff_ins] {
     color: #b5cea8;
+}
+[data-ulight-theme=dark-vs-plus] h-[data-h^=diff_mod] {
+    color: #569cd6;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=err] {
     color: #f44747;

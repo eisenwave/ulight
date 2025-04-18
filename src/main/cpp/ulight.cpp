@@ -74,6 +74,10 @@ consteval ulight_string_view make_sv(std::string_view name)
 
 } // namespace
 
+// When adding a new language,
+// add all the aliases that highlight.js supports:
+// https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md
+
 // clang-format off
 ULIGHT_EXPORT
 constexpr ulight_lang_entry ulight_lang_list[] {
@@ -86,6 +90,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("css", ULIGHT_LANG_CSS),
     // make_lang_entry( "cts", ULIGHT_LANG_typescript ),
     make_lang_entry("cxx", ULIGHT_LANG_CPP),
+    make_lang_entry("diff", ULIGHT_LANG_DIFF),
     make_lang_entry("h", ULIGHT_LANG_C),
     make_lang_entry("h++", ULIGHT_LANG_CPP),
     make_lang_entry("hpp", ULIGHT_LANG_CPP),
@@ -102,6 +107,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     // make_lang_entry( u8"ts", ULIGHT_LANG_typescript ),
     // make_lang_entry( u8"tsx", ULIGHT_LANG_typescript ),
     // make_lang_entry( u8"typescript", ULIGHT_LANG_typescript ),
+    make_lang_entry("patch", ULIGHT_LANG_DIFF),
     make_lang_entry("sh", ULIGHT_LANG_BASH),
     make_lang_entry("zsh", ULIGHT_LANG_BASH),
 };
@@ -119,7 +125,8 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("CSS"),
     make_sv("C"),
     make_sv("JavaScript"),
-    make_sv("Bash")
+    make_sv("Bash"),
+    make_sv("Diff")
 };
 // clang-format on
 
@@ -280,20 +287,10 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     if (state->flush_tokens == nullptr) {
         return error(state, ULIGHT_STATUS_BAD_BUFFER, u8"flush_tokens must not be null.");
     }
-    switch (state->lang) {
-    case ULIGHT_LANG_BASH:
-    case ULIGHT_LANG_C:
-    case ULIGHT_LANG_CPP:
-    case ULIGHT_LANG_CSS:
-    case ULIGHT_LANG_HTML:
-    case ULIGHT_LANG_LUA:
-    case ULIGHT_LANG_JS:
-    case ULIGHT_LANG_MMML: break;
-    case ULIGHT_LANG_NONE: {
+    if (state->lang == ULIGHT_LANG_NONE || int(state->lang) > ULIGHT_LANG_COUNT) {
         return error(
             state, ULIGHT_STATUS_BAD_LANG, u8"The given language (numeric value) is invalid."
         );
-    }
     }
 
     ulight::Non_Owning_Buffer<ulight_token> buffer { state->token_buffer,

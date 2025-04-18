@@ -86,6 +86,17 @@ std::optional<unsigned long long> parse_uinteger_digits(std::u8string_view text,
 
 } // namespace
 
+Line_Result match_line(std::u8string_view str)
+{
+    const std::size_t length = str.find_first_of(u8"\r\n");
+    if (length == std::u8string_view::npos) {
+        return { .content_length = length, .terminator_length = 0 };
+    }
+    const std::size_t terminator_length
+        = str[length] == u8'\r' && length + 1 < str.length() && str[length + 1] == u8'\n' ? 2 : 1;
+    return { .content_length = length, .terminator_length = terminator_length };
+}
+
 std::size_t match_digits(std::u8string_view str, int base)
 {
     ULIGHT_ASSERT((base >= 2 && base <= 10) || base == 16);

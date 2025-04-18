@@ -40,7 +40,7 @@ typedef struct ulight_string_view {
 enum {
     /// @brief The amount of unique languages supported,
     /// including `ULIGHT_LANG_NONE`.
-    ULIGHT_LANG_COUNT = 9
+    ULIGHT_LANG_COUNT = 10
 };
 
 /// @brief A language supported by ulight for syntax highlighting.
@@ -53,6 +53,8 @@ typedef enum ulight_lang {
     ULIGHT_LANG_CPP = 2,
     /// @brief CSS.
     ULIGHT_LANG_CSS = 5,
+    /// @brief Unidiff, i.e. GNU `diff` output in Unified Format.
+    ULIGHT_LANG_DIFF = 9,
     /// @brief HTML.
     ULIGHT_LANG_HTML = 4,
     /// @brief JavaScript.
@@ -262,19 +264,25 @@ typedef enum ulight_highlight_type {
     /// @brief In languages with attribute syntax, the attribute delimiters
     ULIGHT_HL_ATTR_DELIM = 0x71,
 
-    // 0x80..0x87 Unidiff highlighting
+    // 0x80..0x87 Diff highlighting
     // -------------------------------------------------------------------------
 
-    /// @brief In unidiff, a heading (`--- from-file`, `+++ to-file`).
+    /// @brief In diff, a heading (`--- from-file`, `+++ to-file`, `***` etc.).
     ULIGHT_HL_DIFF_HEADING = 0x80,
-    /// @brief In unidiff, a common (unmodified) line.
-    ULIGHT_HL_DIFF_COMMON = 0x81,
-    /// @brief In unidiff, a hunk heading (`@@ ... @@`)
-    ULIGHT_HL_DIFF_HUNK = 0x82,
-    /// @brief In unidiff, a deletion line.
+    /// @brief A hunk heading in unified format (`@@ ... @@`).
+    ULIGHT_HL_DIFF_HEADING_HUNK = 0x81,
+    /// @brief In diff, a common (unmodified) line,
+    /// such as a line preceded with space.
+    ULIGHT_HL_DIFF_COMMON = 0x82,
+    /// @brief In diff, a deletion line,
+    /// such as a line preceded with `-`.
     ULIGHT_HL_DIFF_DELETION = 0x83,
-    /// @brief In unidiff, an insertion line.
+    /// @brief In diff, an insertion line,
+    /// such as a line preceded with `+`.
     ULIGHT_HL_DIFF_INSERTION = 0x84,
+    /// @brief In diff, a modified line,
+    /// such as a line preceded with `!` in Context Format.
+    ULIGHT_HL_DIFF_MODIFICATION = 0x85,
 
     // 0x88..0x8a Unused
     // -------------------------------------------------------------------------

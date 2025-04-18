@@ -37,6 +37,21 @@
         "attr": "#966c1c",
         "sym": "#000000",
         "sym-punc": "#646464",
+        "diff-heading": "#777777",
+        "diff-heading-hunk": "#5c477e",
+        "diff-common": "#000000",
+        "diff-deletion": {
+            "color": "#b31d28",
+            "background-color": "#ffeef0"
+        },
+        "diff-insertion": {
+            "color": "#22863a",
+            "background-color": "#f0fff4"
+        },
+        "diff-modification": {
+            "color": "#7a680d",
+            "background-color": "#fffdee"
+        },
         "markup-tag": "#c80032",
         "markup-attr": "#5c477e",
         "markup-deletion": {
@@ -139,6 +154,21 @@
         "attr": "#ea91d4",
         "sym": "#ffffff",
         "sym-punc": "#a0a0a0",
+        "diff-heading": "#777777",
+        "diff-heading-hunk": "#edc385",
+        "diff-common": "#e7e7e7",
+        "diff-deletion": {
+            "color": "#ffdcd7",
+            "background-color": "#67060c"
+        },
+        "diff-insertion": {
+            "color": "#aff5b4",
+            "background-color": "#033a16"
+        },
+        "diff-modification": {
+            "color": "#fff4d7",
+            "background-color": "#674d06"
+        },
         "markup-tag": "#ff5a82",
         "markup-attr": "#a4c4de",
         "markup-deletion": {

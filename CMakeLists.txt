@@ -43,6 +43,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/lang/bash.cpp
     src/main/cpp/lang/cpp.cpp
     src/main/cpp/lang/css.cpp
+    src/main/cpp/lang/diff.cpp
     src/main/cpp/lang/js.cpp
     src/main/cpp/lang/lua.cpp
     src/main/cpp/lang/mmml.cpp

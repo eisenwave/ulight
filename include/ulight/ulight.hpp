@@ -21,6 +21,7 @@ enum struct Lang : Underlying {
     c = ULIGHT_LANG_C,
     cpp = ULIGHT_LANG_CPP,
     css = ULIGHT_LANG_CSS,
+    diff = ULIGHT_LANG_DIFF,
     html = ULIGHT_LANG_HTML,
     javascript = ULIGHT_LANG_JS,
     lua = ULIGHT_LANG_LUA,
@@ -108,11 +109,12 @@ constexpr Flag operator|(Flag x, Flag y) noexcept
     F(keyword_op, "keyword-op", "kw_op", ULIGHT_HL_KEYWORD_OP)                                     \
     F(attr, "attr", "attr", ULIGHT_HL_ATTR)                                                        \
     F(attr_delim, "attr-delim", "attr_dlim", ULIGHT_HL_ATTR_DELIM)                                 \
-    F(diff_heading, "diff-heading", "diff_h", ULIGHT_HL_DIFF_HEADING)                              \
+    F(diff_heading, "diff-heading", "diff_head", ULIGHT_HL_DIFF_HEADING)                           \
+    F(diff_heading_hunk, "diff-heading-hunk", "diff_head_hunk", ULIGHT_HL_DIFF_HEADING_HUNK)       \
     F(diff_common, "diff-common", "diff_eq", ULIGHT_HL_DIFF_COMMON)                                \
-    F(diff_hunk, "diff-hunk", "diff_hunk", ULIGHT_HL_DIFF_HUNK)                                    \
     F(diff_deletion, "diff-deletion", "diff_del", ULIGHT_HL_DIFF_DELETION)                         \
     F(diff_insertion, "diff-insertion", "diff_ins", ULIGHT_HL_DIFF_INSERTION)                      \
+    F(diff_modification, "diff-modification", "diff_mod", ULIGHT_HL_DIFF_MODIFICATION)             \
     F(markup_tag, "markup-tag", "mk_tag", ULIGHT_HL_MARKUP_TAG)                                    \
     F(markup_attr, "markup-attr", "mk_attr", ULIGHT_HL_MARKUP_ATTR)                                \
     F(markup_deletion, "markup-deletion", "mk_del", ULIGHT_HL_MARKUP_DELETION)                     \
