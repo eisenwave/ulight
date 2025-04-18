@@ -3,9 +3,10 @@
 
 #include "ulight/ulight.hpp"
 
-#include "ulight/impl/bash.hpp"
-#include "ulight/impl/chars.hpp"
 #include "ulight/impl/highlight.hpp"
+
+#include "ulight/impl/bash.hpp"
+#include "ulight/impl/lang/bash_chars.hpp"
 
 namespace ulight {
 namespace bash {

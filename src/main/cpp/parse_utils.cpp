@@ -8,9 +8,10 @@
 #include "ulight/impl/assert.hpp"
 #include "ulight/ulight.hpp"
 
-#include "ulight/impl/chars.hpp"
 #include "ulight/impl/parse_utils.hpp"
 #include "ulight/impl/strings.hpp"
+
+#include "ulight/impl/lang/html_chars.hpp"
 
 namespace ulight {
 
