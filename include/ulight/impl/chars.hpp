@@ -1,9 +1,69 @@
 #ifndef ULIGHT_CHARS_HPP
 #define ULIGHT_CHARS_HPP
 
+#include <string_view>
+
 #include "ulight/impl/assert.hpp"
+#include "ulight/impl/charset.hpp"
 
 namespace ulight {
+
+// Charset
+// ==========================================================================================
+
+namespace detail {
+
+template <std::size_t N>
+[[nodiscard]]
+consteval Charset<N> to_charset(std::u8string_view chars)
+{
+    Charset<N> result {};
+    for (const char8_t c : chars) {
+        result.insert(c);
+    }
+    return result;
+}
+
+[[nodiscard]]
+consteval Charset256 to_charset256(std::u8string_view chars)
+{
+    return to_charset<256>(chars);
+}
+
+template <std::size_t N>
+[[nodiscard]]
+consteval Charset<N> to_charset(bool predicate(char8_t))
+{
+    static_assert(N >= 256);
+    Charset<N> result {};
+    for (std::size_t i = 0; i < 256; ++i) {
+        if (predicate(char8_t(i))) {
+            result.insert(char8_t(i));
+        }
+    }
+    return result;
+}
+
+[[nodiscard]]
+consteval Charset256 to_charset256(bool predicate(char8_t))
+{
+    return to_charset<256>(predicate);
+}
+
+template <std::size_t N>
+[[nodiscard]]
+consteval Charset<N> to_charset(char8_t c)
+{
+    return Charset<N> {} | c;
+}
+
+[[nodiscard]]
+consteval Charset256 to_charset256(char8_t c)
+{
+    return to_charset<256>(c);
+}
+
+} // namespace detail
 
 // PURE ASCII ======================================================================================
 
@@ -19,6 +79,8 @@ constexpr bool is_ascii(char32_t c)
     return c <= U'\u007f';
 }
 
+inline constexpr Charset256 is_ascii_bits = detail::to_charset256(is_ascii);
+
 /// @brief Returns `true` if the `c` is a decimal digit (`0` through `9`).
 [[nodiscard]]
 constexpr bool is_ascii_digit(char8_t c)
@@ -32,6 +94,8 @@ constexpr bool is_ascii_digit(char32_t c)
 {
     return c >= U'0' && c <= U'9';
 }
+
+inline constexpr Charset256 is_ascii_digit_bits = detail::to_charset256(is_ascii_digit);
 
 /// @brief Returns `true` if `c` is a digit in the usual representation of digits beyond base 10.
 /// That is, after `9`, the next digit is `a`, then `b`, etc.
@@ -72,6 +136,9 @@ constexpr bool is_ascii_binary_digit(char32_t c)
     return c == U'0' || c == U'1';
 }
 
+inline constexpr Charset256 is_ascii_binary_digit_bits
+    = detail::to_charset256(is_ascii_binary_digit);
+
 /// @brief Returns `true` if `c` is in `[0-7]`.
 [[nodiscard]]
 constexpr bool is_ascii_octal_digit(char8_t c)
@@ -85,6 +152,8 @@ constexpr bool is_ascii_octal_digit(char32_t c)
 {
     return c >= U'0' && c <= U'7';
 }
+
+inline constexpr Charset256 is_ascii_octal_digit_bits = detail::to_charset256(is_ascii_octal_digit);
 
 /// @brief Returns `true` if `c` is in `[0-9A-Fa-f]`.
 [[nodiscard]]
@@ -101,6 +170,8 @@ constexpr bool is_ascii_hex_digit(char32_t c)
     return is_ascii_digit_base(c, 16);
 }
 
+inline constexpr Charset256 is_ascii_hex_digit_bits = detail::to_charset256(is_ascii_hex_digit);
+
 [[nodiscard]]
 constexpr bool is_ascii_upper_alpha(char8_t c)
 {
@@ -115,6 +186,8 @@ constexpr bool is_ascii_upper_alpha(char32_t c)
     return c >= U'A' && c <= U'Z';
 }
 
+inline constexpr Charset256 is_ascii_upper_alpha_bits = detail::to_charset256(is_ascii_upper_alpha);
+
 [[nodiscard]]
 constexpr bool is_ascii_lower_alpha(char8_t c)
 {
@@ -128,6 +201,8 @@ constexpr bool is_ascii_lower_alpha(char32_t c)
     // https://infra.spec.whatwg.org/#ascii-lower-alpha
     return c >= U'a' && c <= U'z';
 }
+
+inline constexpr Charset256 is_ascii_lower_alpha_bits = detail::to_charset256(is_ascii_lower_alpha);
 
 /// @brief If `is_ascii_lower_alpha(c)` is `true`,
 /// returns the corresponding upper case alphabetic character, otherwise `c`.
@@ -161,19 +236,25 @@ constexpr bool is_ascii_alpha(char32_t c)
     return is_ascii_lower_alpha(c) || is_ascii_upper_alpha(c);
 }
 
+inline constexpr Charset256 is_ascii_alpha_bits = detail::to_charset256(is_ascii_alpha);
+
+inline constexpr Charset256 is_ascii_alphanumeric_bits = is_ascii_alpha_bits | is_ascii_digit_bits;
+
 [[nodiscard]]
 constexpr bool is_ascii_alphanumeric(char8_t c)
 {
     // https://infra.spec.whatwg.org/#ascii-alphanumeric
-    return is_ascii_digit(c) || is_ascii_alpha(c);
+    return is_ascii_alphanumeric_bits.contains(c);
 }
 
 [[nodiscard]]
 constexpr bool is_ascii_alphanumeric(char32_t c)
 {
     // https://infra.spec.whatwg.org/#ascii-alphanumeric
-    return is_ascii_digit(c) || is_ascii_alpha(c);
+    return is_ascii(c) && is_ascii_alphanumeric(char8_t(c));
 }
+
+static_assert(is_ascii_alphanumeric(u8'a'));
 
 // UNICODE STUFF ===================================================================================
 
@@ -272,6 +353,8 @@ constexpr bool is_private_use_area_character(char32_t c)
         || (c >= supplementary_pua_b_min && c <= supplementary_pua_b_max);
 }
 
+inline constexpr Charset256 is_ascii_xid_start_bits = is_ascii_alpha_bits;
+
 /// @brief Equivalent to `is_ascii_alpha(c)`.
 [[nodiscard]]
 constexpr bool is_ascii_xid_start(char8_t c) noexcept
@@ -308,6 +391,9 @@ constexpr bool is_ascii_xid_continue(char32_t c) noexcept
     return is_ascii_alphanumeric(c) || c == u8'_';
 }
 
+inline constexpr Charset256 is_ascii_xid_continue_bits
+    = detail::to_charset256(is_ascii_xid_continue);
+
 bool is_xid_continue(char8_t c) = delete;
 
 /// @brief Returns `true` iff `c` has the XID_Continue Unicode property.
@@ -318,12 +404,15 @@ bool is_xid_continue(char32_t c) noexcept;
 
 // HTML ============================================================================================
 
+inline constexpr Charset256 is_html_ascii_tag_name_character_bits
+    = is_ascii_alphanumeric_bits | detail::to_charset256(u8"-._");
+
 /// @brief Returns `true` if `c` is an ASCII character
 /// that can legally appear in the name of an HTML tag.
 [[nodiscard]]
 constexpr bool is_html_ascii_tag_name_character(char8_t c)
 {
-    return c == u8'-' || c == u8'.' || c == u8'_' || is_ascii_alphanumeric(c);
+    return is_html_ascii_tag_name_character_bits.contains(c);
 }
 
 [[nodiscard]]
@@ -332,6 +421,9 @@ constexpr bool is_html_ascii_control(char8_t c)
     // https://infra.spec.whatwg.org/#control
     return c <= u8'\u001F' || c == u8'\N{DELETE}';
 }
+
+inline constexpr Charset256 is_html_ascii_control_bits
+    = detail::to_charset256(is_html_ascii_control);
 
 constexpr bool is_html_control(char8_t c) = delete;
 
@@ -375,6 +467,8 @@ constexpr bool is_html_tag_name_character(char32_t c)
     // clang-format on
 }
 
+inline constexpr Charset256 is_html_whitespace_bits = detail::to_charset256(u8" \t\n\f\r");
+
 /// @brief Returns `true` if `c` is whitespace.
 /// Note that "whitespace" matches the HTML standard definition here,
 /// and unlike the C locale,
@@ -383,7 +477,7 @@ constexpr bool is_html_tag_name_character(char32_t c)
 constexpr bool is_html_whitespace(char8_t c)
 {
     // https://infra.spec.whatwg.org/#ascii-whitespace
-    return c == u8'\t' || c == u8'\n' || c == u8'\f' || c == u8'\r' || c == u8' ';
+    return is_html_whitespace_bits.contains(c);
 }
 
 /// @brief Returns `true` if `c` is whitespace.
@@ -394,22 +488,24 @@ constexpr bool is_html_whitespace(char8_t c)
 constexpr bool is_html_whitespace(char32_t c)
 {
     // https://infra.spec.whatwg.org/#ascii-whitespace
-    return c == U'\t' || c == U'\n' || c == U'\f' || c == U'\r' || c == U' ';
+    return is_ascii(c) && is_html_whitespace(char8_t(c));
 }
+
+inline constexpr Charset256 is_html_ascii_attribute_name_character_bits
+    = is_ascii_bits - is_html_ascii_control_bits - detail::to_charset256(u8" \"'>/=");
 
 [[nodiscard]]
 constexpr bool is_html_ascii_attribute_name_character(char8_t c)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#syntax-attribute-name
-    // clang-format off
-    return !is_html_ascii_control(c)
-        && c != u8' '
-        && c != u8'"'
-        && c != u8'\''
-        && c != u8'>'
-        && c != u8'/'
-        && c != u8'=';
-    // clang-format on
+    return is_html_ascii_attribute_name_character_bits.contains(c);
+}
+
+[[nodiscard]]
+constexpr bool is_html_ascii_attribute_name_character(char32_t c)
+{
+    // https://html.spec.whatwg.org/dev/syntax.html#syntax-attribute-name
+    return is_ascii(c) && is_html_ascii_attribute_name_character(char8_t(c));
 }
 
 constexpr bool is_html_attribute_name_character(char8_t c) = delete;
@@ -418,17 +514,11 @@ constexpr bool is_html_attribute_name_character(char8_t c) = delete;
 constexpr bool is_html_attribute_name_character(char32_t c)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#syntax-attribute-name
-    // clang-format off
-    return !is_html_control(c)
-        && c != U' '
-        && c != U'"'
-        && c != U'\''
-        && c != U'>'
-        && c != U'/'
-        && c != U'='
-        && !is_noncharacter(c);
-    // clang-format on
+    return is_ascii(c) ? is_html_ascii_attribute_name_character(c) : !is_noncharacter(c);
 }
+
+inline constexpr Charset256 is_html_unquoted_attribute_value_terminator_bits
+    = is_html_whitespace_bits | detail::to_charset256(u8"\"'=<>`");
 
 /// @brief Returns `true` iff `c` HTML whitespace or one of the special characters that terminates
 /// unquoted attribute values.
@@ -436,16 +526,11 @@ constexpr bool is_html_attribute_name_character(char32_t c)
 constexpr bool is_html_unquoted_attribute_value_terminator(char8_t c)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#unquoted
-    // clang-format off
-    return is_html_whitespace(c)
-        || c == u8'"'
-        || c == u8'\''
-        || c == u8'='
-        || c == u8'<'
-        || c == u8'>'
-        || c == u8'`';
-    // clang-format on
+    return is_html_unquoted_attribute_value_terminator_bits.contains(c);
 }
+
+inline constexpr Charset256 is_html_ascii_unquoted_attribute_value_character_bits
+    = is_ascii_bits - is_html_unquoted_attribute_value_terminator_bits;
 
 /// @brief Returns `true` if `c` can appear in an attribute value string with no
 /// surrounding quotes, such as in `<h2 id=heading>`.
@@ -456,22 +541,13 @@ constexpr bool is_html_unquoted_attribute_value_terminator(char8_t c)
 constexpr bool is_html_ascii_unquoted_attribute_value_character(char8_t c)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#unquoted
-    // clang-format off
-    return is_ascii(c)
-        && !is_html_whitespace(c)
-        && c != u8'"'
-        && c != u8'\''
-        && c != u8'='
-        && c != u8'<'
-        && c != u8'>'
-        && c != u8'`';
-    // clang-format on
+    return is_html_ascii_unquoted_attribute_value_character_bits.contains(c);
 }
 
 [[nodiscard]]
 constexpr bool is_html_ascii_unquoted_attribute_value_character(char32_t c)
 {
-    return is_html_ascii_unquoted_attribute_value_character(char8_t(c));
+    return is_ascii(c) && is_html_ascii_unquoted_attribute_value_character(char8_t(c));
 }
 
 constexpr bool is_html_unquoted_attribute_value_character(char8_t c) = delete;
@@ -485,7 +561,7 @@ constexpr bool is_html_unquoted_attribute_value_character(char8_t c) = delete;
 constexpr bool is_html_unquoted_attribute_value_character(char32_t c)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#unquoted
-    return !is_ascii(c) || is_html_ascii_unquoted_attribute_value_character(c);
+    return !is_ascii(c) || is_html_ascii_unquoted_attribute_value_character(char8_t(c));
 }
 
 /// @brief Returns `true` iff `c`
@@ -516,6 +592,9 @@ constexpr bool is_html_min_raw_passthrough_character(char32_t c)
     return c != U'<' && c != U'&';
 }
 
+inline constexpr Charset256 is_html_min_raw_passthrough_character_bits
+    = detail::to_charset256(is_html_min_raw_passthrough_character);
+
 // CSS =============================================================================================
 
 [[nodiscard]]
@@ -532,6 +611,8 @@ constexpr bool is_css_newline(char32_t c)
     return c == U'\n' || c == U'\r' || c == U'\f';
 }
 
+inline constexpr Charset256 is_css_newline_bits = detail::to_charset256(is_css_newline);
+
 [[nodiscard]]
 constexpr bool is_css_whitespace(char8_t c)
 {
@@ -546,32 +627,40 @@ constexpr bool is_css_whitespace(char32_t c)
     return is_html_whitespace(c);
 }
 
+inline constexpr Charset256 is_css_whitespace_bits = is_html_whitespace_bits;
+
+inline constexpr Charset256 is_css_identifier_start_bits
+    = is_ascii_alpha_bits | detail::to_charset256(u8'_') | ~is_ascii_bits;
+
 [[nodiscard]]
 constexpr bool is_css_identifier_start(char8_t c)
 {
     // https://www.w3.org/TR/css-syntax-3/#ident-start-code-point
-    return is_ascii_alpha(c) || c == u8'_' || !is_ascii(c);
+    return is_css_identifier_start_bits.contains(c);
 }
 
 [[nodiscard]]
 constexpr bool is_css_identifier_start(char32_t c)
 {
     // https://www.w3.org/TR/css-syntax-3/#ident-start-code-point
-    return is_ascii_alpha(c) || c == U'_' || !is_ascii(c);
+    return !is_ascii(c) || is_css_identifier_start(char8_t(c));
 }
+
+inline constexpr Charset256 is_css_identifier_bits
+    = is_css_identifier_start_bits | is_ascii_digit_bits | detail::to_charset256(u8'-');
 
 [[nodiscard]]
 constexpr bool is_css_identifier(char8_t c)
 {
     // https://www.w3.org/TR/css-syntax-3/#ident-code-point
-    return is_css_identifier_start(c) || is_ascii_digit(c) || c == u8'-';
+    return is_css_identifier_bits.contains(c);
 }
 
 [[nodiscard]]
 constexpr bool is_css_identifier(char32_t c)
 {
     // https://www.w3.org/TR/css-syntax-3/#ident-code-point
-    return is_css_identifier_start(c) || is_ascii_digit(c) || c == U'-';
+    return !is_ascii(c) || is_css_identifier(char8_t(c));
 }
 
 // MMML ============================================================================================
@@ -591,23 +680,38 @@ constexpr bool is_mmml_escapeable(char32_t c)
     return c == U'\\' || c == U'}' || c == U'{';
 }
 
+inline constexpr Charset256 is_mmml_escapeable_bits = detail::to_charset256(is_mmml_escapeable);
+
+inline constexpr Charset256 is_mmml_special_character_bits = detail::to_charset256(u8"{}\\[],");
+
 [[nodiscard]]
 constexpr bool is_mmml_special_character(char8_t c)
 {
-    return c == u8'{' || c == u8'}' || c == u8'\\' || c == u8'[' || c == u8']' || c == u8',';
+    return is_mmml_special_character_bits.contains(c);
 }
 
 [[nodiscard]]
 constexpr bool is_mmml_special_character(char32_t c)
 {
-    return c == U'{' || c == U'}' || c == U'\\' || c == U'[' || c == U']' || c == U',';
+    return is_ascii(c) && is_mmml_special_character(char8_t(c));
 }
+
+inline constexpr Charset256 is_mmml_ascii_argument_name_character_bits
+    = is_html_ascii_attribute_name_character_bits - is_mmml_special_character_bits;
 
 [[nodiscard]]
 constexpr bool is_mmml_ascii_argument_name_character(char8_t c)
 {
-    return !is_mmml_special_character(c) && is_html_ascii_attribute_name_character(c);
+    return is_mmml_ascii_argument_name_character_bits.contains(c);
 }
+
+[[nodiscard]]
+constexpr bool is_mmml_ascii_argument_name_character(char32_t c)
+{
+    return is_ascii(c) && is_mmml_ascii_argument_name_character(char8_t(c));
+}
+
+constexpr bool is_mmml_argument_name_character(char8_t c) = delete;
 
 /// @brief Returns `true` if `c` can legally appear
 /// in the name of an MMML directive argument.
@@ -617,11 +721,22 @@ constexpr bool is_mmml_argument_name_character(char32_t c)
     return !is_mmml_special_character(c) && is_html_attribute_name_character(c);
 }
 
+inline constexpr Charset256 is_mmml_ascii_directive_name_character_bits
+    = is_html_ascii_tag_name_character_bits;
+
 [[nodiscard]]
 constexpr bool is_mmml_ascii_directive_name_character(char8_t c)
 {
     return is_html_ascii_tag_name_character(c);
 }
+
+[[nodiscard]]
+constexpr bool is_mmml_ascii_directive_name_character(char32_t c)
+{
+    return is_ascii(c) && is_html_ascii_tag_name_character(char8_t(c));
+}
+
+constexpr bool is_mmml_directive_name_character(char8_t) = delete;
 
 /// @brief Returns `true` if `c` can legally appear
 /// in the name of an MMML directive.
@@ -632,6 +747,9 @@ constexpr bool is_mmml_directive_name_character(char32_t c)
 }
 
 // C & C++ =========================================================================================
+
+inline constexpr Charset256 is_cpp_ascii_identifier_start_bits
+    = is_ascii_xid_start_bits | detail::to_charset256(u8'_');
 
 /// @brief Returns `true` iff `c` is in the set `[A-Za-z_]`.
 [[nodiscard]]
@@ -656,6 +774,8 @@ constexpr bool is_cpp_identifier_start(char32_t c)
     return c == U'_' || is_xid_start(c);
 }
 
+inline constexpr Charset256 is_cpp_ascii_identifier_continue_bits = is_ascii_xid_continue_bits;
+
 /// @brief Returns `true` iff `c` is in the set `[A-Za-z0-9_]`.
 [[nodiscard]]
 constexpr bool is_cpp_ascii_identifier_continue(char8_t c)
@@ -679,65 +799,31 @@ constexpr bool is_cpp_identifier_continue(char32_t c)
     return c == U'_' || is_xid_continue(c);
 }
 
+inline constexpr Charset256 is_cpp_whitespace_bits = detail::to_charset256(u8"\t\n\f\r \v");
+
 /// @brief consistent with `isspace` in the C locale.
 [[nodiscard]]
 constexpr bool is_cpp_whitespace(char8_t c)
 {
-    return c == u8'\t' || c == u8'\n' || c == u8'\f' || c == u8'\r' || c == u8' ' || c == u8'\v';
+    return is_cpp_whitespace_bits.contains(c);
 }
 
 /// @brief Consistent with `isspace` in the C locale.
 [[nodiscard]]
 constexpr bool is_cpp_whitespace(char32_t c)
 {
-    return c == u8'\t' || c == u8'\n' || c == u8'\f' || c == u8'\r' || c == u8' ' || c == U'\v';
+    return is_ascii(c) && is_cpp_whitespace(char8_t(c));
 }
+
+inline constexpr Charset256 is_cpp_basic_bits = is_ascii_alphanumeric_bits
+    | detail::to_charset256(u8"\t\v\f\r\n!\"#$%&'()*+,-./:;<>=?@[]\\^_`{|}~");
 
 /// @brief Returns `true` iff `c` is in the
 /// [basic character set](https://eel.is/c++draft/tab:lex.charset.basic).
 [[nodiscard]]
 constexpr bool is_cpp_basic(char8_t c)
 {
-    switch (c) {
-    case u8'\t':
-    case u8'\v':
-    case u8'\f':
-    case u8'\r':
-    case u8'\n':
-    case u8'!':
-    case u8'"':
-    case u8'#':
-    case u8'$':
-    case u8'%':
-    case u8'&':
-    case u8'\'':
-    case u8'(':
-    case u8')':
-    case u8'*':
-    case u8'+':
-    case u8',':
-    case u8'-':
-    case u8'.':
-    case u8'/':
-    case u8':':
-    case u8';':
-    case u8'<':
-    case u8'>':
-    case u8'=':
-    case u8'?':
-    case u8'@':
-    case u8'[':
-    case u8']':
-    case u8'\\':
-    case u8'^':
-    case u8'_':
-    case u8'`':
-    case u8'{':
-    case u8'|':
-    case u8'}':
-    case u8'~': return true;
-    default: return is_ascii_alphanumeric(c);
-    }
+    return is_cpp_basic_bits.contains(c);
 }
 
 [[nodiscard]]
@@ -747,6 +833,8 @@ constexpr bool is_cpp_basic(char32_t c)
 }
 
 // LUA =============================================================================================
+
+inline constexpr Charset256 is_lua_whitespace_bits = is_cpp_whitespace_bits;
 
 [[nodiscard]]
 constexpr bool is_lua_whitespace(char8_t c) noexcept
@@ -763,6 +851,8 @@ constexpr bool is_lua_whitespace(char32_t c) noexcept
     return is_cpp_whitespace(c);
 }
 
+inline constexpr Charset256 is_lua_identifier_start_bits = is_cpp_ascii_identifier_start_bits;
+
 [[nodiscard]]
 constexpr bool is_lua_identifier_start(char8_t c) noexcept
 {
@@ -776,6 +866,8 @@ constexpr bool is_lua_identifier_start(char32_t c) noexcept
     // See: https://www.lua.org/manual/5.4/manual.html
     return is_cpp_ascii_identifier_start(c);
 }
+
+inline constexpr Charset256 is_lua_identifier_continue_bits = is_cpp_ascii_identifier_continue_bits;
 
 [[nodiscard]]
 constexpr bool is_lua_identifier_continue(char8_t c) noexcept
@@ -889,16 +981,18 @@ constexpr bool is_jsx_tag_name_part(char32_t c)
 
 // BASH ============================================================================================
 
+inline constexpr Charset256 is_bash_whitespace_bits = detail::to_charset256(u8" \t\v\r\n");
+
 [[nodiscard]]
 constexpr bool is_bash_whitespace(char8_t c)
 {
-    return c == u8' ' || c == u8'\t' || c == u8'\v' || c == u8'\r' || c == u8'\n';
+    return is_bash_whitespace_bits.contains(c);
 }
 
 [[nodiscard]]
 constexpr bool is_bash_whitespace(char32_t c)
 {
-    return c == U' ' || c == U'\t' || c == U'\v' || c == U'\r' || c == U'\n';
+    return is_ascii(c) && is_bash_whitespace(char8_t(c));
 }
 
 [[nodiscard]]
@@ -915,14 +1009,16 @@ constexpr bool is_bash_blank(char32_t c)
     return c == U' ' || c == U'\t';
 }
 
+inline constexpr Charset256 is_bash_blank_bits = detail::to_charset256(u8" \t");
+
+inline constexpr Charset256 is_bash_metacharacter_bits
+    = is_bash_blank_bits | detail::to_charset256(u8"|&;()<>");
+
 [[nodiscard]]
 constexpr bool is_bash_metacharacter(char8_t c)
 {
     // https://www.gnu.org/software/bash/manual/bash.html#index-metacharacter
-    return is_bash_blank(c) //
-        || c == u8'|' || c == u8'&' || c == u8';' //
-        || c == u8'(' || c == u8')' //
-        || c == u8'<' || c == u8'>';
+    return is_bash_metacharacter_bits.contains(c);
 }
 
 [[nodiscard]]
@@ -931,6 +1027,9 @@ constexpr bool is_bash_metacharacter(char32_t c)
     // https://www.gnu.org/software/bash/manual/bash.html#index-metacharacter
     return is_ascii(c) && is_bash_metacharacter(char8_t(c));
 }
+
+inline constexpr Charset256 is_bash_escapable_in_double_quotes_bits
+    = detail::to_charset256(u8"'$`\"\\\n");
 
 /// @brief Returns `true` iff `c` is a character
 /// for which a preceding backslash within a double-quoted sring
@@ -942,7 +1041,7 @@ constexpr bool is_bash_metacharacter(char32_t c)
 constexpr bool is_bash_escapable_in_double_quotes(char8_t c)
 {
     // https://www.gnu.org/software/bash/manual/bash.html#Double-Quotes
-    return c == u8'$' || c == u8'`' || c == u8'"' || c == u8'\\' || c == u8'\n';
+    return is_bash_escapable_in_double_quotes_bits.contains(c);
 }
 
 [[nodiscard]]
@@ -951,6 +1050,8 @@ constexpr bool is_bash_escapable_in_double_quotes(char32_t c)
     // https://www.gnu.org/software/bash/manual/bash.html#Double-Quotes
     return is_ascii(c) && is_bash_escapable_in_double_quotes(char8_t(c));
 }
+
+inline constexpr Charset256 is_bash_special_parameter_bits = detail::to_charset256(u8"*@#?-$!0");
 
 /// @brief Returns `true` iff `c` forms a parameter substitution
 /// when preceded by `$` despite not being a variable name.
@@ -961,16 +1062,7 @@ constexpr bool is_bash_escapable_in_double_quotes(char32_t c)
 constexpr bool is_bash_special_parameter(char8_t c)
 {
     // https://www.gnu.org/software/bash/manual/bash.html#Special-Parameters
-    // clang-format off
-    return c == u8'*'
-        || c == u8'@'
-        || c == u8'#'
-        || c == u8'?'
-        || c == u8'-'
-        || c == u8'$'
-        || c == u8'!'
-        || c == u8'0';
-    // clang-format on
+    return is_bash_special_parameter_bits.contains(c);
 }
 
 [[nodiscard]]
@@ -994,6 +1086,9 @@ constexpr bool is_bash_identifier_start(char32_t c)
     return is_ascii_alpha(c) || c == U'_';
 }
 
+inline constexpr Charset256 is_bash_identifier_start_bits
+    = detail::to_charset256(is_bash_identifier_start);
+
 [[nodiscard]]
 constexpr bool is_bash_identifier(char8_t c)
 {
@@ -1008,19 +1103,26 @@ constexpr bool is_bash_identifier(char32_t c)
     return is_ascii_alphanumeric(c) || c == U'_';
 }
 
+inline constexpr Charset256 is_bash_identifier_bits = detail::to_charset256(is_bash_identifier);
+
+inline constexpr Charset256 is_bash_parameter_substitution_start_bits
+    = detail::to_charset256(u8"({") | is_bash_identifier_start_bits
+    | is_bash_special_parameter_bits;
+
 /// @brief Returns `true` iff `c` would start a parameter substitution when following `'$'`.
 [[nodiscard]]
 constexpr bool is_bash_parameter_substitution_start(char8_t c)
 {
-    return c == u8'(' || c == u8'{' //
-        || is_bash_identifier_start(c) //
-        || is_bash_special_parameter(c);
+    return is_bash_parameter_substitution_start_bits.contains(c);
 }
 
 constexpr bool is_bash_parameter_substitution_start(char32_t c)
 {
     return is_ascii(c) && is_bash_parameter_substitution_start(char8_t(c));
 }
+
+inline constexpr Charset256 is_bash_unquoted_terminator_bits
+    = detail::to_charset256(u8"\\'\"") | is_bash_whitespace_bits | is_bash_metacharacter_bits;
 
 /// @brief Returns `true` if `c` is a character that ends a sequence of unquoted characters that
 /// comprise a single argument for the highlighter.
@@ -1031,9 +1133,7 @@ constexpr bool is_bash_parameter_substitution_start(char32_t c)
 [[nodiscard]]
 constexpr bool is_bash_unquoted_terminator(char8_t c)
 {
-    return is_bash_whitespace(c) //
-        || is_bash_metacharacter(c) //
-        || c == u8'\\' || c == u8'\'' || c == u8'"';
+    return is_bash_unquoted_terminator_bits.contains(c);
 }
 
 [[nodiscard]]
