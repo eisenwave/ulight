@@ -10,6 +10,7 @@
 #include "ulight/impl/assert.hpp"
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
+#include "ulight/impl/highlighter.hpp"
 #include "ulight/impl/unicode.hpp"
 #include "ulight/impl/unicode_algorithm.hpp"
 
@@ -1002,69 +1003,29 @@ constexpr bool input_element_has_regex(Input_Element goal)
 }
 
 /// @brief  Common JS and JSX highlighter implementation.
-struct [[nodiscard]] Highlighter {
-    Non_Owning_Buffer<Token>& out;
-    std::u8string_view source;
-    const Highlight_Options& options;
+struct [[nodiscard]] Highlighter : Highlighter_Base {
+private:
     Input_Element input_element = Input_Element::hashbang_or_regex;
 
-    std::size_t index = 0;
-
+public:
     Highlighter(
         Non_Owning_Buffer<Token>& out,
         std::u8string_view source,
         const Highlight_Options& options
     )
-        : out { out }
-        , source { source }
-        , options { options }
+        : Highlighter_Base { out, source, options }
     {
-    }
-
-    void emit(std::size_t begin, std::size_t length, Highlight_Type type)
-    {
-        ULIGHT_DEBUG_ASSERT(length != 0);
-        ULIGHT_DEBUG_ASSERT(begin < source.length());
-        ULIGHT_DEBUG_ASSERT(begin + length <= source.length());
-
-        const bool coalesce = options.coalescing //
-            && !out.empty() //
-            && Highlight_Type(out.back().type) == type //
-            && out.back().begin + out.back().length == begin;
-        if (coalesce) {
-            out.back().length += length;
-        }
-        else {
-            out.emplace_back(begin, length, Underlying(type));
-        }
-    }
-
-    void emit_and_advance(std::size_t length, Highlight_Type type)
-    {
-        emit(index, length, type);
-        advance(length);
-    }
-
-    void advance(std::size_t amount)
-    {
-        index += amount;
-        ULIGHT_DEBUG_ASSERT(index <= source.length());
-    }
-
-    [[nodiscard]]
-    std::u8string_view remainder() const
-    {
-        return source.substr(index);
     }
 
     bool operator()()
     {
-        while (index < source.length()) {
+        while (!remainder.empty()) {
             consume_token();
         }
         return true;
     }
 
+private:
     /// @brief Consumes braced JS code.
     /// This is used both for matching braced JS code in JSX, like in `<div id={get_id()}>`,
     /// and for template literals in regular JS.
@@ -1074,14 +1035,14 @@ struct [[nodiscard]] Highlighter {
     {
         input_element = Input_Element::regex;
         int brace_level = 0;
-        while (index < source.length()) {
-            if (source[index] == u8'{') {
+        while (!remainder.empty()) {
+            if (remainder[0] == u8'{') {
                 ++brace_level;
                 emit_and_advance(1, Highlight_Type::sym_brace);
                 input_element = Input_Element::regex;
                 continue;
             }
-            if (source[index] == u8'}') {
+            if (remainder[0] == u8'}') {
                 if (--brace_level < 0) {
                     return;
                 }
@@ -1130,8 +1091,7 @@ struct [[nodiscard]] Highlighter {
         //
         // Furthermore, we ignore closing tags at the beginning.
 
-        const std::u8string_view rem = source.substr(index);
-        const JSX_Tag_Result opening = match_jsx_tag_impl(rem, JSX_Tag_Subset::non_closing);
+        const JSX_Tag_Result opening = match_jsx_tag_impl(remainder, JSX_Tag_Subset::non_closing);
         if (!opening) {
             return false;
         }
@@ -1204,14 +1164,14 @@ struct [[nodiscard]] Highlighter {
 
         } out { *this };
 
-        match_jsx_tag_impl(out, source.substr(index));
+        match_jsx_tag_impl(out, remainder);
     }
 
     void consume_jsx_children_and_closing_tag()
     {
         // https://facebook.github.io/jsx/#prod-JSXChildren
         int depth = 0;
-        std::u8string_view rem = remainder();
+        std::u8string_view rem = remainder;
         while (!rem.empty()) {
             // https://facebook.github.io/jsx/#prod-JSXText
             const std::size_t safe_length = rem.find_first_of(u8"&{}<>");
@@ -1292,7 +1252,7 @@ struct [[nodiscard]] Highlighter {
     void highlight_jsx_braced(const JSX_Braced_Result& braced)
     {
         ULIGHT_ASSERT(braced);
-        ULIGHT_ASSERT(source[index] == u8'{');
+        ULIGHT_ASSERT(remainder.starts_with(u8'{'));
 
         emit_and_advance(1, Highlight_Type::sym_brace);
         const std::size_t js_length = braced.length - (braced.is_terminated ? 2 : 1);
@@ -1307,8 +1267,8 @@ struct [[nodiscard]] Highlighter {
 
     bool expect_whitespace()
     {
-        const std::size_t white_length = match_whitespace(remainder());
-        index += white_length;
+        const std::size_t white_length = match_whitespace(remainder);
+        advance(white_length);
         return white_length != 0;
     }
 
@@ -1319,7 +1279,7 @@ struct [[nodiscard]] Highlighter {
             return false;
         }
 
-        const std::size_t hashbang_length = match_hashbang_comment(remainder());
+        const std::size_t hashbang_length = match_hashbang_comment(remainder);
         if (hashbang_length == 0) {
             return false;
         }
@@ -1334,7 +1294,7 @@ struct [[nodiscard]] Highlighter {
     bool expect_line_comment()
     {
         // https://262.ecma-international.org/15.0/index.html#prod-SingleLineComment
-        if (const std::size_t length = match_line_comment(remainder())) {
+        if (const std::size_t length = match_line_comment(remainder)) {
             highlight_line_comment(length);
             return true;
         }
@@ -1353,7 +1313,7 @@ struct [[nodiscard]] Highlighter {
     bool expect_block_comment()
     {
         // https://262.ecma-international.org/15.0/index.html#prod-MultiLineComment
-        if (const Comment_Result block_comment = match_block_comment(remainder())) {
+        if (const Comment_Result block_comment = match_block_comment(remainder)) {
             highlight_block_comment(block_comment);
             return true;
         }
@@ -1378,7 +1338,7 @@ struct [[nodiscard]] Highlighter {
 
     bool expect_string_literal()
     {
-        if (const String_Literal_Result string = match_string_literal(remainder())) {
+        if (const String_Literal_Result string = match_string_literal(remainder)) {
             highlight_string_literal(string);
             return true;
         }
@@ -1402,7 +1362,7 @@ struct [[nodiscard]] Highlighter {
     bool expect_template()
     {
         // https://262.ecma-international.org/15.0/index.html#sec-template-literal-lexical-components
-        if (remainder().starts_with(u8'`')) {
+        if (remainder.starts_with(u8'`')) {
             consume_template();
             return true;
         }
@@ -1412,7 +1372,7 @@ struct [[nodiscard]] Highlighter {
     void consume_template()
     {
         // https://262.ecma-international.org/15.0/index.html#sec-template-literal-lexical-components
-        ULIGHT_ASSERT(remainder().starts_with(u8'`'));
+        ULIGHT_ASSERT(remainder.starts_with(u8'`'));
         emit_and_advance(1, Highlight_Type::string_delim);
 
         std::size_t chars = 0;
@@ -1423,8 +1383,8 @@ struct [[nodiscard]] Highlighter {
             }
         };
 
-        while (index < source.length()) {
-            const std::u8string_view rem = remainder();
+        while (!remainder.empty()) {
+            const std::u8string_view rem = remainder;
 
             switch (rem[0]) {
             case u8'`': {
@@ -1438,8 +1398,8 @@ struct [[nodiscard]] Highlighter {
                     flush_chars();
                     emit_and_advance(2, Highlight_Type::escape);
                     consume_js_before_closing_brace();
-                    if (index < source.length()) {
-                        ULIGHT_ASSERT(source[index] == u8'}');
+                    if (!remainder.empty()) {
+                        ULIGHT_ASSERT(remainder.starts_with(u8'}'));
                         emit_and_advance(1, Highlight_Type::escape);
                     }
                     // Otherwise, we have an unterminated substitution.
@@ -1482,7 +1442,7 @@ struct [[nodiscard]] Highlighter {
             return false;
         }
 
-        std::u8string_view rem = remainder();
+        std::u8string_view rem = remainder;
 
         if (!rem.starts_with(u8'/') || rem.starts_with(u8"/*") || rem.starts_with(u8"//")) {
             return false;
@@ -1521,7 +1481,7 @@ struct [[nodiscard]] Highlighter {
 
     bool expect_numeric_literal()
     {
-        const Numeric_Result number = match_numeric_literal(remainder());
+        const Numeric_Result number = match_numeric_literal(remainder);
         if (!number) {
             return false;
         }
@@ -1538,7 +1498,7 @@ struct [[nodiscard]] Highlighter {
 
     bool expect_private_identifier()
     {
-        if (const std::size_t private_id_length = match_private_identifier(remainder())) {
+        if (const std::size_t private_id_length = match_private_identifier(remainder)) {
             emit_and_advance(private_id_length, Highlight_Type::id);
             input_element = Input_Element::div;
             return true;
@@ -1548,13 +1508,13 @@ struct [[nodiscard]] Highlighter {
 
     bool expect_symbols()
     {
-        const std::size_t id_length = match_identifier(remainder());
+        const std::size_t id_length = match_identifier(remainder);
         if (id_length == 0) {
             return false;
         }
 
         const std::optional<Token_Type> keyword
-            = js_token_type_by_code(remainder().substr(0, id_length));
+            = js_token_type_by_code(remainder.substr(0, id_length));
         if (!keyword) {
             emit_and_advance(id_length, Highlight_Type::id);
             input_element = Input_Element::div;
@@ -1572,7 +1532,7 @@ struct [[nodiscard]] Highlighter {
 
     bool expect_operator_or_punctuation()
     {
-        const std::optional<Token_Type> op = match_operator_or_punctuation(remainder());
+        const std::optional<Token_Type> op = match_operator_or_punctuation(remainder);
         if (!op) {
             return false;
         }

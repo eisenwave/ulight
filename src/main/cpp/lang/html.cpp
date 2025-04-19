@@ -8,6 +8,7 @@
 #include "ulight/impl/assert.hpp"
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
+#include "ulight/impl/highlighter.hpp"
 #include "ulight/impl/strings.hpp"
 #include "ulight/impl/unicode_algorithm.hpp"
 
@@ -265,61 +266,18 @@ End_Tag_Result match_end_tag_permissive(std::u8string_view str)
 
 namespace {
 
-struct Highlighter {
-private:
-    Non_Owning_Buffer<Token>& out;
-    std::u8string_view remainder;
-    std::pmr::memory_resource* memory;
-    Highlight_Options options;
+struct Highlighter : Highlighter_Base {
 
-    const std::size_t source_length = remainder.length();
-    std::size_t index = 0;
-
-public:
     Highlighter(
         Non_Owning_Buffer<Token>& out,
         std::u8string_view source,
         std::pmr::memory_resource* memory,
         const Highlight_Options& options
     )
-        : out { out }
-        , remainder { source }
-        , memory { memory }
-        , options { options }
+        : Highlighter_Base { out, source, memory, options }
     {
     }
 
-private:
-    void emit(std::size_t begin, std::size_t length, Highlight_Type type)
-    {
-        ULIGHT_DEBUG_ASSERT(begin < source_length);
-        ULIGHT_DEBUG_ASSERT(begin + length <= source_length);
-
-        const bool coalesce = options.coalescing //
-            && !out.empty() //
-            && Highlight_Type(out.back().type) == type //
-            && out.back().begin + out.back().length == begin;
-        if (coalesce) {
-            out.back().length += length;
-        }
-        else {
-            out.emplace_back(begin, length, Underlying(type));
-        }
-    }
-
-    void advance(std::size_t length)
-    {
-        index += length;
-        remainder.remove_prefix(length);
-    }
-
-    void emit_and_advance(std::size_t begin, std::size_t length, Highlight_Type type)
-    {
-        emit(begin, length, type);
-        advance(length);
-    }
-
-public:
     bool operator()()
     {
         expect_bom();
@@ -337,6 +295,7 @@ public:
         return true;
     }
 
+private:
     bool expect_bom()
     {
         if (remainder.starts_with(byte_order_mark8)) {
@@ -349,7 +308,7 @@ public:
     bool expect_doctype()
     {
         if (const Match_Result doctype = match_doctype_permissive(remainder)) {
-            emit_and_advance(index, doctype.length, Highlight_Type::macro);
+            emit_and_advance(doctype.length, Highlight_Type::macro);
             return true;
         }
         return false;
@@ -386,19 +345,17 @@ public:
         if (!comment) {
             return false;
         }
-        emit_and_advance(index, comment_prefix.length(), Highlight_Type::comment_delim);
+        emit_and_advance(comment_prefix.length(), Highlight_Type::comment_delim);
         comment.length -= comment_prefix.length();
 
         if (comment.terminated) {
             if (comment.length > comment_suffix.length()) {
-                emit_and_advance(
-                    index, comment.length - comment_suffix.length(), Highlight_Type::comment
-                );
+                emit_and_advance(comment.length - comment_suffix.length(), Highlight_Type::comment);
             }
-            emit_and_advance(index, comment_suffix.length(), Highlight_Type::comment_delim);
+            emit_and_advance(comment_suffix.length(), Highlight_Type::comment_delim);
         }
         else if (comment.length != 0) {
-            emit_and_advance(index, comment.length, Highlight_Type::comment);
+            emit_and_advance(comment.length, Highlight_Type::comment);
         }
         return true;
     }
@@ -408,24 +365,24 @@ public:
         if (!remainder.starts_with(u8'<')) {
             return false;
         }
-        emit_and_advance(index, 1, Highlight_Type::sym_punc);
+        emit_and_advance(1, Highlight_Type::sym_punc);
 
         const std::size_t name_length = match_tag_name(remainder);
         if (name_length == 0) {
             return true;
         }
         const std::u8string_view name = remainder.substr(0, name_length);
-        emit_and_advance(index, name_length, Highlight_Type::markup_tag);
+        emit_and_advance(name_length, Highlight_Type::markup_tag);
 
         while (!remainder.empty()) {
             expect_whitespace();
 
             if (remainder.starts_with(u8"/>")) {
-                emit_and_advance(index, 2, Highlight_Type::sym_punc);
+                emit_and_advance(2, Highlight_Type::sym_punc);
                 break;
             }
             if (remainder.starts_with(u8'>')) {
-                emit_and_advance(index, 1, Highlight_Type::sym_punc);
+                emit_and_advance(1, Highlight_Type::sym_punc);
                 break;
             }
             if (!expect_attribute()) {
@@ -443,57 +400,34 @@ public:
             while (const Raw_Text_Result result = match_escapable_raw_text_piece(remainder, name)) {
                 advance(result.raw_length);
                 if (result.ref_length != 0) {
-                    emit_and_advance(index, result.ref_length, Highlight_Type::escape);
+                    emit_and_advance(result.ref_length, Highlight_Type::escape);
                 }
             }
             return true;
         }
         if (equals_ascii_ignore_case(name, script_tag)) {
             const std::size_t js_length = match_raw_text(remainder, script_tag);
-            consume_nested_language(Lang::javascript, js_length);
+            consume_nested_css_or_js(Lang::javascript, js_length);
             return true;
         }
         if (equals_ascii_ignore_case(name, style_tag)) {
             const std::size_t css_length = match_raw_text(remainder, style_tag);
-            consume_nested_language(Lang::css, css_length);
+            consume_nested_css_or_js(Lang::css, css_length);
             return true;
         }
 
         return true;
     }
 
-    void consume_nested_language(Lang lang, std::size_t length)
+    void consume_nested_css_or_js(Lang lang, std::size_t length)
     {
         ULIGHT_ASSERT(lang == Lang::css || lang == Lang::javascript);
         if (length == 0) {
             return;
         }
         Token nested_tokens[1024];
-        Non_Owning_Buffer<Token> sub = sub_buffer(nested_tokens);
-        const std::u8string_view nested_source = remainder.substr(0, length);
-
-        if (lang == Lang::css) {
-            highlight_css(sub, nested_source, memory, options);
-        }
-        else {
-            highlight_javascript(sub, nested_source, memory, options);
-        }
-        sub.flush();
-
-        advance(length);
-    }
-
-    [[nodiscard]]
-    Non_Owning_Buffer<Token> sub_buffer(std::span<Token> data)
-    {
-        constexpr auto flush = +[](void* this_pointer, Token* tokens, std::size_t amount) {
-            auto& self = *static_cast<Highlighter*>(this_pointer);
-            for (std::size_t i = 0; i < amount; ++i) {
-                tokens[i].begin += self.index;
-            }
-            self.out.append_range(std::span<const Token> { tokens, amount });
-        };
-        return { data.data(), data.size(), this, flush };
+        const Status status = consume_nested_language(lang, length, nested_tokens);
+        ULIGHT_ASSERT(status == Status::ok);
     }
 
     bool expect_attribute()
@@ -503,14 +437,14 @@ public:
         if (name_length == 0) {
             return false;
         }
-        emit_and_advance(index, name_length, Highlight_Type::markup_attr);
+        emit_and_advance(name_length, Highlight_Type::markup_attr);
         expect_whitespace();
 
         // Empty attribute syntax, e.g. <input disabled>
         if (!remainder.starts_with(u8'=')) {
             return true;
         }
-        emit_and_advance(index, 1, Highlight_Type::sym_punc);
+        emit_and_advance(1, Highlight_Type::sym_punc);
         expect_whitespace();
 
         // Always returns true because unquoted (possibly zero-length) is always matched.
@@ -524,7 +458,7 @@ public:
         std::size_t piece_length = 0;
         const auto flush = [&] {
             if (piece_length != 0) {
-                emit_and_advance(index, piece_length, Highlight_Type::string);
+                emit_and_advance(piece_length, Highlight_Type::string);
                 piece_length = 0;
             }
         };
@@ -538,7 +472,7 @@ public:
             if (const std::size_t ref_length
                 = match_character_reference(remainder.substr(piece_length))) {
                 flush();
-                emit_and_advance(index, ref_length, Highlight_Type::escape);
+                emit_and_advance(ref_length, Highlight_Type::escape);
             }
         }
         flush();
@@ -553,7 +487,7 @@ public:
         std::size_t piece_length = 1;
         const auto flush = [&] {
             if (piece_length != 0) {
-                emit_and_advance(index, piece_length, Highlight_Type::string);
+                emit_and_advance(piece_length, Highlight_Type::string);
                 piece_length = 0;
             }
         };
@@ -568,7 +502,7 @@ public:
             if (const std::size_t ref_length
                 = match_character_reference(remainder.substr(piece_length))) {
                 flush();
-                emit_and_advance(index, ref_length, Highlight_Type::escape);
+                emit_and_advance(ref_length, Highlight_Type::escape);
             }
         }
         flush();

@@ -4,6 +4,7 @@
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/highlight.hpp"
+#include "ulight/impl/highlighter.hpp"
 
 #include "ulight/impl/lang/bash.hpp"
 #include "ulight/impl/lang/bash_chars.hpp"
@@ -149,7 +150,7 @@ std::optional<Token_Type> match_operator(std::u8string_view str)
 
 namespace {
 
-struct Highlighter {
+struct Highlighter : Highlighter_Base {
 private:
     enum struct Context : Underlying {
         file,
@@ -165,12 +166,6 @@ private:
         parameter_sub,
     };
 
-    Non_Owning_Buffer<Token>& out;
-    std::u8string_view remainder;
-    const Highlight_Options& options;
-
-    const std::size_t source_length = remainder.size();
-    std::size_t index = 0;
     State state = State::before_command;
 
 public:
@@ -179,9 +174,7 @@ public:
         std::u8string_view source,
         const Highlight_Options& options
     )
-        : out { out }
-        , remainder { source }
-        , options { options }
+        : Highlighter_Base { out, source, options }
     {
     }
 
@@ -408,34 +401,6 @@ private:
             return;
         }
         ULIGHT_ASSERT_UNREACHABLE(u8"No substitution to consume.");
-    }
-
-    void emit(std::size_t begin, std::size_t length, Highlight_Type type)
-    {
-        ULIGHT_DEBUG_ASSERT(begin < source_length);
-        ULIGHT_DEBUG_ASSERT(begin + length <= source_length);
-
-        const bool coalesce = options.coalescing && !out.empty() //
-            && Highlight_Type(out.back().type) == type //
-            && out.back().begin + out.back().length == begin;
-        if (coalesce) {
-            out.back().length += length;
-        }
-        else {
-            out.emplace_back(begin, length, Underlying(type));
-        }
-    }
-
-    void advance(std::size_t length)
-    {
-        index += length;
-        remainder.remove_prefix(length);
-    }
-
-    void emit_and_advance(std::size_t length, Highlight_Type type)
-    {
-        emit(index, length, type);
-        advance(length);
     }
 };
 

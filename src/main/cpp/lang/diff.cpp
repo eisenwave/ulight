@@ -1,8 +1,8 @@
-#include <cstddef>
 #include <string_view>
 
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
+#include "ulight/impl/highlighter.hpp"
 #include "ulight/impl/parse_utils.hpp"
 
 #include "ulight/impl/lang/diff.hpp"
@@ -36,60 +36,17 @@ Highlight_Type choose_line_highlight(std::u8string_view line)
 
 namespace {
 
-struct Highlighter {
-private:
-    Non_Owning_Buffer<Token>& out;
-    std::u8string_view remainder;
-    const Highlight_Options& options;
-    const std::size_t source_length;
+struct Highlighter : Highlighter_Base {
 
-    std::size_t index = 0;
-
-public:
     Highlighter(
         Non_Owning_Buffer<Token>& out,
         std::u8string_view source,
         const Highlight_Options& options
     )
-        : out { out }
-        , remainder { source }
-        , options { options }
-        , source_length { source.length() }
+        : Highlighter_Base { out, source, options }
     {
     }
 
-private:
-    void emit(std::size_t begin, std::size_t length, Highlight_Type type)
-    {
-        ULIGHT_DEBUG_ASSERT(length != 0);
-        ULIGHT_DEBUG_ASSERT(begin < source_length);
-        ULIGHT_DEBUG_ASSERT(begin + length <= source_length);
-
-        const bool coalesce = options.coalescing //
-            && !out.empty() //
-            && Highlight_Type(out.back().type) == type //
-            && out.back().begin + out.back().length == begin;
-        if (coalesce) {
-            out.back().length += length;
-        }
-        else {
-            out.emplace_back(begin, length, Underlying(type));
-        }
-    }
-
-    void advance(std::size_t length)
-    {
-        index += length;
-        remainder.remove_prefix(length);
-    }
-
-    void emit_and_advance(std::size_t length, Highlight_Type type)
-    {
-        emit(index, length, type);
-        advance(length);
-    }
-
-public:
     bool operator()()
     {
         while (!remainder.empty()) {
