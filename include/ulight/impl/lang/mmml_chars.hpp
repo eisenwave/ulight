@@ -77,14 +77,22 @@ constexpr bool is_mmml_ascii_directive_name_character(char32_t c)
     return is_ascii(c) && is_html_ascii_tag_name_character(char8_t(c));
 }
 
-constexpr bool is_mmml_directive_name_character(char8_t) = delete;
+constexpr bool is_mmml_directive_name(char8_t) = delete;
 
 /// @brief Returns `true` if `c` can legally appear
 /// in the name of an MMML directive.
 [[nodiscard]]
-constexpr bool is_mmml_directive_name_character(char32_t c)
+constexpr bool is_mmml_directive_name(char32_t c)
 {
     return is_html_tag_name_character(c);
+}
+
+constexpr bool is_mmml_directive_name_start(char8_t) = delete;
+
+[[nodiscard]]
+constexpr bool is_mmml_directive_name_start(char32_t c)
+{
+    return !is_ascii_digit(c) && is_mmml_directive_name(c);
 }
 
 } // namespace ulight
