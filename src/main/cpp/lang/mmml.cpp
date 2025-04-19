@@ -34,8 +34,8 @@ std::size_t match_whitespace(std::u8string_view str)
 {
     constexpr auto predicate = [](char8_t c) { return is_html_whitespace(c); };
     const auto* const data_end = str.data() + str.size();
-    const auto* const end = std::ranges::find_if_not(str.begin(), data_end, predicate);
-    return std::size_t(data_end - end);
+    const auto* const end = std::ranges::find_if_not(str.data(), data_end, predicate);
+    return std::size_t(end - str.data());
 }
 
 bool starts_with_escape_or_directive(std::u8string_view str)
@@ -126,6 +126,8 @@ struct Consumer {
 
     virtual void push_directive() { }
     virtual void pop_directive() { }
+    virtual void push_arguments() { }
+    virtual void pop_arguments() { }
     virtual void unexpected_eof() { }
 };
 
@@ -228,6 +230,7 @@ std::size_t match_argument_list(Consumer& out, std::u8string_view str)
     if (!str.starts_with(u8'[')) {
         return 0;
     }
+    out.push_arguments();
     out.opening_square();
     str.remove_prefix(1);
 
@@ -241,10 +244,12 @@ std::size_t match_argument_list(Consumer& out, std::u8string_view str)
             break;
         }
         if (str[0] == u8'}') {
-            break;
+            out.pop_arguments();
+            return length;
         }
         if (str[0] == u8']') {
             out.closing_square();
+            out.pop_arguments();
             ++length;
             return length;
         }
@@ -312,139 +317,6 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
 
     bool operator()();
 
-private:
-    void consume_content_sequence(Content_Context context)
-    {
-        Bracket_Levels levels {};
-        while (!eof() && !is_terminated_by(context, remainder[0])) {
-            consume_content(context, levels);
-        }
-    }
-
-    void consume_content(Content_Context context, Bracket_Levels& levels)
-    {
-        if (expect_escape() || expect_directive()) {
-            return;
-        }
-        std::size_t plain_length = 0;
-
-        for (; plain_length < remainder.length(); ++plain_length) {
-            const char8_t c = remainder[plain_length];
-            if (c == u8'\\') {
-                if (starts_with_escape_or_directive(remainder.substr(plain_length))) {
-                    break;
-                }
-                continue;
-            }
-            if (context == Content_Context::document) {
-                continue;
-            }
-            if (context == Content_Context::argument_value) {
-                if (c == u8',') {
-                    break;
-                }
-                if (c == u8'[') {
-                    ++levels.square;
-                }
-                if (c == u8']' && levels.square-- == 0) {
-                    break;
-                }
-            }
-            if (c == u8'{') {
-                ++levels.brace;
-            }
-            if (c == u8'}' && levels.brace-- == 0) {
-                break;
-            }
-        }
-
-        advance(plain_length);
-    }
-
-    bool expect_directive()
-    {
-        if (!remainder.starts_with(u8'\\')) {
-            return false;
-        }
-        const std::size_t name_length = match_directive_name(remainder.substr(1));
-        if (name_length == 0) {
-            return false;
-        }
-
-        emit_and_advance(1 + name_length, Highlight_Type::markup_tag);
-
-        expect_argument_list();
-        expect_block();
-        return true;
-    }
-
-    bool expect_argument_list()
-    {
-        if (!remainder.starts_with(u8'[')) {
-            return false;
-        }
-        emit_and_advance(1, Highlight_Type::sym_square);
-
-        while (!eof()) {
-            consume_argument();
-            if (remainder[0] == u8'}') {
-                return true;
-            }
-            if (remainder.starts_with(u8']')) {
-                emit_and_advance(1, Highlight_Type::sym_square);
-                return true;
-            }
-            if (remainder.starts_with(u8',')) {
-                emit_and_advance(1, Highlight_Type::sym_punc);
-                continue;
-            }
-            ULIGHT_ASSERT(eof());
-            break;
-        }
-        return true;
-    }
-
-    [[nodiscard]]
-    bool expect_escape()
-    {
-        constexpr std::size_t sequence_length = 2;
-        if (remainder.length() < sequence_length || //
-            remainder[0] != u8'\\' || //
-            !is_mmml_escapeable(remainder[1])) {
-            return false;
-        }
-        emit_and_advance(sequence_length, Highlight_Type::escape);
-        return true;
-    }
-
-    void consume_argument()
-    {
-        if (Named_Argument_Result r = match_named_argument_prefix(remainder)) {
-            advance(r.leading_whitespace);
-            emit_and_advance(r.name_length, Highlight_Type::id_argument);
-            advance(r.trailing_whitespace);
-            emit_and_advance(1, Highlight_Type::sym_punc);
-        }
-
-        consume_content_sequence(Content_Context::argument_value);
-    }
-
-    bool expect_block()
-    {
-        if (!remainder.starts_with(u8'{')) {
-            return false;
-        }
-        emit_and_advance(1, Highlight_Type::sym_brace);
-        consume_content_sequence(Content_Context::block);
-        if (remainder.starts_with(u8'}')) {
-            emit_and_advance(1, Highlight_Type::sym_brace);
-        }
-        else {
-            ULIGHT_ASSERT(eof());
-        }
-        return true;
-    }
-
     struct Dispatch_Consumer;
     struct Normal_Consumer;
     struct Comment_Consumer;
@@ -511,7 +383,7 @@ struct Highlighter::Comment_Consumer final : Consumer {
     std::size_t suffix = 0;
 
 private:
-    std::size_t square_level = 0;
+    std::size_t arguments_level = 0;
     std::size_t brace_level = 0;
     std::size_t* active_length = &prefix;
 
@@ -527,7 +399,7 @@ public:
         prefix = 0;
         content = 0;
         suffix = 0;
-        square_level = 0;
+        arguments_level = 0;
         brace_level = 0;
         active_length = &prefix;
     }
@@ -549,12 +421,10 @@ public:
     void opening_square() final
     {
         *active_length += 1;
-        ++square_level;
     }
     void closing_square() final
     {
         *active_length += 1;
-        --square_level;
     }
     void comma() final
     {
@@ -575,7 +445,7 @@ public:
     void opening_brace() final
     {
         *active_length += 1;
-        if (square_level == 0 && brace_level == 0) {
+        if (arguments_level == 0 && brace_level == 0) {
             ULIGHT_DEBUG_ASSERT(prefix != 0);
             active_length = &content;
         }
@@ -584,7 +454,7 @@ public:
     void closing_brace() final
     {
         --brace_level;
-        if (brace_level == 0 && active_length == &content) {
+        if (arguments_level == 0 && brace_level == 0 && active_length == &content) {
             active_length = &suffix;
         }
         *active_length += 1;
@@ -592,6 +462,14 @@ public:
     void escape() final
     {
         *active_length += 1;
+    }
+    void push_arguments() final
+    {
+        ++arguments_level;
+    }
+    void pop_arguments() final
+    {
+        --arguments_level;
     }
     void unexpected_eof() final
     {
@@ -663,20 +541,32 @@ struct Highlighter::Dispatch_Consumer final : Consumer {
         current->escape();
     }
 
+    void push_directive() final
+    {
+        // deliberately do nothing; we need full control over this
+    }
     void pop_directive() final
     {
-        flush_special_consumers();
+        try_flush_special_consumer();
+    }
+    void push_arguments() final
+    {
+        current->push_arguments();
+    }
+    void pop_arguments() final
+    {
+        current->pop_arguments();
     }
     void unexpected_eof() final
     {
         current->unexpected_eof();
-        flush_special_consumers();
+        try_flush_special_consumer();
     }
 
-    void flush_special_consumers()
+    void try_flush_special_consumer()
     {
         Highlighter& self = normal.self;
-        if (comment.done()) {
+        if (current == &comment && comment.done()) {
             ULIGHT_ASSERT(comment.prefix != 0);
             self.emit_and_advance(comment.prefix, Highlight_Type::comment_delim);
             if (comment.content) {
@@ -687,8 +577,8 @@ struct Highlighter::Dispatch_Consumer final : Consumer {
                 self.emit_and_advance(comment.suffix, Highlight_Type::comment_delim);
             }
             comment.reset();
+            current = &normal;
         }
-        current = &normal;
     }
 };
 
