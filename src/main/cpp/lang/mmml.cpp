@@ -26,7 +26,7 @@ std::size_t match_directive_name(std::u8string_view str)
 
 std::size_t match_argument_name(std::u8string_view str)
 {
-    constexpr auto predicate = [](char32_t c) { return is_mmml_argument_name_character(c); };
+    constexpr auto predicate = [](char32_t c) { return is_mmml_argument_name(c); };
     return str.empty() || is_ascii_digit(str[0]) ? 0 : utf8::length_if(str, predicate);
 }
 
@@ -170,8 +170,8 @@ std::size_t match_content(
         if (context == Content_Context::document) {
             continue;
         }
-        if (context == Content_Context::argument_value) {
-            if (c == u8',') {
+        if (context == Content_Context::argument_value && levels.brace == 0) {
+            if (levels.square == 0 && c == u8',') {
                 break;
             }
             if (c == u8'[') {
