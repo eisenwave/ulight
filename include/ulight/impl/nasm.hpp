@@ -11,11 +11,14 @@ namespace ulight::nasm{
 /// @brief
 
 [[nodiscard]]
-std::size_t line_comment(std::u8string_view source);
+std::size_t match_line_comment(std::u8string_view source);
 
 [[nodiscard]]
-std::size_t line_label(std::u8string_view source);
-} // nasm namespace
+std::size_t match_line_label(std::u8string_view source);
 
+[[nodiscard]]
+std::size_t match_line_register(std::u8string_view source);
+
+} // nasm namespace
 
 #endif // NASM_HPP

@@ -3,6 +3,8 @@
 
 #include "ulight/impl/assert.hpp"
 
+
+
 namespace ulight {
 
 // PURE ASCII ======================================================================================
@@ -630,6 +632,27 @@ constexpr bool is_mmml_directive_name_character(char32_t c)
 {
     return is_html_tag_name_character(c);
 }
+
+
+// NASM =========================================================================================
+
+
+/// @brief Returns true if 'c' is a legal label character
+[[nodiscard]]
+constexpr bool is_nasm_label_character(char32_t c){
+    return c == '_' || c == '$' || c == '#' || c == '@' || c == '~' || c == '.' || c == '?';
+}
+
+/// @brief Returns true if 'c' is a legal register start character
+[[nodiscard]]
+constexpr bool is_nasm_register_start_character(char32_t c){
+    return c == 'a' || c == 'b' || c == 'c' || c == 'd' || c == 'e' || c == 'f' || c == 'g' ||
+           c == 'i' || c == 'm' || c == 'r' || c == 's' || c == 'x' || c == 'y' || c == 'z';
+}
+
+
+
+
 
 // C & C++ =========================================================================================
 
