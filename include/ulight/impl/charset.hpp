@@ -23,7 +23,7 @@ public:
         = default;
 
     [[nodiscard]]
-    constexpr bool contains(char8_t c) const
+    constexpr bool contains(char8_t c) const noexcept(N >= 256)
     {
         return get(std::size_t(c));
     }
@@ -33,12 +33,12 @@ public:
         *this = {};
     }
 
-    constexpr void remove(char8_t c)
+    constexpr void remove(char8_t c) noexcept(N >= 256)
     {
         clear(std::size_t(c));
     }
 
-    constexpr void insert(char8_t c)
+    constexpr void insert(char8_t c) noexcept(N >= 256)
     {
         set(std::size_t(c));
     }
@@ -65,7 +65,7 @@ public:
         return *this;
     }
 
-    constexpr Charset& operator|=(char8_t c)
+    constexpr Charset& operator|=(char8_t c) noexcept(N >= 256)
     {
         set(std::size_t(c));
         return *this;
@@ -80,14 +80,14 @@ public:
     }
 
     [[nodiscard]]
-    friend constexpr Charset operator|(const Charset& x, char8_t c)
+    friend constexpr Charset operator|(const Charset& x, char8_t c) noexcept
     {
         Charset result = x;
         result |= c;
         return result;
     }
 
-    constexpr Charset& operator&=(const Charset& other)
+    constexpr Charset& operator&=(const Charset& other) noexcept
     {
         for (std::size_t i = 0; i < limb_count; ++i) {
             limbs[i] &= other.limbs[i];
@@ -111,7 +111,7 @@ public:
         return *this;
     }
 
-    constexpr Charset& operator-=(char8_t c)
+    constexpr Charset& operator-=(char8_t c) noexcept(N >= 256)
     {
         clear(std::size_t(c));
         return *this;
