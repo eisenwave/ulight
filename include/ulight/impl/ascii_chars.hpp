@@ -8,13 +8,13 @@ namespace ulight {
 // PURE ASCII ======================================================================================
 
 [[nodiscard]]
-constexpr bool is_ascii(char8_t c)
+constexpr bool is_ascii(char8_t c) noexcept
 {
     return c <= u8'\u007f';
 }
 
 [[nodiscard]]
-constexpr bool is_ascii(char32_t c)
+constexpr bool is_ascii(char32_t c) noexcept
 {
     return c <= U'\u007f';
 }
@@ -23,14 +23,14 @@ inline constexpr Charset256 is_ascii_set = detail::to_charset256(is_ascii);
 
 /// @brief Returns `true` if the `c` is a decimal digit (`0` through `9`).
 [[nodiscard]]
-constexpr bool is_ascii_digit(char8_t c)
+constexpr bool is_ascii_digit(char8_t c) noexcept
 {
     return c >= u8'0' && c <= u8'9';
 }
 
 /// @brief Returns `true` if the `c` is a decimal digit (`0` through `9`).
 [[nodiscard]]
-constexpr bool is_ascii_digit(char32_t c)
+constexpr bool is_ascii_digit(char32_t c) noexcept
 {
     return c >= U'0' && c <= U'9';
 }
@@ -64,14 +64,14 @@ constexpr bool is_ascii_digit_base(char32_t c, int base)
 
 /// @brief Returns `true` if `c` is `'0'` or `'1'`.
 [[nodiscard]]
-constexpr bool is_ascii_binary_digit(char8_t c)
+constexpr bool is_ascii_binary_digit(char8_t c) noexcept
 {
     return c == u8'0' || c == u8'1';
 }
 
 /// @brief Returns `true` if `c` is `'0'` or `'1'`.
 [[nodiscard]]
-constexpr bool is_ascii_binary_digit(char32_t c)
+constexpr bool is_ascii_binary_digit(char32_t c) noexcept
 {
     return c == U'0' || c == U'1';
 }
@@ -81,14 +81,14 @@ inline constexpr Charset256 is_ascii_binary_digit_set
 
 /// @brief Returns `true` if `c` is in `[0-7]`.
 [[nodiscard]]
-constexpr bool is_ascii_octal_digit(char8_t c)
+constexpr bool is_ascii_octal_digit(char8_t c) noexcept
 {
     return c >= u8'0' && c <= u8'7';
 }
 
 /// @brief Returns `true` if `c` is in `[0-7]`.
 [[nodiscard]]
-constexpr bool is_ascii_octal_digit(char32_t c)
+constexpr bool is_ascii_octal_digit(char32_t c) noexcept
 {
     return c >= U'0' && c <= U'7';
 }
@@ -97,7 +97,8 @@ inline constexpr Charset256 is_ascii_octal_digit_set = detail::to_charset256(is_
 
 /// @brief Returns `true` if `c` is in `[0-9A-Fa-f]`.
 [[nodiscard]]
-constexpr bool is_ascii_hex_digit(char8_t c)
+// NOLINTNEXTLINE(bugprone-exception-escape)
+constexpr bool is_ascii_hex_digit(char8_t c) noexcept
 {
     // TODO: remove the C++/Lua-specific versions in favor of this.
     return is_ascii_digit_base(c, 16);
@@ -105,22 +106,22 @@ constexpr bool is_ascii_hex_digit(char8_t c)
 
 /// @brief Returns `true` if `c` is in `[0-9A-Fa-f]`.
 [[nodiscard]]
-constexpr bool is_ascii_hex_digit(char32_t c)
+constexpr bool is_ascii_hex_digit(char32_t c) noexcept
 {
-    return is_ascii_digit_base(c, 16);
+    return is_ascii(c) && is_ascii_hex_digit(char8_t(c));
 }
 
 inline constexpr Charset256 is_ascii_hex_digit_set = detail::to_charset256(is_ascii_hex_digit);
 
 [[nodiscard]]
-constexpr bool is_ascii_upper_alpha(char8_t c)
+constexpr bool is_ascii_upper_alpha(char8_t c) noexcept
 {
     // https://infra.spec.whatwg.org/#ascii-upper-alpha
     return c >= u8'A' && c <= u8'Z';
 }
 
 [[nodiscard]]
-constexpr bool is_ascii_upper_alpha(char32_t c)
+constexpr bool is_ascii_upper_alpha(char32_t c) noexcept
 {
     // https://infra.spec.whatwg.org/#ascii-upper-alpha
     return c >= U'A' && c <= U'Z';
@@ -129,14 +130,14 @@ constexpr bool is_ascii_upper_alpha(char32_t c)
 inline constexpr Charset256 is_ascii_upper_alpha_set = detail::to_charset256(is_ascii_upper_alpha);
 
 [[nodiscard]]
-constexpr bool is_ascii_lower_alpha(char8_t c)
+constexpr bool is_ascii_lower_alpha(char8_t c) noexcept
 {
     // https://infra.spec.whatwg.org/#ascii-lower-alpha
     return c >= u8'a' && c <= u8'z';
 }
 
 [[nodiscard]]
-constexpr bool is_ascii_lower_alpha(char32_t c)
+constexpr bool is_ascii_lower_alpha(char32_t c) noexcept
 {
     // https://infra.spec.whatwg.org/#ascii-lower-alpha
     return c >= U'a' && c <= U'z';
@@ -147,7 +148,7 @@ inline constexpr Charset256 is_ascii_lower_alpha_set = detail::to_charset256(is_
 /// @brief If `is_ascii_lower_alpha(c)` is `true`,
 /// returns the corresponding upper case alphabetic character, otherwise `c`.
 [[nodiscard]]
-constexpr char8_t to_ascii_upper(char8_t c)
+constexpr char8_t to_ascii_upper(char8_t c) noexcept
 {
     return is_ascii_lower_alpha(c) ? c & 0xdf : c;
 }
@@ -155,14 +156,14 @@ constexpr char8_t to_ascii_upper(char8_t c)
 /// @brief If `is_ascii_upper_alpha(c)` is `true`,
 /// returns the corresponding lower case alphabetic character, otherwise `c`.
 [[nodiscard]]
-constexpr char8_t to_ascii_lower(char8_t c)
+constexpr char8_t to_ascii_lower(char8_t c) noexcept
 {
     return is_ascii_upper_alpha(c) ? c | 0x20 : c;
 }
 
 /// @brief Returns `true` if `c` is a latin character (`[a-zA-Z]`).
 [[nodiscard]]
-constexpr bool is_ascii_alpha(char8_t c)
+constexpr bool is_ascii_alpha(char8_t c) noexcept
 {
     // https://infra.spec.whatwg.org/#ascii-alpha
     return is_ascii_lower_alpha(c) || is_ascii_upper_alpha(c);
@@ -170,7 +171,7 @@ constexpr bool is_ascii_alpha(char8_t c)
 
 /// @brief Returns `true` if `c` is a latin character (`[a-zA-Z]`).
 [[nodiscard]]
-constexpr bool is_ascii_alpha(char32_t c)
+constexpr bool is_ascii_alpha(char32_t c) noexcept
 {
     // https://infra.spec.whatwg.org/#ascii-alpha
     return is_ascii_lower_alpha(c) || is_ascii_upper_alpha(c);
@@ -181,14 +182,14 @@ inline constexpr Charset256 is_ascii_alpha_set = detail::to_charset256(is_ascii_
 inline constexpr Charset256 is_ascii_alphanumeric_set = is_ascii_alpha_set | is_ascii_digit_set;
 
 [[nodiscard]]
-constexpr bool is_ascii_alphanumeric(char8_t c)
+constexpr bool is_ascii_alphanumeric(char8_t c) noexcept
 {
     // https://infra.spec.whatwg.org/#ascii-alphanumeric
     return is_ascii_alphanumeric_set.contains(c);
 }
 
 [[nodiscard]]
-constexpr bool is_ascii_alphanumeric(char32_t c)
+constexpr bool is_ascii_alphanumeric(char32_t c) noexcept
 {
     // https://infra.spec.whatwg.org/#ascii-alphanumeric
     return is_ascii(c) && is_ascii_alphanumeric(char8_t(c));

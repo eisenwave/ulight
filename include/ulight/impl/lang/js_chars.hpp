@@ -14,7 +14,7 @@ constexpr bool is_js_whitespace(char8_t c)
 // Note that this should be updated whenever the Unicode standard changes.
 // Currently, the Unicode characters are not fully supported.
 [[nodiscard]]
-constexpr bool is_js_whitespace(char32_t c)
+constexpr bool is_js_whitespace(char32_t c) noexcept
 {
     // https://262.ecma-international.org/15.0/index.html#sec-white-space
     // clang-format off
@@ -37,11 +37,11 @@ constexpr bool is_js_whitespace(char32_t c)
 }
 
 [[nodiscard]]
-constexpr bool is_js_identifier_start(char8_t c)
+constexpr bool is_js_identifier_start(char8_t c) noexcept
     = delete;
 
 [[nodiscard]]
-constexpr bool is_js_identifier_start(char32_t c)
+constexpr bool is_js_identifier_start(char32_t c) noexcept
 {
     // https://262.ecma-international.org/15.0/index.html#prod-IdentifierName
     // clang-format off
@@ -68,7 +68,7 @@ constexpr bool is_js_identifier_part(char8_t c)
     = delete;
 
 [[nodiscard]]
-constexpr bool is_js_identifier_part(char32_t c)
+constexpr bool is_js_identifier_part(char32_t c) noexcept
 {
     // https://262.ecma-international.org/15.0/index.html#prod-IdentifierPart
     // clang-format off
@@ -94,7 +94,7 @@ constexpr bool is_jsx_tag_name_part(char8_t c)
 // JSX tag names can include identifiers, hyphens, colons, and periods
 // according to the official JSX spec.
 [[nodiscard]]
-constexpr bool is_jsx_tag_name_part(char32_t c)
+constexpr bool is_jsx_tag_name_part(char32_t c) noexcept
 {
     // https://facebook.github.io/jsx/#prod-JSXElementName
     return is_js_identifier_part(c) || c == U'-' || c == U':' || c == U'.';
