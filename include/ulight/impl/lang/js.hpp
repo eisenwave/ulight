@@ -196,6 +196,17 @@ std::size_t match_line_comment(std::u8string_view str) noexcept;
 [[nodiscard]]
 std::size_t match_hashbang_comment(std::u8string_view str) noexcept;
 
+/// @brief Returns the length of a JavaScript escape sequence at the start of `str`, if any.
+/// Returns zero if there is no escape sequence.
+/// Handles standard JavaScript escape sequences including
+///  - Simple escapes (\\n, \\t, etc.)
+///  - Unicode escapes (\\uXXXX and \\u{XXXXX})
+///  - Hexadecimal escapes (\\xXX)
+///  - Octal escapes (\\0 to \\377)
+/// Considers even incomplete/malformed escape sequences as having a non-zero length.
+[[nodiscard]]
+std::size_t match_escape_sequence(std::u8string_view str) noexcept;
+
 struct String_Literal_Result {
     std::size_t length;
     bool terminated;

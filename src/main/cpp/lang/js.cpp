@@ -22,8 +22,8 @@ namespace ulight {
 
 namespace js {
 
-#define ULIGHT_JS_TOKEN_TYPE_U8_CODE(id, code, highlight, source) u8##code,
-#define ULIGHT_JS_TOKEN_TYPE_LENGTH(id, code, highlight, source) (sizeof(u8##code) - 1),
+#define ULIGHT_JS_TOKEN_TYPE_U8_CODE(id, code, highlight, source) u8## code,
+#define ULIGHT_JS_TOKEN_TYPE_LENGTH(id, code, highlight, source) (sizeof(u8## code) - 1),
 #define ULIGHT_JS_TOKEN_HIGHLIGHT_TYPE(id, code, highlight, source) (Highlight_Type::highlight),
 #define ULIGHT_JS_TOKEN_TYPE_FEATURE_SOURCE(id, code, highlight, source) (Feature_Source::source),
 
@@ -212,6 +212,89 @@ std::size_t match_hashbang_comment(std::u8string_view s) noexcept
     }
 
     return length;
+}
+
+std::size_t match_escape_sequence(std::u8string_view str) noexcept
+{
+    // https://262.ecma-international.org/15.0/index.html#prod-EscapeSequence
+    // All escape sequences must start with backslash.
+    if (str.empty() || str[0] != u8'\\') {
+        return 0;
+    }
+
+    // Need 1 more char after the backslash.
+    if (str.length() < 2) {
+        return 1;
+    }
+
+    switch (str[1]) {
+    case u8'\'': case u8'"': case u8'\\': case u8'b':
+    case u8'f': case u8'n': case u8'r': case u8't': case u8'v':
+    case u8'0': // Null character.
+        return 2;
+    }
+
+    // \xHHH
+    if (str[1] == u8'x') {
+        if (str.length() < 4) {
+            return str.length();
+        }
+        if (is_ascii_hex_digit(str[2]) && is_ascii_hex_digit(str[3])) {
+            return 4;
+        }
+        return 2;
+    }
+
+    // uXXXX
+    if (str[1] == u8'u') {
+        // \u{XXXXX}
+        if (str.length() >= 3 && str[2] == u8'{') {
+            std::size_t pos = 3;
+            while (pos < str.length() && pos < 10) { // U+10FFFF
+                if (str[pos] == u8'}') {
+                    return pos > 3 ? pos + 1 : 3;
+                }
+
+                if (!is_ascii_hex_digit(str[pos])) {
+                    return pos + 1;
+                }
+
+                ++pos;
+            }
+
+            // Got to end without finding a closing brace.
+            return str.length() < 10 ? str.length() : 10;
+        }
+
+        // \uXXXX
+        if (str.length() < 6) {
+            return str.length();
+        }
+
+        if (is_ascii_hex_digit(str[2]) && is_ascii_hex_digit(str[3]) &&
+            is_ascii_hex_digit(str[4]) && is_ascii_hex_digit(str[5])) {
+            return 6;
+        }
+
+        return 2;
+    }
+    // \OOO
+    if (is_ascii_digit(str[1]) && str[1] != u8'9' && str[1] != u8'8') {
+        std::size_t length = 2;
+        if (length < str.length() && is_ascii_octal_digit(str[length])) {
+            ++length;
+
+            // Third octal digit only allowed for values up to \377.
+            if (length < str.length() && is_ascii_octal_digit(str[length]) &&
+                str[1] <= u8'3') {
+                ++length;
+            }
+        }
+
+        return length;
+    }
+    // Any other escaped characters are technically valid in JS.
+    return 2;
 }
 
 String_Literal_Result match_string_literal(std::u8string_view str)
@@ -1349,13 +1432,40 @@ private:
     {
         ULIGHT_ASSERT(string);
         emit_and_advance(1, Highlight_Type::string_delim);
+
+        // Handle content with escapes
         const std::size_t content_length = string.length - (string.terminated ? 2 : 1);
-        if (content_length != 0) {
-            emit_and_advance(content_length, Highlight_Type::string);
+
+        std::size_t remaining = content_length;
+        while (remaining > 0) {
+            if (remainder.starts_with(u8'\\')) {
+                const std::size_t esc_length = match_escape_sequence(remainder);
+                if (esc_length > 0) {
+                    emit_and_advance(esc_length, Highlight_Type::escape);
+                    remaining -= esc_length;
+                } else {
+                    // This should never happen, but just to be safe.
+                    emit_and_advance(1, Highlight_Type::string);
+                    remaining -= 1;
+                }
+            } else {
+                // Find next escape sequence or end of content.
+                const std::size_t next = std::min(remaining, remainder.find(u8'\\'));
+                if (next > 0) {
+                    emit_and_advance(next, Highlight_Type::string);
+                    remaining -= next;
+                } else {
+                    // This should never happen, but just to be safe.
+                    emit_and_advance(1, Highlight_Type::string);
+                    remaining -= 1;
+                }
+            }
         }
+
         if (string.terminated) {
             emit_and_advance(1, Highlight_Type::string_delim);
         }
+
         input_element = Input_Element::div;
     }
 
@@ -1418,7 +1528,12 @@ private:
                     chars += c - 1;
                     continue;
                 }
-                // TODO: there are other escape sequence, and these should be highlighted
+                if (const std::size_t esc_len = match_escape_sequence(rem)) {
+                    flush_chars();
+                    emit_and_advance(esc_len, Highlight_Type::escape);
+                    continue;
+                }
+                // Invalid.
                 advance(1);
                 ++chars;
                 continue;
