@@ -1,0 +1,13 @@
+let a = "hello\nworld";
+let b = "\u1234";
+let c = "emoji\u{1F600}";
+let d = "\x41\x42\x43";
+let e = "line1\nline2\tindented";
+let f = "\"hi\"";
+let g = "C:\\Program Files\\";
+let h = "\u03C0 \u{03C3}";
+let i = "\uD83D\uDE00";
+let j = "\123";
+let k = "a\0b";
+let l = "ctrl \b\f\v\r";
+let m = "long \u{10FFFF}";

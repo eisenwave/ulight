@@ -115,5 +115,34 @@ TEST(JS, match_jsx_tag)
     EXPECT_EQ(match_jsx_tag(u8"</ /*comment */> "), JSX_Tag_Result(16, JSX_Type::fragment_closing));
 }
 
+TEST(JS, match_escape_sequence)
+{
+    EXPECT_EQ(match_escape_sequence(u8"\\n"), 2u);
+    EXPECT_EQ(match_escape_sequence(u8"\\t"), 2u);
+    EXPECT_EQ(match_escape_sequence(u8"\\'"), 2u);
+    EXPECT_EQ(match_escape_sequence(u8"\\\""), 2u);
+    EXPECT_EQ(match_escape_sequence(u8"\\\\"), 2u);
+    EXPECT_EQ(match_escape_sequence(u8"\\0"), 2u);
+
+    EXPECT_EQ(match_escape_sequence(u8"\\x41"), 4u);
+    EXPECT_EQ(match_escape_sequence(u8"\\xG1"), 2u); // Invalid.
+    EXPECT_EQ(match_escape_sequence(u8"\\x"), 2u); // Incomplete.
+
+    EXPECT_EQ(match_escape_sequence(u8"\\u1234"), 6u);
+    EXPECT_EQ(match_escape_sequence(u8"\\uabcd"), 6u);
+    EXPECT_EQ(match_escape_sequence(u8"\\u{1F600}"), 9u);
+    EXPECT_EQ(match_escape_sequence(u8"\\u{10FFFF}"), 10u);
+    EXPECT_EQ(match_escape_sequence(u8"\\u{"), 3u);
+    EXPECT_EQ(match_escape_sequence(u8"\\u{G}"), 4u);
+    EXPECT_EQ(match_escape_sequence(u8"\\u"), 2u);
+
+    EXPECT_EQ(match_escape_sequence(u8"\\123"), 4u);
+    EXPECT_EQ(match_escape_sequence(u8"\\377"), 4u);
+    EXPECT_EQ(match_escape_sequence(u8"\\400"), 3u);
+    EXPECT_EQ(match_escape_sequence(u8"\\1"), 2u);
+
+    EXPECT_EQ(match_escape_sequence(u8"\\a"), 2u);
+}
+
 } // namespace
 } // namespace ulight::js
