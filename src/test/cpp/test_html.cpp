@@ -5,14 +5,24 @@
 #include "ulight/impl/lang/html.hpp"
 
 namespace ulight::html {
-namespace {
 
-[[maybe_unused]]
-std::ostream& operator<<(std::ostream& out, Match_Result result) // NOLINT
+std::ostream& operator<<(std::ostream& out, Match_Result result); // NOLINT
+
+std::ostream& operator<<(std::ostream& out, Match_Result result)
 {
     return out << "{ .length = " << result.length
                << ", .terminated = " << (result.terminated ? "true" : "false") << " }";
 }
+
+std::ostream& operator<<(std::ostream& out, End_Tag_Result result); // NOLINT
+
+std::ostream& operator<<(std::ostream& out, End_Tag_Result result)
+{
+    return out << "{ .length = " << result.length //
+               << ", .name_length = " << result.name_length << " }";
+}
+
+namespace {
 
 TEST(HTML, match_whitespace)
 {

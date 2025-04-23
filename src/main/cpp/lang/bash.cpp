@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <string_view>
 
+#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/highlight.hpp"
@@ -75,10 +76,7 @@ std::size_t match_comment(std::u8string_view str)
 
 std::size_t match_blank(std::u8string_view str)
 {
-    const auto predicate = [](char8_t c) { return is_bash_blank(c); };
-    const auto* const data_end = str.data() + str.size();
-    const auto* const end = std::ranges::find_if_not(str.data(), data_end, predicate);
-    return std::size_t(end - str.data());
+    return ascii::length_if(str, [](char8_t c) { return is_bash_blank(c); });
 }
 
 bool starts_with_substitution(std::u8string_view str)

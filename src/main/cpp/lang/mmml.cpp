@@ -5,6 +5,7 @@
 
 #include "ulight/ulight.hpp"
 
+#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/assert.hpp"
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
@@ -33,9 +34,7 @@ std::size_t match_argument_name(std::u8string_view str)
 std::size_t match_whitespace(std::u8string_view str)
 {
     constexpr auto predicate = [](char8_t c) { return is_html_whitespace(c); };
-    const auto* const data_end = str.data() + str.size();
-    const auto* const end = std::ranges::find_if_not(str.data(), data_end, predicate);
-    return std::size_t(end - str.data());
+    return ascii::length_if(str, predicate);
 }
 
 bool starts_with_escape_or_directive(std::u8string_view str)

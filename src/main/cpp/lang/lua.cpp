@@ -6,6 +6,7 @@
 #include <string_view>
 #include <vector>
 
+#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
 #include "ulight/ulight.hpp"
@@ -82,16 +83,20 @@ std::optional<Lua_Token_Type> lua_token_type_by_code(std::u8string_view code) no
     return Lua_Token_Type(result - token_type_codes);
 }
 
+namespace {
+
+constexpr auto is_lua_whitespace_lambda = [](char8_t c) { return is_lua_whitespace(c); };
+
+} // namespace
+
 std::size_t match_whitespace(std::u8string_view str)
 {
-    constexpr auto predicate = [](char8_t c) { return is_lua_whitespace(c); };
-    return std::size_t(std::ranges::find_if_not(str, predicate) - str.begin());
+    return ascii::length_if(str, is_lua_whitespace_lambda);
 }
 
 std::size_t match_non_whitespace(std::u8string_view str)
 {
-    constexpr auto predicate = [](char8_t c) { return !is_lua_whitespace(c); };
-    return std::size_t(std::ranges::find_if_not(str, predicate) - str.begin());
+    return ascii::length_if_not(str, is_lua_whitespace_lambda);
 }
 
 std::size_t match_line_comment(std::u8string_view s) noexcept
