@@ -265,20 +265,20 @@ inline constexpr auto cpp_token_type_count = std::size_t(Token_Type::kw_xor_eq) 
 /// For example, if `type` is `plus`, returns `"+"`.
 /// If `type` is invalid, returns an empty string.
 [[nodiscard]]
-std::u8string_view cpp_token_type_code(Token_Type type) noexcept;
+std::u8string_view cpp_token_type_code(Token_Type type);
 
 /// @brief Equivalent to `cpp_token_type_code(type).length()`.
 [[nodiscard]]
-std::size_t cpp_token_type_length(Token_Type type) noexcept;
+std::size_t cpp_token_type_length(Token_Type type);
 
 [[nodiscard]]
-Highlight_Type cpp_token_type_highlight(Token_Type type) noexcept;
+Highlight_Type cpp_token_type_highlight(Token_Type type);
 
 [[nodiscard]]
-Feature_Source cpp_token_type_source(Token_Type type) noexcept;
+Feature_Source cpp_token_type_source(Token_Type type);
 
 [[nodiscard]]
-std::optional<Token_Type> cpp_token_type_by_code(std::u8string_view code) noexcept;
+std::optional<Token_Type> cpp_token_type_by_code(std::u8string_view code);
 
 /// @brief Matches zero or more characters for which `is_cpp_whitespace` is `true`.
 [[nodiscard]]
@@ -293,7 +293,7 @@ struct Comment_Result {
     bool is_terminated;
 
     [[nodiscard]]
-    constexpr explicit operator bool() const noexcept
+    constexpr explicit operator bool() const
     {
         return length != 0;
     }
@@ -301,14 +301,14 @@ struct Comment_Result {
 
 /// @brief Returns a match for a C89-style block comment at the start of `str`, if any.
 [[nodiscard]]
-Comment_Result match_block_comment(std::u8string_view str) noexcept;
+Comment_Result match_block_comment(std::u8string_view str);
 
 /// @brief Returns the length of a C99-style line comment at the start of `str`, if any.
 /// Returns zero if there is no line comment.
 /// In any case, the length does not include the terminating newline character,
 /// but it does include intermediate newlines "escaped" via backslash.
 [[nodiscard]]
-std::size_t match_line_comment(std::u8string_view str) noexcept;
+std::size_t match_line_comment(std::u8string_view str);
 
 [[nodiscard]]
 std::size_t match_preprocessing_directive(std::u8string_view str, Lang c_or_cpp);
@@ -359,7 +359,7 @@ struct Literal_Match_Result {
 /// @param str the string which may contain a literal at the start
 /// @return The match or an error.
 [[nodiscard]]
-Literal_Match_Result match_integer_literal(std::u8string_view str) noexcept;
+Literal_Match_Result match_integer_literal(std::u8string_view str);
 
 /// @brief Matches the regex `\\.?[0-9]('?[0-9a-zA-Z_]|[eEpP][+-]|\\.)*`
 /// at the start of `str`.

@@ -53,32 +53,32 @@ inline constexpr Feature_Source token_type_sources[] {
 /// For example, if `type` is `plus`, returns `"+"`.
 /// If `type` is invalid, returns an empty string.
 [[nodiscard]]
-std::u8string_view cpp_token_type_code(Token_Type type) noexcept
+std::u8string_view cpp_token_type_code(Token_Type type)
 {
     return token_type_codes[std::size_t(type)];
 }
 
 /// @brief Equivalent to `cpp_token_type_code(type).length()`.
 [[nodiscard]]
-std::size_t cpp_token_type_length(Token_Type type) noexcept
+std::size_t cpp_token_type_length(Token_Type type)
 {
     return token_type_lengths[std::size_t(type)];
 }
 
 [[nodiscard]]
-Highlight_Type cpp_token_type_highlight(Token_Type type) noexcept
+Highlight_Type cpp_token_type_highlight(Token_Type type)
 {
     return token_type_highlights[std::size_t(type)];
 }
 
 [[nodiscard]]
-Feature_Source cpp_token_type_source(Token_Type type) noexcept
+Feature_Source cpp_token_type_source(Token_Type type)
 {
     return token_type_sources[std::size_t(type)];
 }
 
 [[nodiscard]]
-std::optional<Token_Type> cpp_token_type_by_code(std::u8string_view code) noexcept
+std::optional<Token_Type> cpp_token_type_by_code(std::u8string_view code)
 {
     const std::u8string_view* const result = std::ranges::lower_bound(token_type_codes, code);
     if (result == std::end(token_type_codes) || *result != code) {
@@ -106,7 +106,7 @@ std::size_t match_non_whitespace(std::u8string_view str)
 namespace {
 
 [[nodiscard]]
-std::size_t match_newline_escape(std::u8string_view str) noexcept
+std::size_t match_newline_escape(std::u8string_view str)
 {
     // https://eel.is/c++draft/lex.phases#1.2
     // > Each sequence of a backslash character (\)
@@ -132,7 +132,7 @@ std::size_t match_newline_escape(std::u8string_view str) noexcept
 } // namespace
 
 // NOLINTNEXTLINE(bugprone-exception-escape)
-std::size_t match_line_comment(std::u8string_view s) noexcept
+std::size_t match_line_comment(std::u8string_view s)
 {
     if (!s.starts_with(u8"//")) {
         return {};
@@ -187,7 +187,7 @@ std::size_t match_preprocessing_directive(std::u8string_view s, Lang c_or_cpp)
     return length;
 }
 
-Comment_Result match_block_comment(std::u8string_view s) noexcept
+Comment_Result match_block_comment(std::u8string_view s)
 {
     if (!s.starts_with(u8"/*")) {
         return {};
@@ -200,8 +200,8 @@ Comment_Result match_block_comment(std::u8string_view s) noexcept
     return Comment_Result { .length = end + 2, .is_terminated = true };
 }
 
-Literal_Match_Result match_integer_literal // NOLINT(bugprone-exception-escape)
-    (std::u8string_view s) noexcept
+// NOLINTNEXTLINE(bugprone-exception-escape)
+Literal_Match_Result match_integer_literal(std::u8string_view s)
 {
     if (s.empty() || !is_ascii_digit(s[0])) {
         return { Literal_Match_Status::no_digits, 0, {} };
