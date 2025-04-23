@@ -4,10 +4,15 @@
 
 namespace ulight::js {
 
-// NOLINTNEXTLINE
-std::ostream& operator<<(std::ostream& out, const Numeric_Result& r);
+ULIGHT_SUPPRESS_MISSING_DECLARATIONS_WARNING()
 
-std::ostream& operator<<(std::ostream& out, const Numeric_Result& r)
+std::ostream& operator<<(std::ostream& out, const Escape_Result& r) // NOLINT
+{
+    return out << "{ .length = " << r.length
+               << ", .erroneous = " << (r.erroneous ? "true" : "false") << " }";
+}
+
+std::ostream& operator<<(std::ostream& out, const Numeric_Result& r) // NOLINT
 {
     return out //
         << "{ .length = " << r.length //
@@ -20,10 +25,7 @@ std::ostream& operator<<(std::ostream& out, const Numeric_Result& r)
         << " }";
 }
 
-// NOLINTNEXTLINE
-std::ostream& operator<<(std::ostream& out, const JSX_Tag_Result& r);
-
-std::ostream& operator<<(std::ostream& out, const JSX_Tag_Result& r)
+std::ostream& operator<<(std::ostream& out, const JSX_Tag_Result& r) // NOLINT
 {
     return out << "{ .length = " << r.length << ", .type = " << int(r.type) << " }";
 }
@@ -117,31 +119,32 @@ TEST(JS, match_jsx_tag)
 
 TEST(JS, match_escape_sequence)
 {
-    EXPECT_EQ(match_escape_sequence(u8"\\n"), 2u);
-    EXPECT_EQ(match_escape_sequence(u8"\\t"), 2u);
-    EXPECT_EQ(match_escape_sequence(u8"\\'"), 2u);
-    EXPECT_EQ(match_escape_sequence(u8"\\\""), 2u);
-    EXPECT_EQ(match_escape_sequence(u8"\\\\"), 2u);
-    EXPECT_EQ(match_escape_sequence(u8"\\0"), 2u);
+    EXPECT_EQ(match_escape_sequence(u8"\\n"), Escape_Result(2u));
+    EXPECT_EQ(match_escape_sequence(u8"\\t"), Escape_Result(2u));
+    EXPECT_EQ(match_escape_sequence(u8"\\'"), Escape_Result(2u));
+    EXPECT_EQ(match_escape_sequence(u8"\\\""), Escape_Result(2u));
+    EXPECT_EQ(match_escape_sequence(u8"\\\\"), Escape_Result(2u));
+    EXPECT_EQ(match_escape_sequence(u8"\\0"), Escape_Result(2u));
 
-    EXPECT_EQ(match_escape_sequence(u8"\\x41"), 4u);
-    EXPECT_EQ(match_escape_sequence(u8"\\xG1"), 2u); // Invalid.
-    EXPECT_EQ(match_escape_sequence(u8"\\x"), 2u); // Incomplete.
+    EXPECT_EQ(match_escape_sequence(u8"\\x41"), Escape_Result(4u));
+    EXPECT_EQ(match_escape_sequence(u8"\\xG1"), Escape_Result(4u, true));
+    EXPECT_EQ(match_escape_sequence(u8"\\x"), Escape_Result(2u, true));
 
-    EXPECT_EQ(match_escape_sequence(u8"\\u1234"), 6u);
-    EXPECT_EQ(match_escape_sequence(u8"\\uabcd"), 6u);
-    EXPECT_EQ(match_escape_sequence(u8"\\u{1F600}"), 9u);
-    EXPECT_EQ(match_escape_sequence(u8"\\u{10FFFF}"), 10u);
-    EXPECT_EQ(match_escape_sequence(u8"\\u{"), 3u);
-    EXPECT_EQ(match_escape_sequence(u8"\\u{G}"), 4u);
-    EXPECT_EQ(match_escape_sequence(u8"\\u"), 2u);
+    EXPECT_EQ(match_escape_sequence(u8"\\u1234"), Escape_Result(6u));
+    EXPECT_EQ(match_escape_sequence(u8"\\uabcd"), Escape_Result(6u));
+    EXPECT_EQ(match_escape_sequence(u8"\\u{1F600}"), Escape_Result(9u));
+    EXPECT_EQ(match_escape_sequence(u8"\\u{1F600}F"), Escape_Result(9u));
+    EXPECT_EQ(match_escape_sequence(u8"\\u{10FFFF}"), Escape_Result(10u));
+    EXPECT_EQ(match_escape_sequence(u8"\\u{"), Escape_Result(3u, true));
+    EXPECT_EQ(match_escape_sequence(u8"\\u{G}"), Escape_Result(5u, true));
+    EXPECT_EQ(match_escape_sequence(u8"\\u"), Escape_Result(2u, true));
 
-    EXPECT_EQ(match_escape_sequence(u8"\\123"), 4u);
-    EXPECT_EQ(match_escape_sequence(u8"\\377"), 4u);
-    EXPECT_EQ(match_escape_sequence(u8"\\400"), 3u);
-    EXPECT_EQ(match_escape_sequence(u8"\\1"), 2u);
+    EXPECT_EQ(match_escape_sequence(u8"\\123"), Escape_Result(4u));
+    EXPECT_EQ(match_escape_sequence(u8"\\377"), Escape_Result(4u));
+    EXPECT_EQ(match_escape_sequence(u8"\\400"), Escape_Result(3u));
+    EXPECT_EQ(match_escape_sequence(u8"\\1"), Escape_Result(2u));
 
-    EXPECT_EQ(match_escape_sequence(u8"\\a"), 2u);
+    EXPECT_EQ(match_escape_sequence(u8"\\a"), Escape_Result(2u));
 }
 
 } // namespace

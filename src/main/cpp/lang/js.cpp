@@ -215,56 +215,45 @@ std::size_t match_hashbang_comment(std::u8string_view s) noexcept
     return length;
 }
 
-std::size_t match_escape_sequence(const std::u8string_view str) noexcept
+Escape_Result match_escape_sequence(const std::u8string_view str) noexcept
 {
+    static constexpr auto is_ascii_hex_digit_lambda
+        = [](char8_t c) { return is_ascii_hex_digit(c); };
+
     // https://262.ecma-international.org/15.0/index.html#prod-EscapeSequence
     // All escape sequences must start with backslash.
     if (str.length() < 2 || str[0] != u8'\\') {
-        return 0;
+        return {};
     }
 
     switch (str[1]) {
     case u8'x': {
         // https://262.ecma-international.org/15.0/index.html#prod-HexEscapeSequence
         if (str.length() < 4) {
-            return str.length();
+            return { .length = str.length(), .erroneous = true };
         }
-        if (is_ascii_hex_digit(str[2]) && is_ascii_hex_digit(str[3])) {
-            return 4;
-        }
-        return 2;
+        return { .length = 4,
+                 .erroneous = !is_ascii_hex_digit(str[2]) || !is_ascii_hex_digit(str[3]) };
     }
     case u8'u': {
         // https://262.ecma-international.org/15.0/index.html#prod-UnicodeEscapeSequence
         if (str.length() >= 3 && str[2] == u8'{') {
-            std::size_t pos = 3;
-            while (pos < str.length() && pos < 10) { // U+10FFFF
-                if (str[pos] == u8'}') {
-                    return pos > 3 ? pos + 1 : 3;
-                }
-
-                if (!is_ascii_hex_digit(str[pos])) {
-                    return pos + 1;
-                }
-
-                ++pos;
-            }
-
-            // Got to end without finding a closing brace.
-            return str.length() < 10 ? str.length() : 10;
+            const std::size_t length_without_brace = ascii::length_before(str, u8'}', 3);
+            const std::u8string_view digits = str.substr(3, length_without_brace - 3);
+            const bool erroneous = length_without_brace <= 3 || length_without_brace > 9
+                || !std::ranges::all_of(digits, is_ascii_hex_digit_lambda);
+            const std::size_t length
+                = length_without_brace == str.length() || str[length_without_brace] != u8'}'
+                ? length_without_brace
+                : length_without_brace + 1;
+            return { .length = length, .erroneous = erroneous };
         }
 
         // \uXXXX
-        if (str.length() < 6) {
-            return str.length();
-        }
-
-        if (is_ascii_hex_digit(str[2]) && is_ascii_hex_digit(str[3]) && is_ascii_hex_digit(str[4])
-            && is_ascii_hex_digit(str[5])) {
-            return 6;
-        }
-
-        return 2;
+        const std::size_t length = ascii::length_if(
+            str.substr(0, std::min(str.length(), 6uz)), is_ascii_hex_digit_lambda, 2
+        );
+        return { .length = length, .erroneous = length != 6 };
     }
 
     case u8'0':
@@ -275,11 +264,12 @@ std::size_t match_escape_sequence(const std::u8string_view str) noexcept
         if (str.length() >= 3 && is_ascii_octal_digit(str[2])) {
             // ZeroToThree OctalDigit [lookahead ∉ OctalDigit]
             // ZeroToThree OctalDigit OctalDigit
-            return str.length() >= 4 && is_ascii_octal_digit(str[3]) ? 4 : 3;
+            const std::size_t length = str.length() >= 4 && is_ascii_octal_digit(str[3]) ? 4 : 3;
+            return { .length = length };
         }
         // 0 [lookahead ∈ { 8, 9 }]
         // NonZeroOctalDigit [lookahead ∉ OctalDigit]
-        return 2;
+        return { .length = 2 };
     }
 
     case u8'4':
@@ -289,11 +279,12 @@ std::size_t match_escape_sequence(const std::u8string_view str) noexcept
         // https://262.ecma-international.org/15.0/index.html#prod-LegacyOctalEscapeSequence
         // NonZeroOctalDigit [lookahead ∉ OctalDigit]
         // FourToSeven OctalDigit
-        return str.length() >= 3 && is_ascii_octal_digit(str[2]) ? 3 : 2;
+        const std::size_t length = str.length() >= 3 && is_ascii_octal_digit(str[2]) ? 3 : 2;
+        return { .length = length };
     }
     default: {
         // https://262.ecma-international.org/15.0/index.html#prod-CharacterEscapeSequence
-        return 2;
+        return { .length = 2 };
     }
     }
 }
@@ -1445,11 +1436,12 @@ private:
         std::size_t remaining = content_length;
         while (remaining > 0) {
             if (remainder.starts_with(u8'\\')) {
-                const std::size_t esc_length = match_escape_sequence(remainder);
-                if (esc_length > 0) {
+                if (const Escape_Result esc = match_escape_sequence(remainder)) {
                     flush_chars();
-                    emit_and_advance(esc_length, Highlight_Type::escape);
-                    remaining -= esc_length;
+                    emit_and_advance(
+                        esc.length, esc.erroneous ? Highlight_Type::error : Highlight_Type::escape
+                    );
+                    remaining -= esc.length;
                 }
                 else {
                     advance(1);
@@ -1542,9 +1534,11 @@ private:
                     chars += c - 1;
                     continue;
                 }
-                if (const std::size_t esc_len = match_escape_sequence(rem)) {
+                if (const Escape_Result esc = match_escape_sequence(rem)) {
                     flush_chars();
-                    emit_and_advance(esc_len, Highlight_Type::escape);
+                    emit_and_advance(
+                        esc.length, esc.erroneous ? Highlight_Type::error : Highlight_Type::escape
+                    );
                     continue;
                 }
                 // Invalid.
