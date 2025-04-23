@@ -3,6 +3,7 @@
 #include <memory_resource>
 #include <string_view>
 
+#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/assert.hpp"
@@ -47,8 +48,7 @@ bool is_character_reference_content(std::u8string_view str)
 
 std::size_t match_whitespace(std::u8string_view str)
 {
-    constexpr auto predicate = [](char8_t c) { return is_html_whitespace(c); };
-    return std::size_t(std::ranges::find_if_not(str, predicate) - str.begin());
+    return ascii::length_if(str, [](char8_t c) { return is_html_whitespace(c); });
 }
 
 std::size_t match_character_reference(std::u8string_view str)
@@ -233,35 +233,34 @@ Match_Result match_cdata(std::u8string_view str)
     return { .length = result + cdata_suffix.length(), .terminated = true };
 }
 
-End_Tag_Result match_end_tag_permissive(std::u8string_view str)
+End_Tag_Result match_end_tag_permissive(const std::u8string_view str)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#end-tags
     if (!str.starts_with(u8"</")) {
         return {};
     }
 
-    const auto* const end_pointer = str.data() + str.size();
-    const auto* const pos = std::ranges::find_if(str.data() + 2, end_pointer, [](char8_t c) static {
-        return is_html_whitespace(c) || c == u8'>';
-    });
-    if (pos == end_pointer) {
+    const std::size_t name_end_pos = ascii::find_if(
+        str, [](char8_t c) static { return is_html_whitespace(c) || c == u8'>'; }, 2
+    );
+    if (name_end_pos == std::u8string_view::npos) {
         return {};
     }
-    const auto name_length = std::size_t(pos - str.data() - 2);
+    const std::size_t name_length = name_end_pos - 2;
     if (name_length == 0) {
         return {};
     }
 
-    if (*pos == u8'>') {
-        return { .length = std::size_t(pos - str.data()) + 1, .name_length = name_length };
+    if (str[name_end_pos] == u8'>') {
+        return { .length = name_end_pos + 1, .name_length = name_length };
     }
 
-    const auto* const pos2 = std::ranges::find(pos, end_pointer, u8'>');
-    if (pos2 == end_pointer) {
+    const std::size_t end_pos = str.find(u8'>', name_end_pos);
+    if (end_pos == std::u8string_view::npos) {
         return {};
     }
 
-    return { .length = std::size_t(pos2 - str.data() + 1), .name_length = name_length };
+    return { .length = end_pos, .name_length = name_length };
 }
 
 namespace {

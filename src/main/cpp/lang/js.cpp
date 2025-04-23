@@ -5,6 +5,7 @@
 #include <string_view>
 #include <vector>
 
+#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/assert.hpp"
@@ -416,11 +417,10 @@ std::size_t match_template_substitution(std::u8string_view str)
 
 Digits_Result match_digits(std::u8string_view str, int base)
 {
-    const auto* const data_end = str.data() + str.length();
     bool erroneous = false;
 
     char8_t previous = u8'_';
-    const auto* const it = std::ranges::find_if_not(str.data(), data_end, [&](char8_t c) {
+    const std::size_t length = ascii::length_if(str, [&](char8_t c) {
         if (c == u8'_') {
             erroneous |= previous == u8'_';
             previous = c;
@@ -432,7 +432,6 @@ Digits_Result match_digits(std::u8string_view str, int base)
     });
     erroneous |= previous == u8'_';
 
-    const std::size_t length = it == data_end ? str.length() : std::size_t(it - str.data());
     return { .length = length, .erroneous = erroneous };
 }
 

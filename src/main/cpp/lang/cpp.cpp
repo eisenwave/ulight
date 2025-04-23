@@ -6,6 +6,7 @@
 #include <string_view>
 #include <vector>
 
+#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/parse_utils.hpp"
@@ -86,16 +87,20 @@ std::optional<Token_Type> cpp_token_type_by_code(std::u8string_view code) noexce
     return Token_Type(result - token_type_codes);
 }
 
+namespace {
+
+constexpr auto is_cpp_whitespace_lambda = [](char8_t c) { return is_cpp_whitespace(c); };
+
+} // namespace
+
 std::size_t match_whitespace(std::u8string_view str)
 {
-    constexpr auto predicate = [](char8_t c) { return is_cpp_whitespace(c); };
-    return std::size_t(std::ranges::find_if_not(str, predicate) - str.begin());
+    return ascii::length_if(str, is_cpp_whitespace_lambda);
 }
 
 std::size_t match_non_whitespace(std::u8string_view str)
 {
-    constexpr auto predicate = [](char8_t c) { return is_cpp_whitespace(c); };
-    return std::size_t(std::ranges::find_if(str, predicate) - str.begin());
+    return ascii::length_if_not(str, is_cpp_whitespace_lambda);
 }
 
 namespace {
@@ -340,12 +345,16 @@ std::size_t match_identifier(std::u8string_view str)
 
 Escape_Result match_escape_sequence(std::u8string_view str)
 {
+    static constexpr auto is_ascii_octal_digit_lambda
+        = [](char8_t c) { return is_ascii_octal_digit(c); };
+    static constexpr auto is_ascii_hex_digit_lambda
+        = [](char8_t c) { return is_ascii_hex_digit(c); };
+
     // https://eel.is/c++draft/lex.literal#nt:escape-sequence
     if (!str.starts_with(u8'\\') || str.length() < 2) {
         return {};
     }
 
-    const auto* const data_end = str.data() + str.length();
     switch (str[1]) {
     // https://eel.is/c++draft/lex.literal#nt:simple-escape-sequence-char
     case u8'\'':
@@ -377,26 +386,19 @@ Escape_Result match_escape_sequence(std::u8string_view str)
     case u8'u': {
         // https://eel.is/c++draft/lex.universal.char#nt:universal-character-name
         if (str.length() >= 3 && str[2] == u8'{') {
-            const auto* const end = std::ranges::find_if(str.data() + 3, data_end, [](char8_t c) {
-                return c == u8'}' || !is_ascii_hex_digit(c);
-            });
-            if (end == data_end || *end != u8'}') {
+            const std::size_t end_pos = ascii::find_if_not(str, is_ascii_hex_digit_lambda, 3);
+            if (end_pos == std::u8string_view::npos || str[end_pos] != u8'}') {
                 return { .length = 3, .type = Escape_Type::universal, .erroneous = true };
             }
-            return { .length = std::size_t(end - str.data() + 1), .type = Escape_Type::universal };
+            return { .length = end_pos + 1, .type = Escape_Type::universal };
         }
-        const auto* const end = std::ranges::find_if_not(
-            str.data() + 2, str.data() + std::min(str.length(), 6uz),
-            [](char8_t c) { return is_ascii_hex_digit(c); }
-        );
-        return { .length = 6, .type = Escape_Type::universal, .erroneous = end - str.data() != 6 };
+        const std::u8string_view rem = str.substr(0, std::min(str.length(), 6uz));
+        const std::size_t length = ascii::length_if(rem, is_ascii_hex_digit_lambda, 2);
+        return { .length = length, .type = Escape_Type::universal, .erroneous = length != 6 };
     }
     case u8'U': {
-        const auto* const end = std::ranges::find_if_not(
-            str.data() + 2, str.data() + std::min(str.length(), 10uz),
-            [](char8_t c) { return is_ascii_hex_digit(c); }
-        );
-        const auto length = std::size_t(end - str.data());
+        const std::u8string_view rem = str.substr(0, std::min(str.length(), 10uz));
+        const std::size_t length = ascii::length_if(rem, is_ascii_hex_digit_lambda, 2);
         return { .length = length, .type = Escape_Type::universal, .erroneous = length != 10 };
     }
     case u8'N': {
@@ -413,33 +415,23 @@ Escape_Result match_escape_sequence(std::u8string_view str)
     case u8'x': {
         // https://eel.is/c++draft/lex.literal#nt:hexadecimal-escape-sequence
         if (str.length() >= 3 && str[2] == u8'{') {
-            const auto* const end = std::ranges::find_if(str.data() + 3, data_end, [](char8_t c) {
-                return c == u8'}' || !is_ascii_hex_digit(c);
-            });
-            if (end == data_end || *end != u8'}') {
+            const std::size_t end_pos = ascii::find_if_not(str, is_ascii_hex_digit_lambda, 3);
+            if (end_pos == std::u8string_view::npos || str[end_pos] != u8'}') {
                 return { .length = 3, .type = Escape_Type::hexadecimal, .erroneous = true };
             }
-            return { .length = std::size_t(end - str.data() + 1),
-                     .type = Escape_Type::hexadecimal };
+            return { .length = end_pos + 1, .type = Escape_Type::hexadecimal };
         }
-        const auto* const end = std::ranges::find_if_not(str.data() + 2, data_end, [](char8_t c) {
-            return is_ascii_hex_digit(c);
-        });
-        if (end == data_end) {
-            return {};
-        }
-        return { .length = std::size_t(end - str.data()), .type = Escape_Type::hexadecimal };
+        const std::size_t length = ascii::length_if(str, is_ascii_hex_digit_lambda, 2);
+        return { .length = length, .type = Escape_Type::hexadecimal, .erroneous = length == 2 };
     }
     case u8'o': {
         // https://eel.is/c++draft/lex.literal#nt:octal-escape-sequence
         if (str.length() >= 3 && str[2] == u8'{') {
-            const auto* const end = std::ranges::find_if(str.data() + 3, data_end, [](char8_t c) {
-                return c == u8'}' || !is_ascii_octal_digit(c);
-            });
-            if (end == data_end || *end != u8'}') {
+            const std::size_t end_pos = ascii::find_if_not(str, is_ascii_octal_digit_lambda, 3);
+            if (end_pos == std::u8string_view::npos || str[end_pos] != u8'}') {
                 return { .length = 3, .type = Escape_Type::octal, .erroneous = true };
             }
-            return { .length = std::size_t(end - str.data() + 1), .type = Escape_Type::octal };
+            return { .length = end_pos + 1, .type = Escape_Type::octal };
         }
         return { .length = 2, .type = Escape_Type::octal, .erroneous = true };
     }
@@ -452,11 +444,9 @@ Escape_Result match_escape_sequence(std::u8string_view str)
     case u8'6':
     case u8'7': {
         // https://eel.is/c++draft/lex.literal#nt:octal-escape-sequence
-        const auto* const limit = str.data() + std::min(str.length(), 4uz);
-        const auto* const end = std::ranges::find_if_not(str.data() + 2, limit, [](char8_t c) {
-            return is_ascii_octal_digit(c);
-        });
-        return { .length = std::size_t(end - str.data()), .type = Escape_Type::octal };
+        const std::u8string_view rem = str.substr(0, std::min(4uz, str.length()));
+        const std::size_t length = ascii::length_if(rem, is_ascii_octal_digit_lambda, 2);
+        return { .length = length, .type = Escape_Type::octal };
     }
 
     default: {
@@ -479,8 +469,7 @@ constexpr bool is_d_char(char8_t c)
 [[nodiscard]]
 std::size_t match_d_char_sequence(std::u8string_view str)
 {
-    constexpr auto predicate = [](char8_t c) { return is_d_char(c); };
-    return std::size_t(std::ranges::find_if_not(str, predicate) - str.begin());
+    return ascii::length_if(str, [](char8_t c) { return is_d_char(c); });
 }
 
 } // namespace
