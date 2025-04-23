@@ -214,7 +214,7 @@ std::size_t match_hashbang_comment(std::u8string_view s) noexcept
     return length;
 }
 
-std::size_t match_escape_sequence(std::u8string_view str) noexcept
+std::size_t match_escape_sequence(const std::u8string_view str) noexcept
 {
     // https://262.ecma-international.org/15.0/index.html#prod-EscapeSequence
     // All escape sequences must start with backslash.
@@ -223,19 +223,8 @@ std::size_t match_escape_sequence(std::u8string_view str) noexcept
     }
 
     switch (str[1]) {
-    case u8'\'':
-    case u8'"':
-    case u8'\\':
-    case u8'b':
-    case u8'f':
-    case u8'n':
-    case u8'r':
-    case u8't':
-    case u8'v':
-    case u8'0': { // Null character.
-        return 2;
-    }
-    case u8'x': { // \xHHH
+    case u8'x': {
+        // https://262.ecma-international.org/15.0/index.html#prod-HexEscapeSequence
         if (str.length() < 4) {
             return str.length();
         }
@@ -244,8 +233,8 @@ std::size_t match_escape_sequence(std::u8string_view str) noexcept
         }
         return 2;
     }
-    case u8'u': { // uXXXX
-        // \u{XXXXX}
+    case u8'u': {
+        // https://262.ecma-international.org/15.0/index.html#prod-UnicodeEscapeSequence
         if (str.length() >= 3 && str[2] == u8'{') {
             std::size_t pos = 3;
             while (pos < str.length() && pos < 10) { // U+10FFFF
@@ -276,24 +265,36 @@ std::size_t match_escape_sequence(std::u8string_view str) noexcept
 
         return 2;
     }
-    }
 
-    // \OOO
-    if (is_ascii_digit(str[1]) && str[1] != u8'9' && str[1] != u8'8') {
-        std::size_t length = 2;
-        if (length < str.length() && is_ascii_octal_digit(str[length])) {
-            ++length;
-
-            // Third octal digit only allowed for values up to \377.
-            if (length < str.length() && is_ascii_octal_digit(str[length]) && str[1] <= u8'3') {
-                ++length;
-            }
+    case u8'0':
+    case u8'1':
+    case u8'2':
+    case u8'3': {
+        // https://262.ecma-international.org/15.0/index.html#prod-LegacyOctalEscapeSequence
+        if (str.length() >= 3 && is_ascii_octal_digit(str[2])) {
+            // ZeroToThree OctalDigit [lookahead ∉ OctalDigit]
+            // ZeroToThree OctalDigit OctalDigit
+            return str.length() >= 4 && is_ascii_octal_digit(str[3]) ? 4 : 3;
         }
-
-        return length;
+        // 0 [lookahead ∈ { 8, 9 }]
+        // NonZeroOctalDigit [lookahead ∉ OctalDigit]
+        return 2;
     }
-    // Any other escaped characters are technically valid in JS.
-    return 2;
+
+    case u8'4':
+    case u8'5':
+    case u8'6':
+    case u8'7': {
+        // https://262.ecma-international.org/15.0/index.html#prod-LegacyOctalEscapeSequence
+        // NonZeroOctalDigit [lookahead ∉ OctalDigit]
+        // FourToSeven OctalDigit
+        return str.length() >= 3 && is_ascii_octal_digit(str[2]) ? 3 : 2;
+    }
+    default: {
+        // https://262.ecma-international.org/15.0/index.html#prod-CharacterEscapeSequence
+        return 2;
+    }
+    }
 }
 
 String_Literal_Result match_string_literal(std::u8string_view str)
