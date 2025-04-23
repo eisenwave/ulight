@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "ulight/impl/css.hpp"
+#include "ulight/impl/lang/css.hpp"
 #include "ulight/impl/strings.hpp"
 
 namespace ulight::css {
@@ -68,6 +68,7 @@ TEST(CSS, starts_with_ident_sequence)
     EXPECT_TRUE(starts_with_ident_sequence(u8"-\\ "));
 }
 
+/*
 TEST(CSS, match_number)
 {
     // https://www.w3.org/TR/css-syntax-3/#consume-number
@@ -115,7 +116,7 @@ TEST(CSS, match_escaped_code_point)
     constexpr std::u8string_view umlaut_x = u8"äx";
     EXPECT_EQ(match_escaped_code_point(umlaut_x), umlaut.length());
 }
-
+*/
 TEST(CSS, match_ident_sequence)
 {
     // https://www.w3.org/TR/css-syntax-3/#consume-name

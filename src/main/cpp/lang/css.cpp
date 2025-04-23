@@ -7,10 +7,10 @@
 #include "ulight/impl/assert.hpp"
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/chars.hpp"
-#include "ulight/impl/cpp.hpp"
-#include "ulight/impl/css.hpp"
+#include "ulight/impl/lang/cpp.hpp"
+#include "ulight/impl/lang/css.hpp"
 #include "ulight/impl/highlight.hpp"
-#include "ulight/impl/html.hpp"
+#include "ulight/impl/lang/html.hpp"
 #include "ulight/impl/strings.hpp"
 #include "ulight/impl/unicode.hpp"
 

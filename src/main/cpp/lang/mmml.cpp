@@ -12,7 +12,7 @@
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/chars.hpp"
 #include "ulight/impl/highlight.hpp"
-#include "ulight/impl/mmml.hpp"
+#include "ulight/impl/lang/mmml.hpp"
 #include "ulight/impl/unicode.hpp"
 
 namespace ulight {

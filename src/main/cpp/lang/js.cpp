@@ -5,14 +5,14 @@
 #include <string_view>
 #include <vector>
 
-#include "ulight/impl/html.hpp"
+#include "ulight/impl/lang//html.hpp"
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/assert.hpp"
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/chars.hpp"
 #include "ulight/impl/highlight.hpp"
-#include "ulight/impl/js.hpp"
+#include "ulight/impl/lang/js.hpp"
 #include "ulight/impl/unicode.hpp"
 #include "ulight/impl/unicode_algorithm.hpp"
 

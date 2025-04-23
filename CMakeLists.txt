@@ -40,14 +40,15 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 set(LIBRARY_SOURCES
+    src/main/cpp/lang/cpp.cpp
+    src/main/cpp/lang/css.cpp
+    src/main/cpp/lang/html.cpp
+    src/main/cpp/lang/js.cpp
+    src/main/cpp/lang/lua.cpp
+    src/main/cpp/lang/mmml.cpp
+    src/main/cpp/lang/nasm.cpp
+
     src/main/cpp/chars.cpp
-    src/main/cpp/cpp.cpp
-    src/main/cpp/css.cpp
-    src/main/cpp/html.cpp
-    src/main/cpp/js.cpp
-    src/main/cpp/lua.cpp
-    src/main/cpp/mmml.cpp
-    src/main/cpp/nasm.cpp
     src/main/cpp/parse_utils.cpp
     src/main/cpp/ulight.cpp
 )
@@ -109,15 +110,15 @@ else(NOT DEFINED EMSCRIPTEN)
         include/ulight/impl/assert.hpp
         include/ulight/impl/buffer.hpp
         include/ulight/impl/chars.hpp
-        include/ulight/impl/cpp.hpp
-        include/ulight/impl/css.hpp
+        include/ulight/impl/lang/cpp.hpp
+        include/ulight/impl/lang/css.hpp
         include/ulight/impl/highlight.hpp
-        include/ulight/impl/html.hpp
+        include/ulight/impl/lang/html.hpp
         include/ulight/impl/io.hpp
-        include/ulight/impl/lua.hpp
+        include/ulight/impl/lang/lua.hpp
         include/ulight/impl/memory.hpp
-        include/ulight/impl/mmml.hpp
-        include/ulight/impl/nasm.hpp
+        include/ulight/impl/lang/mmml.hpp
+        include/ulight/impl/lang/nasm.hpp
         include/ulight/impl/parse_utils.hpp
         include/ulight/impl/platform.h
         include/ulight/impl/string_diff.hpp
