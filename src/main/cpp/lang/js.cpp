@@ -232,8 +232,9 @@ std::size_t match_escape_sequence(std::u8string_view str) noexcept
     case u8'r':
     case u8't':
     case u8'v':
-    case u8'0': // Null character.
+    case u8'0': { // Null character.
         return 2;
+    }
     case u8'x': { // \xHHH
         if (str.length() < 4) {
             return str.length();
@@ -243,7 +244,7 @@ std::size_t match_escape_sequence(std::u8string_view str) noexcept
         }
         return 2;
     }
-    case u8'u': {// uXXXX
+    case u8'u': { // uXXXX
         // \u{XXXXX}
         if (str.length() >= 3 && str[2] == u8'{') {
             std::size_t pos = 3;
@@ -271,7 +272,7 @@ std::size_t match_escape_sequence(std::u8string_view str) noexcept
         if (is_ascii_hex_digit(str[2]) && is_ascii_hex_digit(str[3]) && is_ascii_hex_digit(str[4])
             && is_ascii_hex_digit(str[5])) {
             return 6;
-            }
+        }
 
         return 2;
     }
