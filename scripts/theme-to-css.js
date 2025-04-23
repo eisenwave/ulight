@@ -1,9 +1,8 @@
+#!/usr/bin/node
 "use strict";
 
 const fs = require("fs");
 const yargs = require('yargs');
-
-const indent = "    ";
 
 const longNameToShort = {
     "error": "err",
@@ -81,7 +80,42 @@ const longNameToShort = {
 
 const variants = ["light", "dark"];
 
-function generateCss(path, theme, themeName = "", noBlockBackground = false) {
+function generateCss(
+    path,
+    theme,
+    themeName,
+    noBlockBackground,
+    noBlockForeground,
+    isMmml
+) {
+    const indent = isMmml ? " " : "    ";
+    if (isMmml) {
+        const systemCss = doGenerateCss(path, theme, themeName, noBlockBackground, noBlockForeground, "mmml-system", indent);
+        const themedCss = doGenerateCss(path, theme, themeName, noBlockBackground, noBlockForeground, "mmml-themed", indent);
+        return `${systemCss}\n\n${themedCss}`;
+    }
+    return doGenerateCss(path, theme, themeName, noBlockBackground, noBlockForeground, "ulight", indent);
+}
+
+/**
+ * @param {string} path
+ * @param {string} theme
+ * @param {string} themeName
+ * @param {boolean} noBlockBackground
+ * @param {boolean} noBlockForeground
+ * @param {"ulight"|"mmml-system"|"mmml-themed"} passType
+ * @param {string} indent
+ * @returns {string}
+ */
+function doGenerateCss(
+    path,
+    theme,
+    themeName,
+    noBlockBackground,
+    noBlockForeground,
+    passType,
+    indent
+) {
     let css = "";
 
     let firstVariant = true;
@@ -99,39 +133,50 @@ function generateCss(path, theme, themeName = "", noBlockBackground = false) {
             css += "\n\n";
         }
 
-        if (themeName.length === 0) {
-            const mediaQuery = variant === "light"
-                ? "@media (prefers-color-scheme: light) {\n"
-                : "@media (prefers-color-scheme: dark) {\n";
-            css += mediaQuery;
+        const hasMediaQuery = themeName.length === 0 && passType !== "mmml-themed";
+        if (hasMediaQuery) {
+            css += variantToMediaQuery(variant);
         }
-        const themePrefix = themeName.length !== 0 ?
-            `[data-ulight-theme=${variant}-${themeName}]` : "";
+        const themePrefix = themeName.length !== 0 ? `[data-ulight-theme=${variant}-${themeName}]`
+            : passType === "mmml-themed" ? `html.${variant}`
+                : "";
 
         const sortedEntries = Object.entries(data)
             .sort(([k0, _0], [k1, _1]) => compareKeys(k0, k1));
 
         for (const [key, value] of sortedEntries) {
-            if (key === "background") {
-                if (typeof value !== "string") {
-                    console.error(`${path}: The value of "background" may only be a string.`);
-                    process.exit(1);
-                }
-                if (noBlockBackground) {
-                    continue;
-                }
+            const isSpecialKey = key === "background" || key === "foreground";
+            if (isSpecialKey && typeof value !== "string") {
+                console.error(`${path}: The value of "background" may only be a string.`);
+                process.exit(1);
             }
-            const indentLevel = themeName.length !== 0 ? 0 : 1;
+            if (key === "background" && noBlockBackground) {
+                continue;
+            }
+            if (key === "foreground" && noBlockForeground) {
+                continue;
+            }
+            const indentLevel = hasMediaQuery ? 1 : 0;
             const cssSelector = `${indent.repeat(indentLevel)}${keyToCssSelector(path, key, themePrefix)}`;
             const declarations = jsonValueToCssDeclarations(path, key, value);
-            const cssBlock = cssDeclarationsInBlock(declarations, indentLevel);
+            const cssBlock = cssDeclarationsInBlock(declarations, indentLevel, indent);
             css += `${cssSelector} ${cssBlock}\n`;
         }
-        if (themeName.length === 0) {
+        if (hasMediaQuery) {
             css += "}";
         }
     }
     return css;
+}
+
+/**
+ * @param {string} variant
+ * @returns {string}
+ */
+function variantToMediaQuery(variant) {
+    return variant === "light"
+        ? "@media (prefers-color-scheme: light) {\n"
+        : "@media (prefers-color-scheme: dark) {\n";
 }
 
 const specialKeys = ["background", "foreground"];
@@ -179,7 +224,13 @@ function jsonValueToCssDeclarations(path, key, value) {
         .map(([property, value]) => `${property}: ${value};`);
 }
 
-function cssDeclarationsInBlock(declarations, indentLevel) {
+/**
+ * @param {string[]} declarations
+ * @param {number} indentLevel
+ * @param {string} indent
+ * @returns 
+ */
+function cssDeclarationsInBlock(declarations, indentLevel, indent = "    ") {
     const joined = declarations
         .map(d => `${indent.repeat(indentLevel + 1)}${d}`)
         .join("\n");
@@ -191,7 +242,15 @@ function filePathToThemeName(path) {
     return path.match(pattern)[1].replace('_', '-');
 }
 
-function fileToCss(path, isThemed, noBlockBackground) {
+/**
+ * @param {boolean} path
+ * @param {boolean} isThemed
+ * @param {boolean} noBlockBackground
+ * @param {boolean} noBlockForeground
+ * @param {boolean} isMmml
+ * @returns {string}
+ */
+function fileToCss(path, isThemed, noBlockBackground, noBlockForeground, isMmml) {
     const themeName = isThemed ? filePathToThemeName(path) : "";
     if (themeName.includes(".")) {
         console.error(`${path}: Unable to generate theme name from input file "${path}"`);
@@ -200,7 +259,7 @@ function fileToCss(path, isThemed, noBlockBackground) {
     const jsonData = fs.readFileSync(path, "utf8");
     const theme = JSON.parse(jsonData);
 
-    return generateCss(path, theme, themeName, noBlockBackground);
+    return generateCss(path, theme, themeName, noBlockBackground, noBlockForeground, isMmml);
 }
 
 function main() {
@@ -217,27 +276,39 @@ function main() {
             type: "string",
             demandOption: false
         })
-        .options("themed", {
+        .option("themed", {
             alias: "t",
             describe: "Emit CSS for selectable theming",
             type: "boolean"
         })
-        .options("no-block-background", {
+        .option("no-block-background", {
             alias: "B",
             describe: "Ignore code block background",
+            type: "boolean"
+        })
+        .option("no-foreground", {
+            alias: "F",
+            describe: "Ignore code block foreground",
+            type: "boolean"
+        })
+        .option("mmml", {
+            alias: "M",
+            describe: "Output CSS for use in MMML",
             type: "boolean"
         })
         .argv;
 
     const isThemed = argv.themed ?? false;
-    const noBlockBackground = argv["no-block-background"] ?? false;
+    const noBlockBackground = !(argv.blockBackground ?? true);
+    const noBlockForeground = !(argv.blockForeground ?? true);
+    const isMmml = argv.mmml ?? false;
 
     const inputStats = fs.lstatSync(argv.input);
     const files = inputStats.isDirectory() ?
         fs.readdirSync(argv.input).map(f => `${argv.input}/${f}`) : [argv.input];
 
     try {
-        const css = files.map(f => fileToCss(f, isThemed, noBlockBackground))
+        const css = files.map(f => fileToCss(f, isThemed, noBlockBackground, noBlockForeground, isMmml))
             .join("\n");
         if (argv.output !== undefined) {
             fs.writeFileSync(argv.output, css, "utf8");
