@@ -137,20 +137,20 @@ inline constexpr auto js_token_type_count = std::size_t(Token_Type::bitwise_not)
 /// For example, if `type` is `plus`, returns `"+"`.
 /// If `type` is invalid, returns an empty string.
 [[nodiscard]]
-std::u8string_view js_token_type_code(Token_Type type) noexcept;
+std::u8string_view js_token_type_code(Token_Type type);
 
 /// @brief Equivalent to `js_token_type_code(type).length()`.
 [[nodiscard]]
-std::size_t js_token_type_length(Token_Type type) noexcept;
+std::size_t js_token_type_length(Token_Type type);
 
 [[nodiscard]]
-Highlight_Type js_token_type_highlight(Token_Type type) noexcept;
+Highlight_Type js_token_type_highlight(Token_Type type);
 
 [[nodiscard]]
-Feature_Source js_token_type_source(Token_Type type) noexcept;
+Feature_Source js_token_type_source(Token_Type type);
 
 [[nodiscard]]
-std::optional<Token_Type> js_token_type_by_code(std::u8string_view code) noexcept;
+std::optional<Token_Type> js_token_type_by_code(std::u8string_view code);
 
 [[nodiscard]]
 bool starts_with_line_terminator(std::u8string_view s);
@@ -180,21 +180,21 @@ struct Comment_Result {
 /// @brief Returns a match for a JavaScript block comment at the start of `str`, if any.
 /// JavaScript block comments start with /* and end with */
 [[nodiscard]]
-Comment_Result match_block_comment(std::u8string_view str) noexcept;
+Comment_Result match_block_comment(std::u8string_view str);
 
 /// @brief Returns the length of a JavaScript line comment at the start of `str`, if any.
 /// Returns zero if there is no line comment.
 /// In any case, the length does not include the terminating newline character.
 /// JavaScript line comments start with //
 [[nodiscard]]
-std::size_t match_line_comment(std::u8string_view str) noexcept;
+std::size_t match_line_comment(std::u8string_view str);
 
 /// @brief Returns the length of a JavaScript hashbang comment at the start of `str`, if any.
 /// Returns zero if there is no hashbang comment.
 /// The hashbang comment must appear at the very beginning of the file to be valid.
 /// JavaScript hashbang comments start with #! and are only valid as the first line
 [[nodiscard]]
-std::size_t match_hashbang_comment(std::u8string_view str) noexcept;
+std::size_t match_hashbang_comment(std::u8string_view str);
 
 struct Escape_Result {
     std::size_t length;
@@ -220,7 +220,7 @@ struct Escape_Result {
 ///  - Octal escapes (\\0 to \\377)
 /// Considers even incomplete/malformed escape sequences as having a non-zero length.
 [[nodiscard]]
-Escape_Result match_escape_sequence(std::u8string_view str) noexcept;
+Escape_Result match_escape_sequence(std::u8string_view str);
 
 struct String_Literal_Result {
     std::size_t length;

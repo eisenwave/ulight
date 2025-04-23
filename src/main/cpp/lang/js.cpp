@@ -52,32 +52,32 @@ inline constexpr Feature_Source token_type_sources[] {
 
 /// @brief Returns the in-code representation of `type`.
 [[nodiscard]]
-std::u8string_view js_token_type_code(Token_Type type) noexcept
+std::u8string_view js_token_type_code(Token_Type type)
 {
     return token_type_codes[std::size_t(type)];
 }
 
 /// @brief Equivalent to `js_token_type_code(type).length()`.
 [[nodiscard]]
-std::size_t js_token_type_length(Token_Type type) noexcept
+std::size_t js_token_type_length(Token_Type type)
 {
     return token_type_lengths[std::size_t(type)];
 }
 
 [[nodiscard]]
-Highlight_Type js_token_type_highlight(Token_Type type) noexcept
+Highlight_Type js_token_type_highlight(Token_Type type)
 {
     return token_type_highlights[std::size_t(type)];
 }
 
 [[nodiscard]]
-Feature_Source js_token_type_source(Token_Type type) noexcept
+Feature_Source js_token_type_source(Token_Type type)
 {
     return token_type_sources[std::size_t(type)];
 }
 
 [[nodiscard]]
-std::optional<Token_Type> js_token_type_by_code(std::u8string_view code) noexcept
+std::optional<Token_Type> js_token_type_by_code(std::u8string_view code)
 {
     const std::u8string_view* const result = std::ranges::lower_bound(token_type_codes, code);
     if (result == std::end(token_type_codes) || *result != code) {
@@ -161,7 +161,7 @@ std::size_t match_whitespace(std::u8string_view str)
     return result == std::u8string_view::npos ? str.length() : result;
 }
 
-std::size_t match_line_comment(std::u8string_view s) noexcept
+std::size_t match_line_comment(std::u8string_view s)
 {
     // https://262.ecma-international.org/15.0/index.html#prod-SingleLineComment
     if (!s.starts_with(u8"//")) {
@@ -180,7 +180,7 @@ std::size_t match_line_comment(std::u8string_view s) noexcept
     return length;
 }
 
-Comment_Result match_block_comment(std::u8string_view s) noexcept
+Comment_Result match_block_comment(std::u8string_view s)
 {
     // https://262.ecma-international.org/15.0/index.html#prod-MultiLineComment
     if (!s.starts_with(u8"/*")) {
@@ -198,7 +198,7 @@ Comment_Result match_block_comment(std::u8string_view s) noexcept
     return Comment_Result { .length = s.length(), .is_terminated = false };
 }
 
-std::size_t match_hashbang_comment(std::u8string_view s) noexcept
+std::size_t match_hashbang_comment(std::u8string_view s)
 {
     if (!s.starts_with(u8"#!")) {
         return 0;
@@ -215,7 +215,7 @@ std::size_t match_hashbang_comment(std::u8string_view s) noexcept
     return length;
 }
 
-Escape_Result match_escape_sequence(const std::u8string_view str) noexcept
+Escape_Result match_escape_sequence(const std::u8string_view str)
 {
     static constexpr auto is_ascii_hex_digit_lambda
         = [](char8_t c) { return is_ascii_hex_digit(c); };
