@@ -218,13 +218,8 @@ std::size_t match_escape_sequence(std::u8string_view str) noexcept
 {
     // https://262.ecma-international.org/15.0/index.html#prod-EscapeSequence
     // All escape sequences must start with backslash.
-    if (str.empty() || str[0] != u8'\\') {
+    if (str.length() < 2 || str[0] != u8'\\') {
         return 0;
-    }
-
-    // Need 1 more char after the backslash.
-    if (str.length() < 2) {
-        return 1;
     }
 
     switch (str[1]) {
@@ -239,10 +234,7 @@ std::size_t match_escape_sequence(std::u8string_view str) noexcept
     case u8'v':
     case u8'0': // Null character.
         return 2;
-    }
-
-    // \xHHH
-    if (str[1] == u8'x') {
+    case u8'x': { // \xHHH
         if (str.length() < 4) {
             return str.length();
         }
@@ -251,9 +243,7 @@ std::size_t match_escape_sequence(std::u8string_view str) noexcept
         }
         return 2;
     }
-
-    // uXXXX
-    if (str[1] == u8'u') {
+    case u8'u': {// uXXXX
         // \u{XXXXX}
         if (str.length() >= 3 && str[2] == u8'{') {
             std::size_t pos = 3;
@@ -281,10 +271,12 @@ std::size_t match_escape_sequence(std::u8string_view str) noexcept
         if (is_ascii_hex_digit(str[2]) && is_ascii_hex_digit(str[3]) && is_ascii_hex_digit(str[4])
             && is_ascii_hex_digit(str[5])) {
             return 6;
-        }
+            }
 
         return 2;
     }
+    }
+
     // \OOO
     if (is_ascii_digit(str[1]) && str[1] != u8'9' && str[1] != u8'8') {
         std::size_t length = 2;
@@ -1439,37 +1431,49 @@ private:
         ULIGHT_ASSERT(string);
         emit_and_advance(1, Highlight_Type::string_delim);
 
-        // Handle content with escapes
-        const std::size_t content_length = string.length - (string.terminated ? 2 : 1);
+        std::size_t chars = 0;
+        const auto flush_chars = [&] {
+            if (chars != 0) {
+                emit(index - chars, chars, Highlight_Type::string);
+                chars = 0;
+            }
+        };
 
+        // Handle content with escapes.
+        const std::size_t content_length = string.length - (string.terminated ? 2 : 1);
         std::size_t remaining = content_length;
         while (remaining > 0) {
             if (remainder.starts_with(u8'\\')) {
                 const std::size_t esc_length = match_escape_sequence(remainder);
                 if (esc_length > 0) {
+                    flush_chars();
                     emit_and_advance(esc_length, Highlight_Type::escape);
                     remaining -= esc_length;
                 }
                 else {
-                    // This should never happen, but just to be safe.
-                    emit_and_advance(1, Highlight_Type::string);
-                    remaining -= 1;
+                    advance(1);
+                    ++chars;
+                    --remaining;
                 }
             }
             else {
                 // Find next escape sequence or end of content.
                 const std::size_t next = std::min(remaining, remainder.find(u8'\\'));
                 if (next > 0) {
-                    emit_and_advance(next, Highlight_Type::string);
+                    advance(next);
+                    chars += next;
                     remaining -= next;
                 }
                 else {
                     // This should never happen, but just to be safe.
-                    emit_and_advance(1, Highlight_Type::string);
-                    remaining -= 1;
+                    advance(1);
+                    ++chars;
+                    --remaining;
                 }
             }
         }
+
+        flush_chars();
 
         if (string.terminated) {
             emit_and_advance(1, Highlight_Type::string_delim);
