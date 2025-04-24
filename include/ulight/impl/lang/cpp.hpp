@@ -224,6 +224,7 @@ constexpr bool is_cpp_feature(Feature_Source source)
     F(kw_static_assert, "static_assert", keyword, c_cpp)                                           \
     F(kw_static_cast, "static_cast", keyword, cpp)                                                 \
     F(kw_struct, "struct", keyword, c_cpp)                                                         \
+    F(kw_switch, "switch", keyword_control, c_cpp)                                                 \
     F(kw_template, "template", keyword, cpp)                                                       \
     F(kw_this, "this", this_, cpp)                                                                 \
     F(kw_thread_local, "thread_local", keyword, c_cpp)                                             \
