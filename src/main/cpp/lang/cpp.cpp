@@ -745,7 +745,8 @@ public:
         constexpr char8_t quote_char = u8'"';
 
         const std::size_t prefix_length = match_identifier(remainder());
-        if (source[index + prefix_length] != quote_char) {
+        if (index + prefix_length >= source.length()
+            || source[index + prefix_length] != quote_char) {
             return false;
         }
 
