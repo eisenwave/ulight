@@ -101,6 +101,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("javascript", ULIGHT_LANG_JS),
     make_lang_entry("js", ULIGHT_LANG_JS),
     make_lang_entry("json", ULIGHT_LANG_JSON),
+    make_lang_entry("jsonc", ULIGHT_LANG_JSONC),
     make_lang_entry("jsx", ULIGHT_LANG_JS),
     make_lang_entry("lua", ULIGHT_LANG_LUA),
     make_lang_entry("mmml", ULIGHT_LANG_MMML),
@@ -129,6 +130,7 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("Bash"),
     make_sv("Diff"),
     make_sv("JSON"),
+    make_sv("JSON with Comments"),
 };
 // clang-format on
 
