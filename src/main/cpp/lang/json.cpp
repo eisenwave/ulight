@@ -247,7 +247,7 @@ private:
                 flush();
                 if (const Escape_Result escape = match_escape_sequence(remainder)) {
                     const auto escape_highlight
-                        = escape.erroneous ? Highlight_Type::escape : Highlight_Type::error;
+                        = escape.erroneous ? Highlight_Type::error : Highlight_Type::escape;
                     emit_and_advance(escape.length, escape_highlight);
                     continue;
                 }
@@ -300,7 +300,9 @@ private:
                 emit_and_advance(1, Highlight_Type::sym_punc);
                 continue;
             }
-            emit_and_advance(1, Highlight_Type::error, Coalescing::forced);
+            if (!remainder.empty()) {
+                emit_and_advance(1, Highlight_Type::error, Coalescing::forced);
+            }
         }
 
         // Unterminated object.
@@ -330,7 +332,8 @@ private:
         if (at_end()) {
             return;
         }
-        expect_string(Highlight_Type::string);
+        expect_value();
+        consume_whitespace_comments();
     }
 
     bool expect_array()
@@ -353,7 +356,9 @@ private:
             if (expect_value()) {
                 continue;
             }
-            emit_and_advance(1, Highlight_Type::error, Coalescing::forced);
+            if (!remainder.empty()) {
+                emit_and_advance(1, Highlight_Type::error, Coalescing::forced);
+            }
         }
 
         // Unterminated array.
