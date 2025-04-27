@@ -8,7 +8,6 @@
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/highlighter.hpp"
 
-#include "ulight/impl/lang/js.hpp"
 #include "ulight/impl/lang/json.hpp"
 #include "ulight/impl/lang/json_chars.hpp"
 
@@ -33,6 +32,7 @@ Identifier_Result match_identifier(std::u8string_view str)
 
 Escape_Result match_escape_sequence(std::u8string_view str)
 {
+    // https://www.json.org/json-en.html
     if (str.length() < 2 || str[0] != u8'\\' || !is_json_escapable(str[1])) {
         return {};
     }
@@ -47,18 +47,74 @@ Escape_Result match_escape_sequence(std::u8string_view str)
     return { .length = length, .erroneous = length != 6 };
 }
 
-std::size_t match_number(std::u8string_view str)
+std::size_t match_digits(std::u8string_view str)
 {
-    return 0;
+    return ascii::length_if(str, [](char8_t c) { return is_ascii_digit(c); });
 }
 
-namespace {
-
-[[nodiscard]]
 std::size_t match_whitespace(std::u8string_view str)
 {
     return ascii::length_if(str, [](char8_t c) { return is_json_whitespace(c); });
 }
+Number_Result match_number(std::u8string_view str)
+{
+    // https://www.json.org/json-en.html
+    std::size_t length = 0;
+    bool erroneous = false;
+    const auto advance = [&](std::size_t amount) {
+        ULIGHT_DEBUG_ASSERT(amount <= str.length());
+        length += amount;
+        str.remove_prefix(amount);
+    };
+
+    std::size_t integer = 0;
+    if (str.starts_with(u8'-')) {
+        ++integer;
+        advance(1);
+    }
+    const std::size_t integer_digits = match_digits(str);
+    erroneous |= integer_digits == 0;
+    // JSON doesn't allow leading zeroes except immediately prior to the radix point.
+    // However, we still know what was meant by say, "0123".
+    erroneous |= integer_digits >= 2 && str.starts_with(u8'0');
+    advance(integer_digits);
+    integer += integer_digits;
+
+    std::size_t fraction = 0;
+    if (str.starts_with(u8'.')) {
+        advance(1);
+        const std::size_t fractional_digits = match_digits(str);
+        erroneous |= fractional_digits == 0;
+        advance(fractional_digits);
+        fraction = fractional_digits + 1;
+    }
+
+    std::size_t exponent = 0;
+    if (str.starts_with(u8'e') || str.starts_with(u8'E')) {
+        advance(1);
+        ++exponent;
+        if (str.starts_with(u8'+') || str.starts_with(u8'-')) {
+            advance(1);
+            ++exponent;
+        }
+        const std::size_t exponent_digits = match_digits(str);
+        erroneous |= exponent_digits == 0;
+        advance(exponent_digits);
+        exponent += exponent_digits;
+    }
+
+    // If the length is zero, we don't want to report `erroneous == true`.
+    // This guarantees that a non-matching `Number_Result` is equal to a value-initialized one.
+    erroneous &= length != 0;
+    ULIGHT_ASSERT(integer + fraction + exponent == length);
+    return { .length = length,
+             .integer = integer,
+             .fraction = fraction,
+             .exponent = exponent,
+             .erroneous = erroneous };
+}
+
+namespace {
 
 enum struct Comment_Policy : bool {
     not_if_strict,
@@ -67,7 +123,7 @@ enum struct Comment_Policy : bool {
 
 struct Highlighter : Highlighter_Base {
 private:
-    bool has_comments;
+    const bool has_comments;
 
 public:
     Highlighter(
@@ -94,11 +150,10 @@ private:
     void consume_whitespace_comments()
     {
         while (true) {
+            const std::size_t white_length = match_whitespace(remainder);
+            advance(white_length);
             if (has_comments && (expect_line_comment() || expect_block_comment())) {
                 continue;
-            }
-            if (const std::size_t white_length = match_whitespace(remainder)) {
-                advance(white_length);
             }
             break;
         }
@@ -218,8 +273,11 @@ private:
 
     bool expect_number()
     {
-        if (const std::size_t length = match_number(remainder)) {
-            emit_and_advance(length, Highlight_Type::number);
+        if (const Number_Result number = match_number(remainder)) {
+            const auto highlight
+                = number.erroneous ? Highlight_Type::error : Highlight_Type::number;
+            // TODO: more detailed highlighting in line with other languages
+            emit_and_advance(number.length, highlight);
             return true;
         }
         return false;
