@@ -1,21 +1,226 @@
 #include <string_view>
 
+#include "ulight/ulight.hpp"
+
+#include "ulight/impl/ascii_algorithm.hpp"
+#include "ulight/impl/ascii_chars.hpp"
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
+#include "ulight/impl/highlighter.hpp"
+
+#include "ulight/impl/lang/js.hpp"
+#include "ulight/impl/lang/json.hpp"
+#include "ulight/impl/lang/json_chars.hpp"
 
 namespace ulight {
 namespace json {
-//
+
+Identifier_Result match_identifier(std::u8string_view str)
+{
+    if (str.empty() || !is_ascii_alpha(str[0])) {
+        return {};
+    }
+    const std::size_t length
+        = ascii::length_if(str, [](char8_t c) { return is_ascii_alphanumeric(c); }, 1);
+    ULIGHT_ASSERT(length != 0);
+    const std::u8string_view id = str.substr(0, length);
+    const auto type = id == u8"null" ? Identifier_Type::null
+        : id == u8"true"             ? Identifier_Type::true_
+        : id == u8"false"            ? Identifier_Type::false_
+                                     : Identifier_Type::normal;
+    return { .length = length, .type = type };
 }
+
+namespace {
+
+[[nodiscard]]
+std::size_t match_whitespace(std::u8string_view str)
+{
+    return ascii::length_if(str, [](char8_t c) { return is_json_whitespace(c); });
+}
+
+enum struct Comment_Policy : bool {
+    not_if_strict,
+    always_allow,
+};
+
+struct Highlighter : Highlighter_Base {
+private:
+    bool has_comments;
+
+public:
+    Highlighter(
+        Non_Owning_Buffer<Token>& out,
+        std::u8string_view source,
+        std::pmr::memory_resource* memory,
+        const Highlight_Options& options,
+        Comment_Policy comments
+    )
+        : Highlighter_Base { out, source, memory, options }
+        , has_comments { comments == Comment_Policy::always_allow || !options.strict }
+    {
+    }
+
+    bool operator()()
+    {
+        consume_whitespace_comments();
+        expect_value();
+        consume_whitespace_comments();
+        return true;
+    }
+
+private:
+    void consume_whitespace_comments()
+    {
+        while (true) {
+            if (has_comments && (expect_line_comment() || expect_block_comment())) {
+                continue;
+            }
+            if (const std::size_t white_length = match_whitespace(remainder)) {
+                advance(white_length);
+            }
+            break;
+        }
+    }
+
+    bool expect_line_comment()
+    {
+        if (const std::size_t length = js::match_line_comment(remainder)) {
+            emit_and_advance(2, Highlight_Type::comment_delim);
+            if (length > 2) {
+                emit_and_advance(length - 2, Highlight_Type::comment);
+            }
+        }
+        return false;
+    }
+
+    bool expect_block_comment()
+    {
+        if (const js::Comment_Result block_comment = js::match_block_comment(remainder)) {
+            emit(index, 2, Highlight_Type::comment_delim); // /*
+            const std::size_t suffix_length = block_comment.is_terminated ? 2 : 0;
+            const std::size_t content_length = block_comment.length - 2 - suffix_length;
+            if (content_length != 0) {
+                emit(index + 2, content_length, Highlight_Type::comment);
+            }
+            if (block_comment.is_terminated) {
+                emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delim); // */
+            }
+            advance(block_comment.length);
+        }
+        return false;
+    }
+
+    bool expect_value()
+    {
+        return expect_string() //
+            || expect_number() //
+            || expect_object() //
+            || expect_array() //
+            || expect_true_false_null();
+    }
+
+    bool expect_string()
+    {
+        return true;
+    }
+
+    bool expect_number()
+    {
+        return true;
+    }
+
+    bool expect_object()
+    {
+        if (!remainder.starts_with(u8'{')) {
+            return false;
+        }
+        emit_and_advance(1, Highlight_Type::sym_brace);
+
+        while (!remainder.empty()) {
+            consume_whitespace_comments();
+            if (remainder.starts_with(u8']')) {
+                emit_and_advance(1, Highlight_Type::sym_square);
+                return true;
+            }
+            if (remainder.starts_with(u8',')) {
+                emit_and_advance(1, Highlight_Type::sym_punc);
+                continue;
+            }
+            if (expect_value()) {
+                continue;
+            }
+            emit_and_advance(1, Highlight_Type::error, Coalescing::forced);
+        }
+
+        // Unterminated object.
+        return true;
+    }
+
+    bool expect_array()
+    {
+        if (!remainder.starts_with(u8'[')) {
+            return false;
+        }
+        emit_and_advance(1, Highlight_Type::sym_square);
+
+        while (!remainder.empty()) {
+            consume_whitespace_comments();
+            if (remainder.starts_with(u8']')) {
+                emit_and_advance(1, Highlight_Type::sym_square);
+                return true;
+            }
+            if (remainder.starts_with(u8',')) {
+                emit_and_advance(1, Highlight_Type::sym_punc);
+                continue;
+            }
+            if (expect_value()) {
+                continue;
+            }
+            emit_and_advance(1, Highlight_Type::error, Coalescing::forced);
+        }
+
+        // Unterminated array.
+        return true;
+    }
+
+    bool expect_true_false_null()
+    {
+        if (const Identifier_Result id = match_identifier(remainder)) {
+            const auto highlight = id.type == Identifier_Type::null ? Highlight_Type::null
+                : id.type == Identifier_Type::true_                 ? Highlight_Type::bool_
+                : id.type == Identifier_Type::false_                ? Highlight_Type::bool_
+                                                                    : Highlight_Type::error;
+            const auto coalescing
+                = highlight == Highlight_Type::error ? Coalescing::forced : Coalescing::normal;
+            emit_and_advance(id.length, highlight, coalescing);
+        }
+        return false;
+    }
+};
+
+} // namespace
+} // namespace json
 
 bool highlight_json(
     Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
-    std::pmr::memory_resource*,
+    std::pmr::memory_resource* memory,
     const Highlight_Options& options
 )
 {
-    return true;
+    return json::Highlighter { out, source, memory, options,
+                               json::Comment_Policy::not_if_strict }();
+}
+
+bool highlight_jsonc(
+    Non_Owning_Buffer<Token>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource* memory,
+    const Highlight_Options& options
+)
+{
+    return json::Highlighter { out, source, memory, options, json::Comment_Policy::always_allow }();
 }
 
 } // namespace ulight
