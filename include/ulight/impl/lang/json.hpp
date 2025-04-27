@@ -32,6 +32,27 @@ struct Identifier_Result {
 [[nodiscard]]
 Identifier_Result match_identifier(std::u8string_view str);
 
+struct Escape_Result {
+    std::size_t length;
+    bool erroneous = false;
+
+    [[nodiscard]]
+    constexpr explicit operator bool() const
+    {
+        return length != 0;
+    }
+
+    [[nodiscard]]
+    friend constexpr bool operator==(Escape_Result, Escape_Result)
+        = default;
+};
+
+[[nodiscard]]
+Escape_Result match_escape_sequence(std::u8string_view str);
+
+[[nodiscard]]
+std::size_t match_number(std::u8string_view str);
+
 } // namespace ulight::json
 
 #endif

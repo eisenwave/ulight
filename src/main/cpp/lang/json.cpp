@@ -31,6 +31,27 @@ Identifier_Result match_identifier(std::u8string_view str)
     return { .length = length, .type = type };
 }
 
+Escape_Result match_escape_sequence(std::u8string_view str)
+{
+    if (str.length() < 2 || str[0] != u8'\\' || !is_json_escapable(str[1])) {
+        return {};
+    }
+    // Almost all escape sequences are two characters.
+    if (str[1] != u8'u') {
+        return { .length = 2 };
+    }
+    // "\", "u", hex, hex, hex, hex
+    constexpr auto is_hex = [](char8_t c) { return is_ascii_hex_digit(c); };
+    const std::u8string_view relevant = str.substr(0, std::min(str.length(), 6uz));
+    const std::size_t length = ascii::length_if(relevant, is_hex, 2);
+    return { .length = length, .erroneous = length != 6 };
+}
+
+std::size_t match_number(std::u8string_view str)
+{
+    return 0;
+}
+
 namespace {
 
 [[nodiscard]]
@@ -113,21 +134,95 @@ private:
 
     bool expect_value()
     {
-        return expect_string() //
+        return expect_string(Highlight_Type::string) //
             || expect_number() //
             || expect_object() //
             || expect_array() //
             || expect_true_false_null();
     }
 
-    bool expect_string()
+    bool expect_string(Highlight_Type highlight)
     {
+        ULIGHT_ASSERT(
+            highlight == Highlight_Type::string || highlight == Highlight_Type::markup_attr
+        );
+
+        if (!remainder.starts_with(u8'"')) {
+            return false;
+        }
+        std::size_t length;
+        if (highlight == Highlight_Type::string) {
+            length = 0;
+            emit_and_advance(1, Highlight_Type::string_delim);
+        }
+        else {
+            length = 1;
+        }
+        const auto flush = [&] {
+            if (length != 0) {
+                emit_and_advance(length, highlight);
+                length = 0;
+            }
+        };
+
+        while (length < remainder.length()) {
+            switch (const char8_t c = remainder[length]) {
+            case u8'"': {
+                if (highlight == Highlight_Type::string) {
+                    flush();
+                    emit_and_advance(1, Highlight_Type::string_delim);
+                }
+                else {
+                    ++length;
+                    flush();
+                }
+                return true;
+            }
+            case u8'\n':
+            case u8'\r':
+            case u8'\v': {
+                // Line breaks are not technically allowed in strings, but we still have to handle
+                // them somehow.
+                // We do this by considering them to be the end of the string, rather than
+                // continuing onto the next line.
+                flush();
+                return true;
+            }
+            case u8'\\': {
+                flush();
+                if (const Escape_Result escape = match_escape_sequence(remainder)) {
+                    const auto escape_highlight
+                        = escape.erroneous ? Highlight_Type::escape : Highlight_Type::error;
+                    emit_and_advance(escape.length, escape_highlight);
+                    continue;
+                }
+                emit_and_advance(1, Highlight_Type::error);
+                break;
+            }
+            default: {
+                if (c < 0x20) {
+                    flush();
+                    emit_and_advance(1, Highlight_Type::error);
+                    break;
+                }
+                ++length;
+                break;
+            }
+            }
+        }
+
+        // Unterminated string.
+        flush();
         return true;
     }
 
     bool expect_number()
     {
-        return true;
+        if (const std::size_t length = match_number(remainder)) {
+            emit_and_advance(length, Highlight_Type::number);
+            return true;
+        }
+        return false;
     }
 
     bool expect_object()
@@ -138,16 +233,13 @@ private:
         emit_and_advance(1, Highlight_Type::sym_brace);
 
         while (!remainder.empty()) {
-            consume_whitespace_comments();
-            if (remainder.starts_with(u8']')) {
-                emit_and_advance(1, Highlight_Type::sym_square);
+            consume_member();
+            if (remainder.starts_with(u8'}')) {
+                emit_and_advance(1, Highlight_Type::sym_brace);
                 return true;
             }
             if (remainder.starts_with(u8',')) {
                 emit_and_advance(1, Highlight_Type::sym_punc);
-                continue;
-            }
-            if (expect_value()) {
                 continue;
             }
             emit_and_advance(1, Highlight_Type::error, Coalescing::forced);
@@ -155,6 +247,32 @@ private:
 
         // Unterminated object.
         return true;
+    }
+
+    void consume_member()
+    {
+        const auto at_end = [&] {
+            consume_whitespace_comments();
+            return remainder.empty() || remainder.starts_with(u8'}')
+                || remainder.starts_with(u8',');
+        };
+        if (at_end()) {
+            return;
+        }
+        expect_string(Highlight_Type::markup_attr);
+        if (at_end()) {
+            return;
+        }
+        if (remainder.starts_with(u8':')) {
+            emit_and_advance(1, Highlight_Type::sym_punc);
+        }
+        else {
+            return;
+        }
+        if (at_end()) {
+            return;
+        }
+        expect_string(Highlight_Type::string);
     }
 
     bool expect_array()
