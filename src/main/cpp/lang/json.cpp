@@ -166,6 +166,7 @@ private:
             if (length > 2) {
                 emit_and_advance(length - 2, Highlight_Type::comment);
             }
+            return true;
         }
         return false;
     }
@@ -183,6 +184,7 @@ private:
                 emit(index + block_comment.length - 2, 2, Highlight_Type::comment_delim); // */
             }
             advance(block_comment.length);
+            return true;
         }
         return false;
     }
