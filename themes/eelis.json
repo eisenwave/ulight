@@ -1,0 +1,59 @@
+{
+    "meta": {
+        "name": "Eeelis",
+        "author": "Eelis",
+        "url": "https://eel.is/c++draft/14882.css"
+    },
+    "light": {
+        "background": "#ffffff",
+        "foreground": "#000000",
+        "error": "#ff0000",
+        "comment": {
+            "color": "green",
+            "font-style": "italic"
+        },
+        "comment-delim": {
+            "font-style": "normal"
+        },
+        "value": "#9f6807",
+        "number": "#9f6807",
+        "string": "#9f6807",
+        "escape": "#9f6807",
+        "null": "#00607c",
+        "bool": "#9f6807",
+        "this": "#00607c",
+        "macro": "#6f4e37",
+        "keyword": "#00607c",
+        "sym": "#570057",
+        "sym-punc": "#000000",
+        "sym-parens": "#af1915",
+        "sym-square": "#af1915",
+        "sym-brace": "#af1915"
+    },
+    "dark": {
+        "background": "#171717",
+        "foreground": "#d0d0d0",
+        "error": "#ff0000",
+        "comment": {
+            "color": "#35da00",
+            "font-style": "italic"
+        },
+        "comment-delim": {
+            "font-style": "normal"
+        },
+        "value": "#dfa837",
+        "number": "#dfa837",
+        "string": "#dfa837",
+        "escape": "#dfa837",
+        "null": "#12cabe",
+        "bool": "#dfa837",
+        "this": "#12cabe",
+        "macro": "#b27c58",
+        "keyword": "#12cabe",
+        "sym": "#baa6b9",
+        "sym-punc": "#d0d0d0",
+        "sym-parens": "#ff1515",
+        "sym-square": "#ff1515",
+        "sym-brace": "#ff1515"
+    }
+}
