@@ -119,7 +119,9 @@
             "font-weight": "bold",
             "font-style": "italic",
             "text-decoration": "underline line-through"
-        }
+        },
+        "shell-command": "#c80032",
+        "shell-option": "#5c477e"
     },
     "dark": {
         "foreground": "#e7e7e7",
