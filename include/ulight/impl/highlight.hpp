@@ -76,6 +76,18 @@ bool highlight_diff(
     std::pmr::memory_resource* memory,
     const Highlight_Options& options = {}
 );
+bool highlight_json(
+    Non_Owning_Buffer<Token>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource* memory,
+    const Highlight_Options& options = {}
+);
+bool highlight_jsonc(
+    Non_Owning_Buffer<Token>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource* memory,
+    const Highlight_Options& options = {}
+);
 
 inline Status highlight(
     Non_Owning_Buffer<Token>& out,
@@ -111,6 +123,10 @@ inline Status highlight(
         return to_result(highlight_bash(out, source, memory, options));
     case Lang::diff: //
         return to_result(highlight_diff(out, source, memory, options));
+    case Lang::json: //
+        return to_result(highlight_json(out, source, memory, options));
+    case Lang::jsonc: //
+        return to_result(highlight_jsonc(out, source, memory, options));
     default: //
         return Status::bad_lang;
     }

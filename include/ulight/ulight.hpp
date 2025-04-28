@@ -24,6 +24,8 @@ enum struct Lang : Underlying {
     diff = ULIGHT_LANG_DIFF,
     html = ULIGHT_LANG_HTML,
     javascript = ULIGHT_LANG_JS,
+    json = ULIGHT_LANG_JSON,
+    jsonc = ULIGHT_LANG_JSONC,
     lua = ULIGHT_LANG_LUA,
     mmml = ULIGHT_LANG_MMML,
     none = ULIGHT_LANG_NONE,
