@@ -89,7 +89,7 @@ public:
     }
 
     [[nodiscard]]
-    constexpr operator bool() const noexcept
+    constexpr explicit operator bool() const noexcept
     {
         return m_file != nullptr;
     }
