@@ -1,0 +1,11 @@
+<scr&&;asdf;;;a7777&&&&7asdf;;;;&&;;a; case="invalid chars in tag name">
+<script case:w&&<<;;;;askdju00+++}}}1!!="invalid chars in attribute name">
+<script case="in<<<valid&&&&chars in attribute value&&&
+1234567890 abcdefghijklmnopqrstuvw">
+<script case="normal start tag">
+<script case="normal start tag" with="multiple" attributes=''>
+<emptyelem case="empty element tag"/>
+<emptyelem case="empty element tag" with="mulitple attributes"/>
+<empty'''';;;;^^^^elem&&& case="invalid chars in tag name"  />
+</end>
+</end    >

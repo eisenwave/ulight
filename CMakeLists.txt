@@ -49,6 +49,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/lang/lua.cpp
     src/main/cpp/lang/mmml.cpp
     src/main/cpp/lang/html.cpp
+    src/main/cpp/lang/xml.cpp
 
     src/main/cpp/chars.cpp
     src/main/cpp/parse_utils.cpp

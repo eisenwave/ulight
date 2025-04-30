@@ -28,6 +28,7 @@ enum struct Lang : Underlying {
     jsonc = ULIGHT_LANG_JSONC,
     lua = ULIGHT_LANG_LUA,
     mmml = ULIGHT_LANG_MMML,
+    xml = ULIGHT_LANG_XML,
     none = ULIGHT_LANG_NONE,
 };
 
