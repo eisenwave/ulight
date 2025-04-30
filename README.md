@@ -115,8 +115,11 @@ and a stable numeric ID whose value can be found in `include/ulight.h`.
 | Diff | `diff`, `patch` | `ULIGHT_LANG_DIFF` |
 | HTML | `htm`, `html` | `ULIGHT_LANG_HTML` |
 | JavaScript | `javascript`, `js`, `jsx` | `ULIGHT_LANG_JS` |
+| JSON | `json` | `ULIGHT_LANG_JSON` |
+| JSON with Comments | `jsonc` | `ULIGHT_LANG_JSONC` |
 | Lua | `lua` | `ULIGHT_LANG_LUA` |
 | MMML | `mmml` | `ULIGHT_LANG_MMML` |
+| XML | `atom`, `plist`, `rss`, `svg`, `xbj`, `xhtml`, `xsd`, `xsl` | `ULIGHT_LANG_XML` |
 
 The long-term plan is to get support for at least 100 languages.
 This may sound like a lot, but considering that many are similar to one another (e.g. JavaScript/TypeScript, XML/HTML),
