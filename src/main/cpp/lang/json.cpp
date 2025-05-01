@@ -818,4 +818,11 @@ bool parse_json(JSON_Visitor& visitor, std::u8string_view source, JSON_Options o
     return json::Parser { visitor, source, options }();
 }
 
+bool parse_json(JSON_Visitor& visitor, std::string_view source, JSON_Options options)
+{
+    const std::u8string_view u8source { reinterpret_cast<const char8_t*>(source.data()),
+                                        source.length() };
+    return parse_json(visitor, u8source, options);
+}
+
 } // namespace ulight
