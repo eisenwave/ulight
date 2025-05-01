@@ -92,7 +92,7 @@ python -m http.server
 ```
 Open `http://localhost:8000/` in your browser.
 
-### Build Requirements
+### Build requirements
 
 - CMake 3.24 or greater, and
 - GCC 13 or greater, or
@@ -138,9 +138,9 @@ You can check the open issues in this repository for planned languages.
 [badge-em]: https://github.com/Eisenwave/ulight/actions/workflows/pages.yml/badge.svg
 [badge-format]: https://github.com/eisenwave/ulight/actions/workflows/clang-format.yml/badge.svg
 
-## JSON Deserialization
+## JSON deserialization
 
-µlight also ships with a C++ JSON parser/deserializer, found in `json.hpp`.
+µlight also ships with a C++ JSON parser/deserializer, found in `include/json.hpp`.
 Since the library already requires a JSON syntax highlighter,
 it is relatively easy for µlight to also provide a parser/deserializer.
 
@@ -174,3 +174,20 @@ int count_numbers(std::string_view json_source) {
     parse_json(visitor, json_source);
 }
 ```
+
+### Building a complete JSON structure
+
+You can also make a visitor which builds a traditional JSON structure in memory,
+but that requires a substantial amount of effort.
+For example, objects and arrays are built
+by overriding `push_object`, `pop_array` etc. in the visitor.
+You can find an example of how to build a full JSON structure under `src/test/cpp/test_json.cpp`.
+
+µlight merely goes through the source file,
+figures out what the meaning of the characters is,
+and optionally obtains `double`s and `char32_t` for numbers and escape sequences.
+
+The obvious benefit is that this approach has almost no overhead.
+If you only want to traverse the file without storing any objects permanently,
+you don't pay the cost of building a `std::vector<JSON_Object>` or something.
+You have full control.
