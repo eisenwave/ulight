@@ -85,7 +85,7 @@ TEST(CSS, match_number)
     EXPECT_EQ(match_number(u8"+123E"), 4);
     EXPECT_EQ(match_number(u8"+123E+"), 4);
     EXPECT_EQ(match_number(u8"+123E-"), 4);
-    EXPECT_EQ(match_number(u8"-123E5"), 4);
+    EXPECT_EQ(match_number(u8"-123E5"), 6);
     EXPECT_EQ(match_number(u8"-123E+5"), 7);
     EXPECT_EQ(match_number(u8"-123E-5"), 7);
 }
