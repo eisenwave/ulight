@@ -151,13 +151,6 @@ TEST_F(Highlight_Test, file_tests)
     }
 }
 
-[[nodiscard]]
-std::string_view lang_display_name(ulight_lang lang)
-{
-    const auto i = std::size_t(lang);
-    return { ulight_lang_display_names[i].text, ulight_lang_display_names[i].length };
-}
-
 TEST_F(Highlight_Test, exhaustive_one_char)
 {
     Token token_buffer[16];
@@ -187,7 +180,8 @@ TEST_F(Highlight_Test, exhaustive_one_char)
             const Status status = state.source_to_tokens();
             if (status != Status::ok && status != Status::bad_code) {
                 lang_success = false;
-                std::cout << ansi::h_red << "FAIL: " << ansi::reset << lang_display_name(lang) //
+                std::cout << ansi::h_red << "FAIL: " << ansi::reset
+                          << lang_display_name(Lang(lang)) //
                           << ", for" << " U+00" << std::hex << int(source) << std::dec;
                 if (!is_html_ascii_control(source)) {
                     std::cout << " '" << source_view << '\'';
@@ -197,7 +191,8 @@ TEST_F(Highlight_Test, exhaustive_one_char)
         }
 
         if (lang_success) {
-            std::cout << ansi::h_green << "OK: " << ansi::reset << lang_display_name(lang) << '\n';
+            std::cout << ansi::h_green << "OK: " << ansi::reset << lang_display_name(Lang(lang))
+                      << '\n';
         }
         else {
             success = false;
@@ -235,14 +230,15 @@ TEST_F(Highlight_Test, exhaustive_three_chars)
             if (status != Status::ok && status != Status::bad_code) {
                 lang_success = false;
                 std::cout << ansi::h_red << "FAIL: " //
-                          << ansi::reset << lang_display_name(lang) //
+                          << ansi::reset << lang_display_name(Lang(lang)) //
                           << ": " << state.get_error_string() << "\n";
                 break;
             }
         }
 
         if (lang_success) {
-            std::cout << ansi::h_green << "OK: " << ansi::reset << lang_display_name(lang) << '\n';
+            std::cout << ansi::h_green << "OK: " << ansi::reset << lang_display_name(Lang(lang))
+                      << '\n';
         }
         else {
             success = false;
