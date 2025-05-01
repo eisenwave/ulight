@@ -35,8 +35,12 @@ struct Identifier_Result {
 Identifier_Result match_identifier(std::u8string_view str);
 
 struct Escape_Result {
+    static constexpr auto no_value = char32_t(-1);
+
+    /// @brief The length of the escape sequence.
     std::size_t length;
-    bool erroneous = false;
+    /// @brief The value of the escape sequence, or `no_value`.
+    char32_t value = no_value;
 
     [[nodiscard]]
     constexpr explicit operator bool() const
