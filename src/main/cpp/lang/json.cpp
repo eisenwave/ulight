@@ -1,5 +1,6 @@
 #include <string_view>
 
+#include "ulight/json.hpp"
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/ascii_algorithm.hpp"
@@ -121,6 +122,11 @@ enum struct Comment_Policy : bool {
     always_allow,
 };
 
+enum struct String_Type : bool {
+    value,
+    property,
+};
+
 struct Highlighter : Highlighter_Base {
 private:
     const bool has_comments;
@@ -161,7 +167,7 @@ private:
 
     bool expect_line_comment()
     {
-        if (const std::size_t length = js::match_line_comment(remainder)) {
+        if (const std::size_t length = match_line_comment(remainder)) {
             emit_and_advance(2, Highlight_Type::comment_delim);
             if (length > 2) {
                 emit_and_advance(length - 2, Highlight_Type::comment);
@@ -173,7 +179,7 @@ private:
 
     bool expect_block_comment()
     {
-        if (const js::Comment_Result block_comment = js::match_block_comment(remainder)) {
+        if (const Comment_Result block_comment = match_block_comment(remainder)) {
             emit(index, 2, Highlight_Type::comment_delim); // /*
             const std::size_t suffix_length = block_comment.is_terminated ? 2 : 0;
             const std::size_t content_length = block_comment.length - 2 - suffix_length;
@@ -191,30 +197,28 @@ private:
 
     bool expect_value()
     {
-        return expect_string(Highlight_Type::string) //
+        return expect_string(String_Type::value) //
             || expect_number() //
             || expect_object() //
             || expect_array() //
             || expect_true_false_null();
     }
 
-    bool expect_string(Highlight_Type highlight)
+    bool expect_string(String_Type type)
     {
-        ULIGHT_ASSERT(
-            highlight == Highlight_Type::string || highlight == Highlight_Type::markup_attr
-        );
-
         if (!remainder.starts_with(u8'"')) {
             return false;
         }
         std::size_t length;
-        if (highlight == Highlight_Type::string) {
+        if (type == String_Type::value) {
             length = 0;
             emit_and_advance(1, Highlight_Type::string_delim);
         }
         else {
             length = 1;
         }
+        const auto highlight
+            = type == String_Type::property ? Highlight_Type::markup_attr : Highlight_Type::string;
         const auto flush = [&] {
             if (length != 0) {
                 emit_and_advance(length, highlight);
@@ -321,7 +325,7 @@ private:
         if (at_end()) {
             return;
         }
-        expect_string(Highlight_Type::markup_attr);
+        expect_string(String_Type::property);
         if (at_end()) {
             return;
         }
@@ -382,6 +386,381 @@ private:
     }
 };
 
+struct Parser {
+private:
+    JSON_Visitor& out;
+    const std::size_t source_length;
+    const bool has_comments;
+
+    std::u8string_view remainder;
+    Source_Position pos {};
+
+public:
+    [[nodiscard]]
+    Parser(JSON_Visitor& out, std::u8string_view source, ulight::Comment_Policy comments)
+        : out { out }
+        , source_length { source.length() }
+        , has_comments { comments == ulight::Comment_Policy::allow }
+        , remainder { source }
+    {
+    }
+
+    [[nodiscard]]
+    bool operator()()
+    {
+        return consume_whitespace_comments() && consume_value() && consume_whitespace_comments();
+    }
+
+private:
+    void error(JSON_Error error = JSON_Error::error)
+    {
+        out.error(pos, error);
+    }
+
+    void advance_on_same_line(std::size_t amount)
+    {
+        pos.code_unit += amount;
+        pos.line_code_unit += amount;
+        remainder.remove_prefix(amount);
+    }
+
+    void advance(std::size_t amount)
+    {
+        while (amount != 0) {
+            const std::size_t newline_pos = remainder.substr(0, amount).find(u8'\n');
+            if (newline_pos == std::u8string_view::npos) {
+                advance_on_same_line(amount);
+                return;
+            }
+            const std::size_t remaining_line_length = newline_pos + 1;
+            pos.code_unit += remaining_line_length;
+            pos.line += 1;
+            pos.line_code_unit = 0;
+            remainder.remove_prefix(remaining_line_length);
+
+            ULIGHT_DEBUG_ASSERT(amount >= remaining_line_length);
+            amount -= remaining_line_length;
+        }
+    }
+
+    [[nodiscard]]
+    bool consume_whitespace_comments()
+    {
+        if (!has_comments) {
+            const std::size_t white_length = match_whitespace(remainder);
+            advance(white_length);
+            return true;
+        }
+        while (true) {
+            const std::size_t white_length = match_whitespace(remainder);
+            advance(white_length);
+            if (remainder.starts_with(u8"//")) {
+                if (!consume_line_comment()) {
+                    return false;
+                }
+                continue;
+            }
+            if (remainder.starts_with(u8"/*")) {
+                if (!consume_block_comment()) {
+                    return false;
+                }
+                continue;
+            }
+            break;
+        }
+        return true;
+    }
+
+    [[nodiscard]]
+    bool consume_line_comment()
+    {
+        if (const std::size_t length = match_line_comment(remainder)) {
+            out.line_comment(pos, remainder.substr(0, length));
+            advance_on_same_line(length);
+            return true;
+        }
+        ULIGHT_DEBUG_ASSERT_UNREACHABLE(u8"// should have been tested.");
+        error();
+        return false;
+    }
+
+    [[nodiscard]]
+    bool consume_block_comment()
+    {
+        if (const js::Comment_Result block_comment = match_block_comment(remainder)) {
+            if (!block_comment.is_terminated) {
+                error();
+                return false;
+            }
+            advance(block_comment.length);
+            out.block_comment(pos, remainder.substr(0, block_comment.length));
+            return true;
+        }
+        ULIGHT_DEBUG_ASSERT_UNREACHABLE(u8"/* should have been tested.");
+        error();
+        return false;
+    }
+
+    [[nodiscard]]
+    bool consume_value()
+    {
+        switch (remainder[0]) {
+        case u8'"': {
+            return consume_string(String_Type::value);
+        }
+        case u8'[': {
+            return consume_array();
+        }
+        case u8'{': {
+            return consume_object();
+        }
+        case u8'0':
+        case u8'1':
+        case u8'2':
+        case u8'3':
+        case u8'4':
+        case u8'5':
+        case u8'6':
+        case u8'7':
+        case u8'8':
+        case u8'9': {
+            return consume_number();
+        }
+        case u8't': {
+            if (remainder.starts_with(u8"true")) {
+                out.boolean(pos, true);
+                advance_on_same_line(4);
+                return true;
+            }
+            return false;
+        }
+        case u8'f': {
+            if (remainder.starts_with(u8"false")) {
+                out.boolean(pos, false);
+                advance_on_same_line(5);
+                return true;
+            }
+            return false;
+        }
+        case u8'n': {
+            if (remainder.starts_with(u8"null")) {
+                out.null(pos);
+                advance_on_same_line(4);
+                return true;
+            }
+            return false;
+        }
+        default: error(); return false;
+        }
+    }
+
+    [[nodiscard]]
+    bool consume_string(String_Type type)
+    {
+        if (!remainder.starts_with(u8'"')) {
+            return false;
+        }
+        if (type == String_Type::property) {
+            out.push_property(pos);
+        }
+        else {
+            out.push_string(pos);
+        }
+        std::size_t length = 0;
+        advance_on_same_line(1);
+
+        const auto flush = [&] {
+            if (length != 0) {
+                out.literal(pos, remainder.substr(0, length));
+                advance_on_same_line(length);
+                length = 0;
+            }
+        };
+
+        while (length < remainder.length()) {
+            switch (const char8_t c = remainder[length]) {
+            case u8'"': {
+                flush();
+                if (type == String_Type::property) {
+                    out.pop_property(pos);
+                }
+                else {
+                    out.pop_string(pos);
+                }
+                return true;
+            }
+            case u8'\\': {
+                flush();
+                if (const Escape_Result escape = match_escape_sequence(remainder)) {
+                    if (escape.erroneous) {
+                        error();
+                        return false;
+                    }
+                    out.escape(pos, remainder.substr(0, escape.length));
+                    advance_on_same_line(escape.length);
+                    continue;
+                }
+                error();
+                return false;
+            }
+            default: {
+                if (c < 0x20) {
+                    flush();
+                    error();
+                    return false;
+                }
+                ++length;
+                break;
+            }
+            }
+        }
+
+        error();
+        return false;
+    }
+
+    [[nodiscard]]
+    bool consume_number()
+    {
+        if (const Number_Result number = match_number(remainder)) {
+            if (number.erroneous) {
+                error();
+                return false;
+            }
+            out.number(
+                pos, remainder.substr(0, number.length), //
+                number.integer, number.fraction, number.exponent
+            );
+            advance_on_same_line(number.length);
+            return true;
+        }
+        return false;
+    }
+
+    [[nodiscard]]
+    bool consume_object()
+    {
+        if (!remainder.starts_with(u8'{')) {
+            ULIGHT_DEBUG_ASSERT_UNREACHABLE(u8"This should have been tested outside.");
+            error();
+            return false;
+        }
+        out.push_object(pos);
+        advance_on_same_line(1);
+
+        bool first_member = true;
+        while (!remainder.empty()) {
+            if (!consume_whitespace_comments()) {
+                return false;
+            }
+            if (remainder.starts_with(u8'}')) {
+                out.pop_object(pos);
+                advance_on_same_line(1);
+                return true;
+            }
+            if (first_member) {
+                if (!consume_member()) {
+                    return false;
+                }
+                first_member = false;
+                continue;
+            }
+            if (remainder.starts_with(u8',')) {
+                advance_on_same_line(1);
+                if (!consume_whitespace_comments() || !consume_member()) {
+                    return false;
+                }
+                continue;
+            }
+            error();
+            return false;
+        }
+
+        error();
+        return false;
+    }
+
+    [[nodiscard]]
+    bool consume_member()
+    {
+        if (!consume_string(String_Type::property)) {
+            return false;
+        }
+
+        const auto at_end = [&] {
+            return remainder.empty() || remainder.starts_with(u8'}')
+                || remainder.starts_with(u8',');
+        };
+        if (!consume_whitespace_comments()) {
+            return false;
+        }
+        if (at_end()) {
+            error();
+            return false;
+        }
+        if (!remainder.starts_with(u8':')) {
+            error();
+            return false;
+        }
+        advance_on_same_line(1);
+
+        if (!!consume_whitespace_comments()) {
+            return false;
+        }
+        if (at_end()) {
+            error();
+            return false;
+        }
+        return consume_value();
+    }
+
+    [[nodiscard]]
+    bool consume_array()
+    {
+        if (!remainder.starts_with(u8'[')) {
+            ULIGHT_DEBUG_ASSERT_UNREACHABLE(u8"This should have been tested outside.");
+            error();
+            return false;
+        }
+        out.push_array(pos);
+        advance_on_same_line(1);
+        if (!consume_whitespace_comments()) {
+            return false;
+        }
+
+        bool first_element = true;
+        while (!remainder.empty()) {
+            if (!consume_whitespace_comments()) {
+                return false;
+            }
+            if (remainder.starts_with(u8']')) {
+                out.pop_array(pos);
+                advance_on_same_line(1);
+                return false;
+            }
+            if (first_element) {
+                if (!consume_value()) {
+                    return false;
+                }
+                first_element = false;
+                continue;
+            }
+            if (remainder.starts_with(u8',')) {
+                advance_on_same_line(1);
+                if (!consume_whitespace_comments() || !consume_value()) {
+                    return false;
+                }
+                continue;
+            }
+            error();
+            return false;
+        }
+
+        error();
+        return false;
+    }
+};
+
 } // namespace
 } // namespace json
 
@@ -404,6 +783,11 @@ bool highlight_jsonc(
 )
 {
     return json::Highlighter { out, source, memory, options, json::Comment_Policy::always_allow }();
+}
+
+bool parse_json(JSON_Visitor& visitor, std::u8string_view source, Comment_Policy comments)
+{
+    return json::Parser { visitor, source, comments }();
 }
 
 } // namespace ulight

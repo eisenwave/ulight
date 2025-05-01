@@ -58,6 +58,7 @@ std::size_t match_digits(std::u8string_view str);
 [[nodiscard]]
 std::size_t match_whitespace(std::u8string_view str);
 
+using js::Comment_Result;
 using js::match_block_comment;
 using js::match_line_comment;
 
