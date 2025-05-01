@@ -137,3 +137,40 @@ You can check the open issues in this repository for planned languages.
 [badge-cmake]: https://github.com/eisenwave/ulight/actions/workflows/cmake-multi-platform.yml/badge.svg
 [badge-em]: https://github.com/Eisenwave/ulight/actions/workflows/pages.yml/badge.svg
 [badge-format]: https://github.com/eisenwave/ulight/actions/workflows/clang-format.yml/badge.svg
+
+## JSON Deserialization
+
+µlight also ships with a C++ JSON parser/deserializer, found in `json.hpp`.
+Since the library already requires a JSON syntax highlighter,
+it is relatively easy for µlight to also provide a parser/deserializer.
+
+This parser is extremely minimalistic.
+It does nothing that requires dynamic allocations,
+i.e. it doesn't build a convenient map/list of values.
+Instead, the interface is comprised of:
+```cpp
+bool parse_json(
+    JSON_Visitor& visitor,
+    std::string_view source, // or std::u8string_view
+    JSON_Options options = {}
+);
+```
+The `JSON_Visitor` is a polymorphic class with various virtual member functions which are
+invoked as the parser traverses the file.
+For example, if you wanted to count how many numbers exist in a JSON file,
+you could make a visitor as follows:
+
+```cpp
+struct My_Visitor : JSON_Visitor {
+    int number_count = 0;
+
+    void number(const Source_Position&, std::u8string_view) override {
+        ++number_count;
+    }
+};
+
+int count_numbers(std::string_view json_source) {
+    My_Visitor visitor;
+    parse_json(visitor, json_source);
+}
+```
