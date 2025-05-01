@@ -92,7 +92,7 @@ python -m http.server
 ```
 Open `http://localhost:8000/` in your browser.
 
-### Build Requirements
+### Build requirements
 
 - CMake 3.24 or greater, and
 - GCC 13 or greater, or
@@ -137,3 +137,57 @@ You can check the open issues in this repository for planned languages.
 [badge-cmake]: https://github.com/eisenwave/ulight/actions/workflows/cmake-multi-platform.yml/badge.svg
 [badge-em]: https://github.com/Eisenwave/ulight/actions/workflows/pages.yml/badge.svg
 [badge-format]: https://github.com/eisenwave/ulight/actions/workflows/clang-format.yml/badge.svg
+
+## JSON deserialization
+
+µlight also ships with a C++ JSON parser/deserializer, found in `include/json.hpp`.
+Since the library already requires a JSON syntax highlighter,
+it is relatively easy for µlight to also provide a parser/deserializer.
+
+This parser is extremely minimalistic.
+It does nothing that requires dynamic allocations,
+i.e. it doesn't build a convenient map/list of values.
+Instead, the interface is comprised of:
+```cpp
+bool parse_json(
+    JSON_Visitor& visitor,
+    std::string_view source, // or std::u8string_view
+    JSON_Options options = {}
+);
+```
+The `JSON_Visitor` is a polymorphic class with various virtual member functions which are
+invoked as the parser traverses the file.
+For example, if you wanted to count how many numbers exist in a JSON file,
+you could make a visitor as follows:
+
+```cpp
+struct My_Visitor : JSON_Visitor {
+    int number_count = 0;
+
+    void number(const Source_Position&, std::u8string_view) override {
+        ++number_count;
+    }
+};
+
+int count_numbers(std::string_view json_source) {
+    My_Visitor visitor;
+    parse_json(visitor, json_source);
+}
+```
+
+### Building a complete JSON structure
+
+You can also make a visitor which builds a traditional JSON structure in memory,
+but that requires a substantial amount of effort.
+For example, objects and arrays are built
+by overriding `push_object`, `pop_array` etc. in the visitor.
+You can find an example of how to build a full JSON structure under `src/test/cpp/test_json.cpp`.
+
+µlight merely goes through the source file,
+figures out what the meaning of the characters is,
+and optionally obtains `double`s and `char32_t` for numbers and escape sequences.
+
+The obvious benefit is that this approach has almost no overhead.
+If you only want to traverse the file without storing any objects permanently,
+you don't pay the cost of building a `std::vector<JSON_Object>` or something.
+You have full control.
