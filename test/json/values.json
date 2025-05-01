@@ -1,0 +1,10 @@
+{
+    "string": "str\"ing",
+    "int": 123,
+    "float": 123.125,
+    "null": null,
+    "true": true,
+    "false": false,
+    "object": {},
+    "array": []
+}
