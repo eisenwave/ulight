@@ -32,6 +32,8 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     if (ASAN_ENABLED)
         set(SANITIZER_OPTIONS "-fsanitize=address,undefined")
     endif()
+    # Clang may also use libstdc++, so we would like assertions on debug builds
+    add_compile_definitions($<$<CONFIG:Debug>:_GLIBCXX_ASSERTIONS>)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(WARNING_OPTIONS -W4)
     if (ASAN_ENABLED)
