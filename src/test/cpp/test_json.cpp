@@ -178,21 +178,23 @@ struct Test_Visitor final : JSON_Visitor {
         current_string.append(chars);
     }
 
+    void escape(const Source_Position&, std::u8string_view) final
+    {
+        ULIGHT_ASSERT_UNREACHABLE(u8"For testing, we use the other overload.");
+    }
     void escape(const Source_Position&, std::u8string_view, char32_t code_point) final
     {
         const auto [code_units, length] = utf8::encode8_unchecked(code_point);
         current_string.append(code_units.data(), code_units.data() + length);
     }
 
-    void
-    number(const Source_Position&, std::u8string_view number, std::size_t, std::size_t, std::size_t)
-        final
+    void number(const Source_Position&, std::u8string_view) final
     {
-        const char* const str_begin = reinterpret_cast<const char*>(number.data());
-        char* str_end;
-        const double result = std::strtod(str_begin, &str_end);
-        ULIGHT_ASSERT(str_begin != str_end);
-        insert_value(result);
+        ULIGHT_ASSERT_UNREACHABLE(u8"For testing, we use the other overload.");
+    }
+    void number(const Source_Position&, std::u8string_view, double value) final
+    {
+        insert_value(value);
     }
 
     void null(const Source_Position&) final
@@ -263,8 +265,11 @@ struct Test_Visitor final : JSON_Visitor {
 [[nodiscard]]
 std::optional<Value> parse(std::u8string_view source)
 {
+    constexpr JSON_Options options { .allow_comments = true,
+                                     .parse_numbers = true,
+                                     .parse_escapes = true };
     Test_Visitor visitor;
-    if (!parse_json(visitor, source)) {
+    if (!parse_json(visitor, source, options)) {
         return {};
     }
     return std::move(visitor.root_value);

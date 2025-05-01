@@ -1,4 +1,5 @@
 #include <charconv>
+#include <cstdlib>
 #include <string_view>
 
 #include "ulight/impl/strings.hpp"
@@ -33,7 +34,7 @@ Identifier_Result match_identifier(std::u8string_view str)
     return { .length = length, .type = type };
 }
 
-Escape_Result match_escape_sequence(std::u8string_view str)
+Escape_Result match_escape_sequence(std::u8string_view str, Escape_Policy policy)
 {
     // https://www.json.org/json-en.html
     if (str.length() < 2 || str[0] != u8'\\' || !is_json_escapable(str[1])) {
@@ -51,6 +52,9 @@ Escape_Result match_escape_sequence(std::u8string_view str)
         return { .length = length };
     }
 
+    if (policy == Escape_Policy::match_only) {
+        return { .length = length, .value = 0 };
+    }
     const auto hex_digits = as_string_view(relevant.substr(2));
     ULIGHT_DEBUG_ASSERT(hex_digits.length() == 4);
     std::uint32_t code_point;
@@ -263,7 +267,8 @@ private:
             }
             case u8'\\': {
                 flush();
-                if (const Escape_Result escape = match_escape_sequence(remainder)) {
+                if (const Escape_Result escape
+                    = match_escape_sequence(remainder, Escape_Policy::match_only)) {
                     const auto escape_highlight = escape.value == Escape_Result::no_value
                         ? Highlight_Type::error
                         : Highlight_Type::escape;
@@ -403,17 +408,17 @@ struct Parser {
 private:
     JSON_Visitor& out;
     const std::size_t source_length;
-    const bool has_comments;
+    const JSON_Options options;
 
     std::u8string_view remainder;
     Source_Position pos {};
 
 public:
     [[nodiscard]]
-    Parser(JSON_Visitor& out, std::u8string_view source, ulight::Comment_Policy comments)
+    Parser(JSON_Visitor& out, std::u8string_view source, JSON_Options options)
         : out { out }
         , source_length { source.length() }
-        , has_comments { comments == ulight::Comment_Policy::allow }
+        , options { options }
         , remainder { source }
     {
     }
@@ -425,7 +430,7 @@ public:
     }
 
 private:
-    void error(JSON_Error error = JSON_Error::error)
+    void error(JSON_Error error)
     {
         out.error(pos, error);
     }
@@ -459,7 +464,7 @@ private:
     [[nodiscard]]
     bool consume_whitespace_comments()
     {
-        if (!has_comments) {
+        if (!options.allow_comments) {
             const std::size_t white_length = match_whitespace(remainder);
             advance(white_length);
             return true;
@@ -493,7 +498,7 @@ private:
             return true;
         }
         ULIGHT_DEBUG_ASSERT_UNREACHABLE(u8"// should have been tested.");
-        error();
+        error(JSON_Error::error);
         return false;
     }
 
@@ -502,7 +507,7 @@ private:
     {
         if (const js::Comment_Result block_comment = match_block_comment(remainder)) {
             if (!block_comment.is_terminated) {
-                error();
+                error(JSON_Error::comment);
                 return false;
             }
             advance(block_comment.length);
@@ -510,7 +515,7 @@ private:
             return true;
         }
         ULIGHT_DEBUG_ASSERT_UNREACHABLE(u8"/* should have been tested.");
-        error();
+        error(JSON_Error::error);
         return false;
     }
 
@@ -563,7 +568,7 @@ private:
             }
             return false;
         }
-        default: error(); return false;
+        default: error(JSON_Error::illegal_escape); return false;
         }
     }
 
@@ -606,22 +611,24 @@ private:
             }
             case u8'\\': {
                 flush();
-                if (const Escape_Result escape = match_escape_sequence(remainder)) {
+                const auto policy
+                    = options.parse_escapes ? Escape_Policy::parse : Escape_Policy::match_only;
+                if (const Escape_Result escape = match_escape_sequence(remainder, policy)) {
                     if (escape.value == Escape_Result::no_value) {
-                        error();
+                        error(JSON_Error::illegal_escape);
                         return false;
                     }
                     out.escape(pos, remainder.substr(0, escape.length), escape.value);
                     advance_on_same_line(escape.length);
                     continue;
                 }
-                error();
+                error(JSON_Error::illegal_escape);
                 return false;
             }
             default: {
                 if (c < 0x20) {
                     flush();
-                    error();
+                    error(JSON_Error::illegal_character);
                     return false;
                 }
                 ++length;
@@ -630,7 +637,7 @@ private:
             }
         }
 
-        error();
+        error(JSON_Error::unterminated_string);
         return false;
     }
 
@@ -639,13 +646,23 @@ private:
     {
         if (const Number_Result number = match_number(remainder)) {
             if (number.erroneous) {
-                error();
+                error(JSON_Error::illegal_number);
                 return false;
             }
-            out.number(
-                pos, remainder.substr(0, number.length), //
-                number.integer, number.fraction, number.exponent
-            );
+            const std::u8string_view number_string = remainder.substr(0, number.length);
+            if (options.parse_numbers) {
+                const auto* const str_begin = reinterpret_cast<const char*>(number_string.data());
+                char* str_end = nullptr;
+                const double value = std::strtod(str_begin, &str_end);
+                if (str_end == str_begin) {
+                    error(JSON_Error::illegal_number);
+                    return false;
+                }
+                out.number(pos, number_string, value);
+            }
+            else {
+                out.number(pos, number_string);
+            }
             advance_on_same_line(number.length);
             return true;
         }
@@ -657,7 +674,7 @@ private:
     {
         if (!remainder.starts_with(u8'{')) {
             ULIGHT_DEBUG_ASSERT_UNREACHABLE(u8"This should have been tested outside.");
-            error();
+            error(JSON_Error::error);
             return false;
         }
         out.push_object(pos);
@@ -687,11 +704,11 @@ private:
                 }
                 continue;
             }
-            error();
+            error(JSON_Error::illegal_character);
             return false;
         }
 
-        error();
+        error(JSON_Error::unterminated_object);
         return false;
     }
 
@@ -699,7 +716,6 @@ private:
     bool consume_member()
     {
         if (!consume_string(String_Type::property)) {
-            error();
             return false;
         }
 
@@ -710,12 +726,8 @@ private:
         if (!consume_whitespace_comments()) {
             return false;
         }
-        if (at_end()) {
-            error();
-            return false;
-        }
         if (!remainder.starts_with(u8':')) {
-            error();
+            error(JSON_Error::valueless_member);
             return false;
         }
         advance_on_same_line(1);
@@ -724,7 +736,7 @@ private:
             return false;
         }
         if (at_end()) {
-            error();
+            error(JSON_Error::valueless_member);
             return false;
         }
         return consume_value();
@@ -735,7 +747,7 @@ private:
     {
         if (!remainder.starts_with(u8'[')) {
             ULIGHT_DEBUG_ASSERT_UNREACHABLE(u8"This should have been tested outside.");
-            error();
+            error(JSON_Error::error);
             return false;
         }
         out.push_array(pos);
@@ -768,11 +780,11 @@ private:
                 }
                 continue;
             }
-            error();
+            error(JSON_Error::illegal_character);
             return false;
         }
 
-        error();
+        error(JSON_Error::unterminated_array);
         return false;
     }
 };
@@ -801,9 +813,9 @@ bool highlight_jsonc(
     return json::Highlighter { out, source, memory, options, json::Comment_Policy::always_allow }();
 }
 
-bool parse_json(JSON_Visitor& visitor, std::u8string_view source, Comment_Policy comments)
+bool parse_json(JSON_Visitor& visitor, std::u8string_view source, JSON_Options options)
 {
-    return json::Parser { visitor, source, comments }();
+    return json::Parser { visitor, source, options }();
 }
 
 } // namespace ulight

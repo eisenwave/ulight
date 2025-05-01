@@ -21,7 +21,23 @@ struct Source_Position {
 
 enum struct JSON_Error : Underlying {
     /// @brief General error.
-    error
+    error,
+    /// @brief A comment was encountered, but comments are not allowed by the parser.
+    comment,
+    /// @brief A character was encountered which is not allowed within the given context.
+    illegal_character,
+    /// @brief An escape sequence is invalid.
+    illegal_escape,
+    /// @brief A number is not in a valid format.
+    illegal_number,
+    /// @brief String is missing a closing `"`.
+    unterminated_string,
+    /// @brief Object is missing a closing `}`.
+    unterminated_object,
+    /// @brief Array is missing a closing `]`.
+    unterminated_array,
+    /// @brief A member has only a key, but no value, like `{"key":}`.
+    valueless_member,
 };
 
 enum struct Error_Reaction : Underlying {
@@ -59,7 +75,15 @@ struct JSON_Visitor {
     /// These characters contain no `\` or control characters.
     /// @param pos The position of the first literal character.
     virtual void literal(const Source_Position& pos, std::u8string_view chars) = 0;
-    /// @brief Invoked when matching an escape sequence within a string.
+
+    /// @brief Invoked when matching an escape sequence within a string
+    /// and the `parse_escapes` option is `false`.
+    /// @param pos The position of the leading `\`.
+    /// @param escape The contents of the escape sequence,
+    /// including the leading `\`.
+    virtual void escape(const Source_Position& pos, std::u8string_view escape) = 0;
+    /// @brief Invoked when matching an escape sequence within a string
+    /// and the `parse_escapes` option is `true`.
     /// @param pos The position of the leading `\`.
     /// @param escape The contents of the escape sequence,
     /// including the leading `\`.
@@ -69,23 +93,17 @@ struct JSON_Visitor {
     virtual void escape(const Source_Position& pos, std::u8string_view escape, char32_t code_point)
         = 0;
 
-    /// @brief Invoked when a number is matched.
-    /// For convenience, the number is also partitioned into its integer,
-    /// fraction, and exponent parts.
-    ///
-    /// `number.length() == integer + fraction + exponent` is `true`.
+    /// @brief Invoked when a number is matched
+    /// and the `parse_numbers` option is `false`.
     /// @param pos The position of the first character of the number.
     /// @param number The contents of the number.
-    /// @param integer The length of the integer part of the number.
-    /// @param fraction The length of the fraction part of the number, starting with `.`.
-    /// @param exponent The length of the exponent part of the number, starting with `E` or `e`.
-    virtual void number(
-        const Source_Position& pos,
-        std::u8string_view number,
-        std::size_t integer,
-        std::size_t fraction,
-        std::size_t exponent
-    ) = 0;
+    virtual void number(const Source_Position& pos, std::u8string_view number) = 0;
+    /// @brief Invoked when a number is matched
+    /// and the `parse_numbers` option is `true`.
+    /// @param pos The position of the first character of the number.
+    /// @param number The contents of the number.
+    /// @param value The parsed value of the number.
+    virtual void number(const Source_Position& pos, std::u8string_view number, double value) = 0;
 
     /// @brief Invoked when `null` is matched.
     /// @param pos The position of the leading `n` character.
@@ -131,25 +149,24 @@ struct JSON_Visitor {
     }
 };
 
-enum struct Comment_Policy : bool {
-    /// @brief Invoke `JSON_Visitor::error` when encountering a comment.
-    error,
-    /// @brief Allow comments and invoke the respective visitor member functions.
-    allow,
+struct JSON_Options {
+    /// @brief If `true`, `// ...` and `/* ... */` comments are allowed.
+    /// Otherwise, comments result in `JSON_Error::comment`.
+    bool allow_comments : 1 = false;
+    /// @brief If `true`, converts numbers to `double` within the parser.
+    bool parse_numbers : 1 = false;
+    /// @brief If `true`, converts escape sequences to `char32_t` within the parser.
+    bool parse_escapes : 1 = false;
 };
 
 /// @brief Parses a JSON string found in `source`.
 /// @param visitor The visitor,
 /// whose member functions are invoked when various part of the file are parsed.
 /// @param source The contents of the source file.
-/// @param comments The policy on comments.
+/// @param options Additional options.
 /// @returns `true` if the file was parsed successfully, else `false`.
 /// More detailed error feedback can be obtained by overriding `JSON_Visitor::error`.
-bool parse_json(
-    JSON_Visitor& visitor,
-    std::u8string_view source,
-    Comment_Policy comments = Comment_Policy::error
-);
+bool parse_json(JSON_Visitor& visitor, std::u8string_view source, JSON_Options options = {});
 
 } // namespace ulight
 

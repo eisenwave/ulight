@@ -38,6 +38,10 @@ struct Escape_Result {
     static constexpr auto no_value = char32_t(-1);
 
     /// @brief The length of the escape sequence.
+    /// Note that just because the length is nonzero doesn't mean that the escape sequence is valid,
+    /// just that it was recognized as an attempted escape sequence.
+    /// For example, `\z` is not permitted in JSON,
+    /// and would result in `{.length = 2, .value = no_value}`.
     std::size_t length;
     /// @brief The value of the escape sequence, or `no_value`.
     char32_t value = no_value;
@@ -53,8 +57,17 @@ struct Escape_Result {
         = default;
 };
 
+enum struct Escape_Policy : bool {
+    /// @brief Only match the escape sequence; don't attempt to convert it to a code point.
+    /// Within `Escape_Result`, `value` will be either `0` or `no_value`.
+    match_only,
+    /// @brief Match the escape sequence and compute the resulting code point.
+    /// Within `Escape_Result`, `value` will be the code point or `no_value`.
+    parse,
+};
+
 [[nodiscard]]
-Escape_Result match_escape_sequence(std::u8string_view str);
+Escape_Result match_escape_sequence(std::u8string_view str, Escape_Policy policy);
 
 [[nodiscard]]
 std::size_t match_digits(std::u8string_view str);
