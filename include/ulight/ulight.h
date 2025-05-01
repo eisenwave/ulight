@@ -6,6 +6,13 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#ifdef __cpp_char8_t
+#define ULIGHT_HAS_CHAR8 1
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+#include <uchar.h>
+#define ULIGHT_HAS_CHAR8 1
+#endif
+
 #ifdef __cplusplus
 #define ULIGHT_NOEXCEPT noexcept
 #else
@@ -33,6 +40,13 @@ typedef struct ulight_string_view {
     const char* text;
     size_t length;
 } ulight_string_view;
+
+#ifdef ULIGHT_HAS_CHAR8
+typedef struct ulight_u8string_view {
+    const char8_t* text;
+    size_t length;
+} ulight_u8string_view;
+#endif
 
 // LANGUAGES
 // =================================================================================================
@@ -78,6 +92,11 @@ typedef enum ulight_lang {
 /// Note that all ulight language names are lower-case.
 ulight_lang ulight_get_lang(const char* name, size_t name_length) ULIGHT_NOEXCEPT;
 
+#ifdef ULIGHT_HAS_CHAR8
+/// @brief Like `ulight_get_lang`, but using `char8_t` instead of `char`.
+ulight_lang ulight_get_lang_u8(const char8_t* name, size_t name_length) ULIGHT_NOEXCEPT;
+#endif
+
 typedef struct ulight_lang_entry {
     /// @brief An ASCII-encoded, lower-case name of the language.
     const char* name;
@@ -93,12 +112,24 @@ extern const ulight_lang_entry ulight_lang_list[];
 /// @brief The size of `ulight_lang_list`, in elements.
 extern const size_t ulight_lang_list_length;
 
-/// @brief An array of "display names" of languages,
-/// indexed by the values of `ulight_lang`.
-///
-/// For example, `ulight_lang_display_names[ULIGHT_LANG_CPP]` is `"C++"`.
-/// Each `ulight_string_view` in this array is null-terminated.
+/// @brief Use `ulight_lang_display_name`.
+ULIGHT_DEPRECATED
 extern const ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT];
+
+/// @brief If `lang` is a valid language other than `ULIGHT_LANG_NONE`,
+/// returns a "display name" for the language.
+/// Otherwise returns a zero-length `ulight_string_view`.
+///
+/// The display name is a human-readable name for the language, and may contain spaces.
+/// For example, `ulight_lang_display_name(ULIGHT_LANG_CPP)` is `"C++"`.
+/// The returned `ulight_string_view` is null-terminated.
+ulight_string_view ulight_lang_display_name(ulight_lang lang) ULIGHT_NOEXCEPT;
+
+#ifdef ULIGHT_HAS_CHAR8
+/// @brief Like `ulight_lang_display_name`,
+/// but returns `ulight_u8string_view`.
+ulight_u8string_view ulight_lang_display_name_u8(ulight_lang lang) ULIGHT_NOEXCEPT;
+#endif
 
 // STATUS AND FLAGS
 // =================================================================================================
@@ -385,14 +416,35 @@ typedef enum ulight_highlight_type {
 
 } ulight_highlight_type;
 
-/// @brief Returns a textual representation made of ASCII characters and underscores of `type`.
-/// This is used as a value in `ulight_tokens_to_html`.
+/// @brief Use `ulight_highlight_type_short_string`.
 ULIGHT_DEPRECATED
 ulight_string_view ulight_highlight_type_id(ulight_highlight_type type) ULIGHT_NOEXCEPT;
 
+/// @brief Returns the long string representation of the highlight type.
+/// This is identical to the enumerator,
+/// without `ULIGHT_HL_`, all lowercase, and with `-` instead of `_`.
+/// The long string is used as a key in ulight themes.
+/// The returned `ulight_string_view` is null-terminated.
 ulight_string_view ulight_highlight_type_long_string(ulight_highlight_type type) ULIGHT_NOEXCEPT;
 
+#ifdef ULIGHT_HAS_CHAR8
+/// @brief Like `ulight_highlight_type_long_string`,
+/// but returns `ulight_u8string_view`.
+ulight_u8string_view ulight_highlight_type_long_string_u8(ulight_highlight_type type
+) ULIGHT_NOEXCEPT;
+#endif
+
+/// @brief Returns a textual representation made of ASCII characters and underscores of `type`.
+/// This is used as a value in `ulight_tokens_to_html`.
+/// The returned `ulight_string_view` is null-terminated.
 ulight_string_view ulight_highlight_type_short_string(ulight_highlight_type type) ULIGHT_NOEXCEPT;
+
+#ifdef ULIGHT_HAS_CHAR8
+/// @brief Like `ulight_highlight_type_short_string`,
+/// but returns `ulight_u8string_view`.
+ulight_u8string_view ulight_highlight_type_short_string_u8(ulight_highlight_type type
+) ULIGHT_NOEXCEPT;
+#endif
 
 typedef struct ulight_token {
     /// @brief The index of the first code point within the source code that has the highlighting.

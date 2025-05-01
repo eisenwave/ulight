@@ -144,9 +144,30 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
 };
 // clang-format on
 
+ULIGHT_DIAGNOSTIC_PUSH()
+ULIGHT_DIAGNOSTIC_IGNORED("-Wdeprecated-declarations")
+
 static_assert(std::ranges::none_of(ulight_lang_display_names, [](ulight_string_view str) {
     return str.length == 0;
 }));
+
+ULIGHT_EXPORT
+ulight_string_view ulight_lang_display_name(ulight_lang lang) noexcept
+{
+    if (lang == ULIGHT_LANG_NONE || int(lang) >= int(ULIGHT_LANG_COUNT)) {
+        return {};
+    }
+    return ulight_lang_display_names[std::size_t(lang)];
+}
+
+ULIGHT_EXPORT
+ulight_u8string_view ulight_lang_display_name_u8(ulight_lang lang) noexcept
+{
+    const ulight_string_view result = ulight_lang_display_name(lang);
+    return { reinterpret_cast<const char8_t*>(result.text), result.length };
+}
+
+ULIGHT_DIAGNOSTIC_POP()
 
 namespace {
 
@@ -172,18 +193,44 @@ ulight_lang ulight_get_lang(const char* name, size_t name_length) noexcept
 }
 
 ULIGHT_EXPORT
+ulight_lang ulight_get_lang_u8(const char8_t* name, size_t name_length) noexcept
+{
+    return ulight_get_lang(reinterpret_cast<const char*>(name), name_length);
+}
+
+ULIGHT_EXPORT
 ulight_string_view ulight_highlight_type_long_string(ulight_highlight_type type) noexcept
 {
-    const std::string_view result
-        = ulight::highlight_type_long_string(ulight::Highlight_Type(type));
+    // While using ulight::highlight_type_short_string would be a bit simpler,
+    // we use the u8 variant to reduce code size.
+    // char can alias char8_t anyway.
+    const std::u8string_view result
+        = ulight::highlight_type_long_string_u8(ulight::Highlight_Type(type));
+    return { reinterpret_cast<const char*>(result.data()), result.size() };
+}
+
+ULIGHT_EXPORT
+ulight_u8string_view ulight_highlight_type_long_string_u8(ulight_highlight_type type) noexcept
+{
+    const std::u8string_view result
+        = ulight::highlight_type_long_string_u8(ulight::Highlight_Type(type));
     return { result.data(), result.size() };
 }
 
 ULIGHT_EXPORT
 ulight_string_view ulight_highlight_type_short_string(ulight_highlight_type type) noexcept
 {
-    const std::string_view result
-        = ulight::highlight_type_short_string(ulight::Highlight_Type(type));
+    // See above for implementation rationale.
+    const std::u8string_view result
+        = ulight::highlight_type_short_string_u8(ulight::Highlight_Type(type));
+    return { reinterpret_cast<const char*>(result.data()), result.size() };
+}
+
+ULIGHT_EXPORT
+ulight_u8string_view ulight_highlight_type_short_string_u8(ulight_highlight_type type) noexcept
+{
+    const std::u8string_view result
+        = ulight::highlight_type_short_string_u8(ulight::Highlight_Type(type));
     return { result.data(), result.size() };
 }
 

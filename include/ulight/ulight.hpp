@@ -32,16 +32,34 @@ enum struct Lang : Underlying {
     none = ULIGHT_LANG_NONE,
 };
 
+/// See `ulight_get_lang`.
 [[nodiscard]]
 inline Lang get_lang(std::string_view name) noexcept
 {
     return Lang(ulight_get_lang(name.data(), name.length()));
 }
 
+/// See `ulight_get_lang_u8`.
 [[nodiscard]]
 inline Lang get_lang(std::u8string_view name) noexcept
 {
-    return get_lang({ reinterpret_cast<const char*>(name.data()), name.size() });
+    return Lang(ulight_get_lang_u8(name.data(), name.length()));
+}
+
+/// See `ulight_lang_display_name`.
+[[nodiscard]]
+inline std::string_view lang_display_name(Lang lang) noexcept
+{
+    const ulight_string_view result = ulight_lang_display_name(ulight_lang(lang));
+    return { result.text, result.length };
+}
+
+/// See `ulight_lang_display_name_u8`.
+[[nodiscard]]
+inline std::u8string_view lang_display_name_u8(Lang lang) noexcept
+{
+    const ulight_u8string_view result = ulight_lang_display_name_u8(ulight_lang(lang));
+    return { result.text, result.length };
 }
 
 /// See `ulight_status`.
@@ -164,12 +182,17 @@ constexpr Flag operator|(Flag x, Flag y) noexcept
     case id: return long_str;
 #define ULIGHT_HIGHLIGHT_TYPE_SHORT_STRING_CASE(id, long_str, short_str, initializer)              \
     case id: return short_str;
+#define ULIGHT_HIGHLIGHT_TYPE_LONG_STRING_CASE_U8(id, long_str, short_str, initializer)            \
+    case id: return u8##long_str;
+#define ULIGHT_HIGHLIGHT_TYPE_SHORT_STRING_CASE_U8(id, long_str, short_str, initializer)           \
+    case id: return u8##short_str;
 
 /// See `ulight_highlight_type`.
 enum struct Highlight_Type : Underlying {
     ULIGHT_HIGHLIGHT_TYPE_ENUM_DATA(ULIGHT_HIGHLIGHT_TYPE_ENUMERATOR)
 };
 
+/// See `ulight_highlight_type_long_string`.
 [[nodiscard]]
 constexpr std::string_view highlight_type_long_string(Highlight_Type type) noexcept
 {
@@ -180,12 +203,35 @@ constexpr std::string_view highlight_type_long_string(Highlight_Type type) noexc
     return {};
 }
 
+/// See `ulight_highlight_type_long_string_u8`.
+[[nodiscard]]
+constexpr std::u8string_view highlight_type_long_string_u8(Highlight_Type type) noexcept
+{
+    switch (type) {
+        using enum Highlight_Type;
+        ULIGHT_HIGHLIGHT_TYPE_ENUM_DATA(ULIGHT_HIGHLIGHT_TYPE_LONG_STRING_CASE_U8)
+    }
+    return {};
+}
+
+/// See `ulight_highlight_type_short_string`.
 [[nodiscard]]
 constexpr std::string_view highlight_type_short_string(Highlight_Type type) noexcept
 {
     switch (type) {
         using enum Highlight_Type;
         ULIGHT_HIGHLIGHT_TYPE_ENUM_DATA(ULIGHT_HIGHLIGHT_TYPE_SHORT_STRING_CASE)
+    }
+    return {};
+}
+
+/// See `ulight_highlight_type_short_string_u8`.
+[[nodiscard]]
+constexpr std::u8string_view highlight_type_short_string_u8(Highlight_Type type) noexcept
+{
+    switch (type) {
+        using enum Highlight_Type;
+        ULIGHT_HIGHLIGHT_TYPE_ENUM_DATA(ULIGHT_HIGHLIGHT_TYPE_SHORT_STRING_CASE_U8)
     }
     return {};
 }
