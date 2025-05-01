@@ -58,6 +58,24 @@ using Underlying = unsigned char;
 #define ULIGHT_EXPORT
 #endif
 
+// https://stackoverflow.com/q/45762357/5740428
+#define ULIGHT_PRAGMA_STR_IMPL(...) _Pragma(#__VA_ARGS__)
+#define ULIGHT_PRAGMA_STR(...) ULIGHT_PRAGMA_STR_IMPL(__VA_ARGS__)
+
+#ifdef ULIGHT_GCC
+#define ULIGHT_DIAGNOSTIC_PUSH() _Pragma("GCC diagnostic push")
+#define ULIGHT_DIAGNOSTIC_POP() _Pragma("GCC diagnostic pop")
+#define ULIGHT_DIAGNOSTIC_IGNORED(...) ULIGHT_PRAGMA_STR(GCC diagnostic ignored __VA_ARGS__)
+#elif defined(ULIGHT_CLANG)
+#define ULIGHT_DIAGNOSTIC_PUSH() _Pragma("clang diagnostic push")
+#define ULIGHT_DIAGNOSTIC_POP() _Pragma("clang diagnostic pop")
+#define ULIGHT_DIAGNOSTIC_IGNORED(...) ULIGHT_PRAGMA_STR(clang diagnostic ignored __VA_ARGS__)
+#else
+#define ULIGHT_DIAGNOSTIC_PUSH()
+#define ULIGHT_DIAGNOSTIC_POP()
+#define ULIGHT_DIAGNOSTIC_IGNORED(...)
+#endif
+
 #ifdef ULIGHT_GCC
 #define ULIGHT_SUPPRESS_MISSING_DECLARATIONS_WARNING()                                             \
     _Pragma("GCC diagnostic ignored \"-Wmissing-declarations\"")
