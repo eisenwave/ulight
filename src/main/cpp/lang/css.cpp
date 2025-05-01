@@ -67,11 +67,11 @@ std::size_t match_number(std::u8string_view str)
         consume_digits();
     }
     if (length + 1 < str.length() && (str[length] == u8'e' || str[length] == u8'E')) {
-        if ((str[length + 1] == u8'+' || str[length + 1] == u8'-') && length + 2 < str.length()
-            && is_ascii_digit(str[length + 2])) {
+        const bool has_sign = str[length + 1] == u8'+' || str[length + 1] == u8'-';
+        if (has_sign && length + 2 < str.length() && is_ascii_digit(str[length + 2])) {
             length += 3;
         }
-        else if (is_ascii_digit(str[length + 2])) {
+        else if (is_ascii_digit(str[length + 1])) {
             length += 2;
         }
         else {
@@ -90,7 +90,7 @@ std::size_t match_escaped_code_point(std::u8string_view str)
         return 0;
     }
     std::size_t length = 0;
-    while (is_ascii_hex_digit(str[length]) && length < 6 && length < str.length()) {
+    while (length < 6 && length < str.length() && is_ascii_hex_digit(str[length])) {
         ++length;
     }
     if (length != 0) {

@@ -460,7 +460,8 @@ Numeric_Result match_numeric_literal(std::u8string_view str)
         result.erroneous |= fractional_digits == 0;
         result.erroneous |= fractional_error;
 
-        if (result.prefix == 0 && result.integer == 0 && !is_ascii_digit(str[length + 1])) {
+        if (result.prefix == 0 && result.integer == 0
+            && (length + 1 >= str.length() || !is_ascii_digit(str[length + 1]))) {
             return {};
         }
         length += result.fractional;
@@ -668,6 +669,9 @@ JSX_Braced_Result match_jsx_braced(std::u8string_view str)
     while (length < str.length()) {
         if (const std::size_t skip_length = match_whitespace_comment_sequence(str.substr(length))) {
             length += skip_length;
+        }
+        if (length >= str.length()) {
+            break;
         }
         switch (str[length]) {
         case u8'{': {
