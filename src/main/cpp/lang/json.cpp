@@ -1,5 +1,7 @@
+#include <charconv>
 #include <string_view>
 
+#include "ulight/impl/strings.hpp"
 #include "ulight/json.hpp"
 #include "ulight/ulight.hpp"
 
@@ -39,13 +41,23 @@ Escape_Result match_escape_sequence(std::u8string_view str)
     }
     // Almost all escape sequences are two characters.
     if (str[1] != u8'u') {
-        return { .length = 2 };
+        return { .length = 2, .value = char32_t(str[1]) };
     }
     // "\", "u", hex, hex, hex, hex
     constexpr auto is_hex = [](char8_t c) { return is_ascii_hex_digit(c); };
     const std::u8string_view relevant = str.substr(0, std::min(str.length(), 6uz));
     const std::size_t length = ascii::length_if(relevant, is_hex, 2);
-    return { .length = length, .erroneous = length != 6 };
+    if (length != 6) {
+        return { .length = length };
+    }
+
+    const auto hex_digits = as_string_view(relevant.substr(2));
+    ULIGHT_DEBUG_ASSERT(hex_digits.length() == 4);
+    std::uint32_t code_point;
+    const auto result = std::from_chars(hex_digits.data(), hex_digits.data() + 4, code_point, 16);
+    ULIGHT_ASSERT(result.ec == std::errc {});
+
+    return { .length = length, .value = char32_t(code_point) };
 }
 
 std::size_t match_digits(std::u8string_view str)
@@ -252,8 +264,9 @@ private:
             case u8'\\': {
                 flush();
                 if (const Escape_Result escape = match_escape_sequence(remainder)) {
-                    const auto escape_highlight
-                        = escape.erroneous ? Highlight_Type::error : Highlight_Type::escape;
+                    const auto escape_highlight = escape.value == Escape_Result::no_value
+                        ? Highlight_Type::error
+                        : Highlight_Type::escape;
                     emit_and_advance(escape.length, escape_highlight);
                     continue;
                 }
@@ -558,6 +571,7 @@ private:
     bool consume_string(String_Type type)
     {
         if (!remainder.starts_with(u8'"')) {
+            ULIGHT_DEBUG_ASSERT_UNREACHABLE(u8"Should have checked for quotes already.");
             return false;
         }
         if (type == String_Type::property) {
@@ -587,16 +601,17 @@ private:
                 else {
                     out.pop_string(pos);
                 }
+                advance_on_same_line(1);
                 return true;
             }
             case u8'\\': {
                 flush();
                 if (const Escape_Result escape = match_escape_sequence(remainder)) {
-                    if (escape.erroneous) {
+                    if (escape.value == Escape_Result::no_value) {
                         error();
                         return false;
                     }
-                    out.escape(pos, remainder.substr(0, escape.length));
+                    out.escape(pos, remainder.substr(0, escape.length), escape.value);
                     advance_on_same_line(escape.length);
                     continue;
                 }
@@ -684,6 +699,7 @@ private:
     bool consume_member()
     {
         if (!consume_string(String_Type::property)) {
+            error();
             return false;
         }
 
@@ -704,7 +720,7 @@ private:
         }
         advance_on_same_line(1);
 
-        if (!!consume_whitespace_comments()) {
+        if (!consume_whitespace_comments()) {
             return false;
         }
         if (at_end()) {
@@ -736,7 +752,7 @@ private:
             if (remainder.starts_with(u8']')) {
                 out.pop_array(pos);
                 advance_on_same_line(1);
-                return false;
+                return true;
             }
             if (first_element) {
                 if (!consume_value()) {

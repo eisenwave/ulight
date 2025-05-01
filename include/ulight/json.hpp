@@ -61,7 +61,13 @@ struct JSON_Visitor {
     virtual void literal(const Source_Position& pos, std::u8string_view chars) = 0;
     /// @brief Invoked when matching an escape sequence within a string.
     /// @param pos The position of the leading `\`.
-    virtual void escape(const Source_Position& pos, std::u8string_view escape) = 0;
+    /// @param escape The contents of the escape sequence,
+    /// including the leading `\`.
+    /// @param code_point The code point represented by the escape sequence.
+    /// Due to JSON only supporting four-digit `\u` escapes,
+    /// the maximum code point is `U+FFFF`.
+    virtual void escape(const Source_Position& pos, std::u8string_view escape, char32_t code_point)
+        = 0;
 
     /// @brief Invoked when a number is matched.
     /// For convenience, the number is also partitioned into its integer,
