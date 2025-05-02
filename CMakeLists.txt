@@ -121,6 +121,9 @@ else(NOT DEFINED EMSCRIPTEN)
         src/main/cpp/main.cpp
     )
 
+    target_compile_options(ulight-cli PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
+    target_link_options(ulight-cli PUBLIC ${SANITIZER_OPTIONS})
+
     add_executable(ulight-test ${HEADERS}
         src/test/cpp/main.cpp
         src/test/cpp/test_buffer.cpp
