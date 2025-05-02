@@ -54,6 +54,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/lang/xml.cpp
 
     src/main/cpp/chars.cpp
+    src/main/cpp/io.cpp
     src/main/cpp/parse_utils.cpp
     src/main/cpp/ulight.cpp
 )
@@ -121,7 +122,6 @@ else(NOT DEFINED EMSCRIPTEN)
     )
 
     add_executable(ulight-test ${HEADERS}
-        src/test/cpp/io.cpp
         src/test/cpp/main.cpp
         src/test/cpp/test_buffer.cpp
         src/test/cpp/test_chars_strings.cpp
