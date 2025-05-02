@@ -69,13 +69,13 @@ struct JSON_Visitor {
     virtual void literal(const Source_Position& pos, std::u8string_view chars) { }
 
     /// @brief Invoked when matching an escape sequence within a string
-    /// and the `parse_escapes` option is `false`.
+    /// and the `escapes` option is `none`.
     /// @param pos The position of the leading `\`.
     /// @param escape The contents of the escape sequence,
     /// including the leading `\`.
     virtual void escape(const Source_Position& pos, std::u8string_view escape) { }
     /// @brief Invoked when matching an escape sequence within a string
-    /// and the `parse_escapes` option is `true`.
+    /// and the `escapes` option is `parse`.
     /// @param pos The position of the leading `\`.
     /// @param escape The contents of the escape sequence,
     /// including the leading `\`.
@@ -83,6 +83,23 @@ struct JSON_Visitor {
     /// Due to JSON only supporting four-digit `\u` escapes,
     /// the maximum code point is `U+FFFF`.
     virtual void escape(const Source_Position& pos, std::u8string_view escape, char32_t code_point)
+    {
+    }
+    /// @brief Invoked when matching an escape sequence within a string
+    /// and the `escapes` option is `parse_encode`.
+    /// @param pos The position of the leading `\`.
+    /// @param escape The contents of the escape sequence,
+    /// including the leading `\`.
+    /// @param code_point The code point represented by the escape sequence.
+    /// Due to JSON only supporting four-digit `\u` escapes,
+    /// the maximum code point is `U+FFFF`.
+    /// @param code_units The UTF-8 code units of the code point.
+    virtual void escape(
+        const Source_Position& pos,
+        std::u8string_view escape,
+        char32_t code_point,
+        std::u8string_view code_units
+    )
     {
     }
 
@@ -144,6 +161,15 @@ struct JSON_Visitor {
 // NOLINTEND(misc-unused-parameters)
 ULIGHT_DIAGNOSTIC_POP()
 
+enum struct Escape_Parsing : Underlying {
+    /// @brief Do no parse escapes.
+    none,
+    /// @brief Parse escapes, and invoke the visitor with a code point.
+    parse,
+    /// @brief Parse escapes, and invoke the visitor with a code point and UTF-8 code units.
+    parse_encode
+};
+
 /// @brief Options for JSON parsing.
 struct JSON_Options {
     /// @brief If `true`, `// ...` and `/* ... */` comments are allowed.
@@ -151,8 +177,8 @@ struct JSON_Options {
     bool allow_comments : 1 = false;
     /// @brief If `true`, converts numbers to `double` within the parser.
     bool parse_numbers : 1 = false;
-    /// @brief If `true`, converts escape sequences to `char32_t` within the parser.
-    bool parse_escapes : 1 = false;
+    /// @brief How to handle escape sequences.
+    Escape_Parsing escapes = Escape_Parsing::none;
 };
 
 /// @brief Parses a JSON string found in `source`.

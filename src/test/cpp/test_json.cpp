@@ -182,10 +182,10 @@ struct Test_Visitor final : JSON_Visitor {
     {
         ULIGHT_ASSERT_UNREACHABLE(u8"For testing, we use the other overload.");
     }
-    void escape(const Source_Position&, std::u8string_view, char32_t code_point) final
+    void escape(const Source_Position&, std::u8string_view, char32_t, std::u8string_view code_units)
+        final
     {
-        const auto [code_units, length] = utf8::encode8_unchecked(code_point);
-        current_string.append(code_units.data(), code_units.data() + length);
+        current_string.append(code_units.begin(), code_units.end());
     }
 
     void number(const Source_Position&, std::u8string_view) final
@@ -267,7 +267,7 @@ std::optional<Value> parse(std::u8string_view source)
 {
     constexpr JSON_Options options { .allow_comments = true,
                                      .parse_numbers = true,
-                                     .parse_escapes = true };
+                                     .escapes = Escape_Parsing::parse_encode };
     Test_Visitor visitor;
     if (!parse_json(visitor, source, options)) {
         return {};

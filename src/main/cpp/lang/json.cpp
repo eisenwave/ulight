@@ -611,19 +611,10 @@ private:
             }
             case u8'\\': {
                 flush();
-                const auto policy
-                    = options.parse_escapes ? Escape_Policy::parse : Escape_Policy::match_only;
-                if (const Escape_Result escape = match_escape_sequence(remainder, policy)) {
-                    if (escape.value == Escape_Result::no_value) {
-                        error(JSON_Error::illegal_escape);
-                        return false;
-                    }
-                    out.escape(pos, remainder.substr(0, escape.length), escape.value);
-                    advance_on_same_line(escape.length);
-                    continue;
+                if (!consume_escape()) {
+                    return false;
                 }
-                error(JSON_Error::illegal_escape);
-                return false;
+                continue;
             }
             default: {
                 if (c < 0x20) {
@@ -642,31 +633,60 @@ private:
     }
 
     [[nodiscard]]
+    bool consume_escape()
+    {
+        const auto policy = options.escapes == Escape_Parsing::none ? Escape_Policy::match_only
+                                                                    : Escape_Policy::parse;
+        const Escape_Result escape = match_escape_sequence(remainder, policy);
+        if (!escape || escape.value == Escape_Result::no_value) {
+            error(JSON_Error::illegal_escape);
+            return false;
+        }
+
+        switch (options.escapes) {
+        case Escape_Parsing::none: //
+            out.escape(pos, remainder.substr(0, escape.length));
+            break;
+        case Escape_Parsing::parse: //
+            out.escape(pos, remainder.substr(0, escape.length), escape.value);
+            break;
+        case Escape_Parsing::parse_encode: {
+            const auto [code_units, length] = utf8::encode8_unchecked(escape.value);
+            const std::u8string_view encoded { code_units.data(), std::size_t(length) };
+            out.escape(pos, remainder.substr(0, escape.length), escape.value, encoded);
+            break;
+        }
+        }
+
+        advance_on_same_line(escape.length);
+        return true;
+    }
+
+    [[nodiscard]]
     bool consume_number()
     {
-        if (const Number_Result number = match_number(remainder)) {
-            if (number.erroneous) {
+        const Number_Result number = match_number(remainder);
+        if (!number || number.erroneous) {
+            error(JSON_Error::illegal_number);
+            return false;
+        }
+
+        const std::u8string_view number_string = remainder.substr(0, number.length);
+        if (options.parse_numbers) {
+            const auto* const str_begin = reinterpret_cast<const char*>(number_string.data());
+            char* str_end = nullptr;
+            const double value = std::strtod(str_begin, &str_end);
+            if (str_end == str_begin) {
                 error(JSON_Error::illegal_number);
                 return false;
             }
-            const std::u8string_view number_string = remainder.substr(0, number.length);
-            if (options.parse_numbers) {
-                const auto* const str_begin = reinterpret_cast<const char*>(number_string.data());
-                char* str_end = nullptr;
-                const double value = std::strtod(str_begin, &str_end);
-                if (str_end == str_begin) {
-                    error(JSON_Error::illegal_number);
-                    return false;
-                }
-                out.number(pos, number_string, value);
-            }
-            else {
-                out.number(pos, number_string);
-            }
-            advance_on_same_line(number.length);
-            return true;
+            out.number(pos, number_string, value);
         }
-        return false;
+        else {
+            out.number(pos, number_string);
+        }
+        advance_on_same_line(number.length);
+        return true;
     }
 
     [[nodiscard]]
