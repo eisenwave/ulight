@@ -97,6 +97,18 @@ ulight_lang ulight_get_lang(const char* name, size_t name_length) ULIGHT_NOEXCEP
 ulight_lang ulight_get_lang_u8(const char8_t* name, size_t name_length) ULIGHT_NOEXCEPT;
 #endif
 
+/// @brief Tries to determine the `ulight_lang` from a file name,
+/// which is typically done by via file extension.
+/// For example, if `name` is `"main.cpp"`,
+/// the result is `ULIGHT_LANG_CPP`.
+/// Returns `ULIGHT_LANGUAGE_NONE` if none matches.
+ulight_lang ulight_lang_from_path(const char* path, size_t path_length) ULIGHT_NOEXCEPT;
+
+#ifdef ULIGHT_HAS_CHAR8
+/// @brief Like `ulight_get_lang_of_path`, but using `char8_t` instead of `char`.
+ulight_lang ulight_lang_from_path_u8(const char8_t* path, size_t path_length) ULIGHT_NOEXCEPT;
+#endif
+
 typedef struct ulight_lang_entry {
     /// @brief An ASCII-encoded, lower-case name of the language.
     const char* name;

@@ -46,6 +46,20 @@ inline Lang get_lang(std::u8string_view name) noexcept
     return Lang(ulight_get_lang_u8(name.data(), name.length()));
 }
 
+/// See `ulight_lang_from_path`.
+[[nodiscard]]
+inline Lang lang_from_path(std::string_view path) noexcept
+{
+    return Lang(ulight_lang_from_path(path.data(), path.length()));
+}
+
+/// See `ulight_lang_from_path_u8`.
+[[nodiscard]]
+inline Lang lang_from_path(std::u8string_view path) noexcept
+{
+    return Lang(ulight_lang_from_path_u8(path.data(), path.length()));
+}
+
 /// See `ulight_lang_display_name`.
 [[nodiscard]]
 inline std::string_view lang_display_name(Lang lang) noexcept
@@ -363,10 +377,15 @@ struct [[nodiscard]] State {
         impl.text_buffer_length = buffer.size();
     }
 
+    void on_flush_text(void* data, void action(void*, char*, std::size_t))
+    {
+        impl.flush_text = action;
+        impl.flush_text_data = data;
+    }
+
     void on_flush_text(Function_Ref<void(char*, std::size_t)> action)
     {
-        impl.flush_text = action.get_invoker();
-        impl.flush_text_data = action.get_entity();
+        on_flush_text(action.get_entity(), action.get_invoker());
     }
 
     /// Returns the current contents of the text buffer as a `std::span<char>`.

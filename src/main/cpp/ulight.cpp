@@ -199,6 +199,27 @@ ulight_lang ulight_get_lang_u8(const char8_t* name, size_t name_length) noexcept
 }
 
 ULIGHT_EXPORT
+ulight_lang ulight_lang_from_path(const char* path, size_t path_length) noexcept
+{
+    // TODO: In addition to just lookin for extension,
+    //       we could also add some common file names,
+    //       such as recognizing .bashrc as a bash script.
+    const std::string_view path_string { path, path_length };
+    const std::size_t last_dot = path_string.find_last_of(u8'.');
+    if (last_dot == std::u8string_view::npos) {
+        return ULIGHT_LANG_NONE;
+    }
+    const std::string_view extension = path_string.substr(last_dot + 1);
+    return ulight_get_lang(extension.data(), extension.length());
+}
+
+ULIGHT_EXPORT
+ulight_lang ulight_lang_from_path_u8(const char8_t* path, size_t path_length) noexcept
+{
+    return ulight_get_lang(reinterpret_cast<const char*>(path), path_length);
+}
+
+ULIGHT_EXPORT
 ulight_string_view ulight_highlight_type_long_string(ulight_highlight_type type) noexcept
 {
     // While using ulight::highlight_type_short_string would be a bit simpler,
