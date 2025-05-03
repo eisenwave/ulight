@@ -1615,10 +1615,102 @@ private:
         if (number.erroneous) {
             emit_and_advance(number.length, Highlight_Type::error);
         }
-        else {
-            // TODO: more granular output
-            emit_and_advance(number.length, Highlight_Type::number);
+        const std::size_t start = index;
+        if (number.prefix > 0) {
+            emit_and_advance(number.prefix, Highlight_Type::number_decor);
         }
+        if (number.integer > 0) {
+            std::size_t chars = 0;
+            auto flush_digits = [&] {
+                if (chars > 0) {
+                    emit(index - chars, chars, Highlight_Type::number);
+                    chars = 0;
+                }
+            };
+
+            std::size_t remaining = number.integer;
+            while (remaining > 0) {
+                if (!remainder.empty() && remainder[0] == U'_') {
+                    flush_digits();
+                    emit_and_advance(1, Highlight_Type::number_delim);
+                    --remaining;
+                }
+                else {
+                    ++chars;
+                    advance(1);
+                    --remaining;
+                }
+            }
+            flush_digits();
+        }
+
+        if (number.fractional > 0) {
+            emit_and_advance(1, Highlight_Type::number_delim);
+            std::size_t chars = 0;
+            auto flush_digits = [&] {
+                if (chars > 0) {
+                    emit(index - chars, chars, Highlight_Type::number);
+                    chars = 0;
+                }
+            };
+
+            std::size_t remaining = number.fractional - 1; // Minus the dot.
+            while (remaining > 0) {
+                if (!remainder.empty() && remainder[0] == U'_') {
+                    flush_digits();
+                    emit_and_advance(1, Highlight_Type::number_delim);
+                    --remaining;
+                }
+                else {
+                    ++chars;
+                    advance(1);
+                    --remaining;
+                }
+            }
+            flush_digits();
+        }
+
+        if (number.exponent > 0) {
+            emit_and_advance(1, Highlight_Type::number_decor);
+
+            // Highlight the exponent sign if it is present.
+            if (!remainder.empty() && (remainder[0] == U'+' || remainder[0] == U'-')) {
+                emit_and_advance(1, Highlight_Type::number_decor);
+            }
+
+            std::size_t chars = 0;
+            auto flush_digits = [&] {
+                if (chars > 0) {
+                    emit(index - chars, chars, Highlight_Type::number);
+                    chars = 0;
+                }
+            };
+
+            std::size_t exp_start_consumed = 1; // 'E' or 'e'
+            if (start + number.prefix + number.integer + number.fractional < index - 1) {
+                exp_start_consumed = 2; // 'E' or 'e' and the sign.
+            }
+
+            std::size_t remaining = number.exponent - exp_start_consumed; // Minus the dot.
+            while (remaining > 0) {
+                if (!remainder.empty() && remainder[0] == U'_') {
+                    flush_digits();
+                    emit_and_advance(1, Highlight_Type::number_delim);
+                    --remaining;
+                }
+                else {
+                    ++chars;
+                    advance(1);
+                    --remaining;
+                }
+            }
+            flush_digits();
+        }
+
+        if (number.suffix > 0) {
+            emit_and_advance(number.suffix, Highlight_Type::number_decor);
+        }
+
         input_element = Input_Element::div;
         return true;
     }
