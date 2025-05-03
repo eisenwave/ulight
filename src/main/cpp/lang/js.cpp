@@ -1614,6 +1614,7 @@ private:
         }
         if (number.erroneous) {
             emit_and_advance(number.length, Highlight_Type::error);
+            return true;
         }
         const std::size_t start = index;
         if (number.prefix > 0) {
@@ -1630,7 +1631,7 @@ private:
 
             std::size_t remaining = number.integer;
             while (remaining > 0) {
-                if (!remainder.empty() && remainder[0] == U'_') {
+                if (!remainder.starts_with(u8'_')) {
                     flush_digits();
                     emit_and_advance(1, Highlight_Type::number_delim);
                     --remaining;
@@ -1656,7 +1657,7 @@ private:
 
             std::size_t remaining = number.fractional - 1; // Minus the dot.
             while (remaining > 0) {
-                if (!remainder.empty() && remainder[0] == U'_') {
+                if (!remainder.starts_with(u8'_')) {
                     flush_digits();
                     emit_and_advance(1, Highlight_Type::number_delim);
                     --remaining;
@@ -1674,7 +1675,7 @@ private:
             emit_and_advance(1, Highlight_Type::number_decor);
 
             // Highlight the exponent sign if it is present.
-            if (!remainder.empty() && (remainder[0] == U'+' || remainder[0] == U'-')) {
+            if (!remainder.empty() && (remainder[0] == u8'+' || remainder[0] == u8'-')) {
                 emit_and_advance(1, Highlight_Type::number_decor);
             }
 
@@ -1693,7 +1694,7 @@ private:
 
             std::size_t remaining = number.exponent - exp_start_consumed; // Minus the dot.
             while (remaining > 0) {
-                if (!remainder.empty() && remainder[0] == U'_') {
+                if (!remainder.empty() && remainder[0] == u8'_') {
                     flush_digits();
                     emit_and_advance(1, Highlight_Type::number_delim);
                     --remaining;
