@@ -1631,7 +1631,7 @@ private:
             };
 
             for (std::size_t remaining = number.integer; remaining > 0; --remaining) {
-                if (!remainder.empty() && remainder[0] == u8'_') {
+                if (remainder.starts_with(u8'_')) {
                     flush_digits();
                     emit_and_advance(1, Highlight_Type::number_delim);
                 }
@@ -1654,7 +1654,7 @@ private:
             };
 
             for (std::size_t remaining = number.fractional - 1; remaining > 0; --remaining) {
-                if (!remainder.empty() && remainder[0] == u8'_') {
+                if (remainder.starts_with(u8'_')) {
                     flush_digits();
                     emit_and_advance(1, Highlight_Type::number_delim);
                 }
@@ -1689,7 +1689,7 @@ private:
 
             for (std::size_t remaining = number.exponent - exp_start_consumed; remaining > 0;
                  --remaining) {
-                if (!remainder.empty() && remainder[0] == u8'_') {
+                if (remainder.starts_with(u8'_')) {
                     flush_digits();
                     emit_and_advance(1, Highlight_Type::number_delim);
                 }
