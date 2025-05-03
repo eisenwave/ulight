@@ -1614,6 +1614,7 @@ private:
         }
         if (number.erroneous) {
             emit_and_advance(number.length, Highlight_Type::error);
+            input_element = Input_Element::div;
             return true;
         }
         const std::size_t start = index;
@@ -1629,17 +1630,14 @@ private:
                 }
             };
 
-            std::size_t remaining = number.integer;
-            while (remaining > 0) {
-                if (!remainder.starts_with(u8'_')) {
+            for (std::size_t remaining = number.integer; remaining > 0; --remaining) {
+                if (!remainder.empty() && remainder[0] == u8'_') {
                     flush_digits();
                     emit_and_advance(1, Highlight_Type::number_delim);
-                    --remaining;
                 }
                 else {
                     ++chars;
                     advance(1);
-                    --remaining;
                 }
             }
             flush_digits();
@@ -1655,17 +1653,14 @@ private:
                 }
             };
 
-            std::size_t remaining = number.fractional - 1; // Minus the dot.
-            while (remaining > 0) {
-                if (!remainder.starts_with(u8'_')) {
+            for (std::size_t remaining = number.fractional - 1; remaining > 0; --remaining) {
+                if (!remainder.empty() && remainder[0] == u8'_') {
                     flush_digits();
                     emit_and_advance(1, Highlight_Type::number_delim);
-                    --remaining;
                 }
                 else {
                     ++chars;
                     advance(1);
-                    --remaining;
                 }
             }
             flush_digits();
@@ -1692,17 +1687,14 @@ private:
                 exp_start_consumed = 2; // 'E' or 'e' and the sign.
             }
 
-            std::size_t remaining = number.exponent - exp_start_consumed; // Minus the dot.
-            while (remaining > 0) {
+            for (std::size_t remaining = number.exponent - exp_start_consumed; remaining > 0; --remaining) {
                 if (!remainder.empty() && remainder[0] == u8'_') {
                     flush_digits();
                     emit_and_advance(1, Highlight_Type::number_delim);
-                    --remaining;
                 }
                 else {
                     ++chars;
                     advance(1);
-                    --remaining;
                 }
             }
             flush_digits();
