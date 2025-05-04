@@ -24,7 +24,6 @@ namespace ulight::nasm{
 namespace {
 
 constexpr std::uint8_t max_registers{195};
-
 constexpr std::array<std::u8string_view, max_registers> nasm_register{{
     u8"ah", u8"al", u8"ax",
     u8"bh", u8"bl", u8"bp", u8"bpl",
@@ -66,6 +65,46 @@ constexpr std::array<std::u8string_view, max_registers> nasm_register{{
 }};
 
 
+// As of now, this is an incomplete list of nasm instructions, full list will be added soon
+constexpr std::uint16_t max_instructions{200};
+constexpr std::array<std::u8string_view, max_instructions> nasm_instruction{{
+
+    // Special instructions (pseudo-ops)
+
+    u8"db", u8"dw", u8"dd", u8"dq", u8"dt", u8"do", u8"dy", u8"dz" , u8"resb", u8"resw", u8"resd",
+    u8"resq", u8"rest", u8"reso", u8"resy", u8"resz", u8"incbin",
+
+    // Conventional instructions
+
+    u8"aaa", u8"aad", u8"aam", u8"aas", u8"adc", u8"add", u8"and", u8"arpl", u8"bb0_reset",
+    u8"bb1_reset", u8"bound", u8"bsf", u8"bsr", u8"bswap", u8"bt", u8"btc", u8"btr", u8"bts",
+    u8"call", u8"cbw", u8"cdq", u8"cdqe", u8"clc", u8"cld", u8"cli", u8"clts", u8"cmc", u8"cmp",
+    u8"cmpsb", u8"cmpsd", u8"cmpsq", u8"cmpsw", u8"cmpxchg", u8"cmpxchg486", u8"cmpxchg8b",
+    u8"cmpxchg16b", u8"cpuid", u8"cpu_read", u8"cpu_write", u8"cqo", u8"cwd", u8"cdwe", u8"daa",
+    u8"das", u8"dec", u8"div", u8"dmint", u8"emms", u8"enter", u8"equ", u8"f2xm1", u8"fabs",
+    u8"fadd", u8"faddp", u8"fbld", u8"fbstp", u8"fchs", u8"fclex", u8"fcmovb", u8"fcmovbe",
+    u8"fcmove", u8"fcmovnb", u8"fcmovnbe", u8"fcmovne", u8"fcmovnu", u8"fcmovu", u8"fcom",
+    u8"fcomi", u8"fcomip", u8"fcomp", u8"fcompp", u8"fcos", u8"fdecstp", u8"fdisi", u8"fdiv",
+    u8"fdivp", u8"fdivr", u8"fdivrp", u8"femms", u8"feni", u8"ffree", u8"ffreep", u8"fiadd",
+    u8"ficom", u8"ficomp", u8"fidiv", u8"fidivr", u8"fild", u8"fimul", u8"fincstp", u8"finit",
+    u8"fist", u8"fistp", u8"fisttp", u8"fisub", u8"fisubr", u8"fisubrfld", u8"fld", u8"fld1",
+    u8"fldcw", u8"fldenv", u8"fldl2e", u8"fldl2t", u8"fldlg2", u8"fldln2", u8"fldpi", u8"fldz",
+    u8"fmul", u8"fmulp", u8"fnclex", u8"fndisi", u8"fneni", u8"fninit", u8"fnop", u8"fnsave",
+    u8"fnstcw", u8"fnstenv" u8"fnstsw", u8"fpatan" u8"fprem", u8"fprem1", u8"fptan", u8"frndint",
+    u8"frstor", u8"fsave", u8"fscale", u8"fsetpm", u8"fsin", u8"fsincos", u8"fsqrt", u8"fst",
+    u8"fstcw", u8"fstenv", u8"fstp", u8"fstsw", u8"fsub", u8"fsubp", u8"fsubr", u8"ftst",
+    u8"fucom", u8"fucomi", u8"fucomip"
+
+}};
+
+
+constexpr std::uint8_t max_assembler_directives{21};
+constexpr std::array<std::u8string_view, max_assembler_directives> nasm_asm_dir{{
+    u8"bits", u8"use16", u8"use32", u8"default", u8"section", u8"segment", u8"absolute",
+    u8"extern", u8"required", u8"global", u8"common", u8"static", u8"prefix", u8"gprefix",
+    u8"lprefix", u8"postfix", u8"gpostfix", u8"lpostfix", u8"cpu", u8"float", u8"[warning]"
+}};
+
 
 
 
@@ -79,6 +118,14 @@ bool is_nasm_label_string(std::u8string_view source){
 }
 
 
+[[nodiscard]]
+std::u8string convert_to_lower_case(std::u8string source){
+    std::u8string tmp {source};
+    for(auto& ch : tmp){
+        ch = static_cast<std::u8string::value_type>(std::tolower(static_cast<unsigned char>(ch)));
+    }
+    return tmp;
+}
 } // anonymous namespace
 
 
@@ -124,14 +171,49 @@ std::size_t match_line_register(std::u8string_view source){
         return 0;
     }
 
-    if(std::ranges::find(nasm_register, source) != nasm_register.end()){
+    std::u8string lower_case_str {convert_to_lower_case(std::u8string(source.data(), source.size()))};
+    std::u8string_view lower_case_strview {std::move(lower_case_str)};
+
+    if(std::ranges::find(nasm_register, lower_case_strview) != nasm_register.end()){
         return source.size();
     }
 
     return 0;
 }
 
+/// @brief Returns length of the instruction if the source line is a instruction, 0 otherwise
+std::size_t match_line_instruction(std::u8string_view source){
 
+    if(source.empty()){
+        return 0;
+    }
+
+    std::u8string lower_case_str {convert_to_lower_case(std::u8string(source.data(), source.size()))};
+    std::u8string_view lower_case_strview {std::move(lower_case_str)};
+
+    if(std::ranges::find(nasm_instruction, lower_case_strview) != nasm_instruction.end()){
+        return source.size();
+    }
+
+    return 0;
+}
+
+/// @brief Returns length of the assembler directive if the source line is an assembler directive, 0 otherwise
+std::size_t match_line_assembler_directive(std::u8string_view source){
+
+    if(source.empty()){
+        return 0;
+    }
+
+    std::u8string lower_case_str {convert_to_lower_case(std::u8string(source.data(), source.size()))};
+    std::u8string_view lower_case_strview {std::move(lower_case_str)};
+
+    if(std::ranges::find(nasm_asm_dir, lower_case_strview) != nasm_asm_dir.end()){
+        return source.size();
+    }
+
+    return 0;
+}
 
 
 /*bool highlight_nasm(

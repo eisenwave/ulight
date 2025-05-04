@@ -107,6 +107,79 @@ TEST(NASM, match_line_register)
 }
 
 
+TEST(NASM, match_line_instruction)
+{
+
+    const std::u8string_view ins[]{
+        u8"dec",
+        u8"femms",
+        u8"ecq",
+        u8".label",
+        u8"@decl..",
+        u8"..start",
+        u8"fldl2e",
+        u8"DMINT",
+        u8"DIV",
+        u8"FFREE88",
+        u8"FENI",
+        u8"flDLN2",
+        u8"FLDLG2",
+        u8";comment"
+    };
+
+    EXPECT_EQ(match_line_instruction(ins[0]), ins[0].size());
+    EXPECT_EQ(match_line_instruction(ins[1]), ins[1].size());
+    EXPECT_EQ(match_line_instruction(ins[2]), 0);
+    EXPECT_EQ(match_line_instruction(ins[3]), 0);
+    EXPECT_EQ(match_line_instruction(ins[4]), 0);
+    EXPECT_EQ(match_line_instruction(ins[5]), 0);
+    EXPECT_EQ(match_line_instruction(ins[6]), ins[6].size());
+    EXPECT_EQ(match_line_instruction(ins[7]), ins[7].size());
+    EXPECT_EQ(match_line_instruction(ins[8]), ins[8].size());
+    EXPECT_EQ(match_line_instruction(ins[9]), 0);
+    EXPECT_EQ(match_line_instruction(ins[10]), ins[10].size());
+    EXPECT_EQ(match_line_instruction(ins[11]), ins[11].size());
+    EXPECT_EQ(match_line_instruction(ins[12]), ins[12].size());
+    EXPECT_EQ(match_line_instruction(ins[13]), 0);
+}
+
+TEST(NASM, match_line_assembler_directive)
+{
+
+    const std::u8string_view asmd[]{
+        u8"section",
+        u8"default",
+        u8";default",
+        u8".commom",
+        u8"..segment",
+        u8"cpu",
+        u8"[WARNING]",
+        u8".prefix",
+        u8"PREfIx",
+        u8"GPostFix",
+        u8"@@Req",
+        u8"REQUIRED",
+        u8";extern",
+        u8";bits"
+    };
+
+    EXPECT_EQ(match_line_assembler_directive(asmd[0]), asmd[0].size());
+    EXPECT_EQ(match_line_assembler_directive(asmd[1]), asmd[1].size());
+    EXPECT_EQ(match_line_assembler_directive(asmd[2]), 0);
+    EXPECT_EQ(match_line_assembler_directive(asmd[3]), 0);
+    EXPECT_EQ(match_line_assembler_directive(asmd[4]), 0);
+    EXPECT_EQ(match_line_assembler_directive(asmd[5]), asmd[5].size());
+    EXPECT_EQ(match_line_assembler_directive(asmd[6]), asmd[6].size());
+    EXPECT_EQ(match_line_assembler_directive(asmd[7]), 0);
+    EXPECT_EQ(match_line_assembler_directive(asmd[8]), asmd[8].size());
+    EXPECT_EQ(match_line_assembler_directive(asmd[9]), asmd[9].size());
+    EXPECT_EQ(match_line_assembler_directive(asmd[10]), 0);
+    EXPECT_EQ(match_line_assembler_directive(asmd[11]), asmd[11].size());
+    EXPECT_EQ(match_line_assembler_directive(asmd[12]), 0);
+    EXPECT_EQ(match_line_assembler_directive(asmd[13]), 0);
+}
+
+
 
 
 

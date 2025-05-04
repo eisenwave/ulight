@@ -651,9 +651,6 @@ constexpr bool is_nasm_register_start_character(char32_t c){
 }
 
 
-
-
-
 // C & C++ =========================================================================================
 
 /// @brief Returns `true` iff `c` is in the set `[A-Za-z_]`.
