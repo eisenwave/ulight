@@ -6,23 +6,6 @@
 
 namespace ulight {
 
-/// @brief Returns `true` if `c` is an escapable MMML character.
-/// That is, if `\\c` would corresponds to the literal character `c`,
-/// rather than starting a directive or being treated as literal text.
-[[nodiscard]]
-constexpr bool is_mmml_escapeable(char8_t c) noexcept
-{
-    return c == u8'\\' || c == u8'}' || c == u8'{';
-}
-
-[[nodiscard]]
-constexpr bool is_mmml_escapeable(char32_t c) noexcept
-{
-    return c == U'\\' || c == U'}' || c == U'{';
-}
-
-inline constexpr Charset256 is_mmml_escapeable_set = detail::to_charset256(is_mmml_escapeable);
-
 inline constexpr Charset256 is_mmml_special_set = detail::to_charset256(u8"{}\\[],=");
 
 [[nodiscard]]
@@ -35,6 +18,23 @@ constexpr bool is_mmml_special(char8_t c) noexcept
 constexpr bool is_mmml_special(char32_t c) noexcept
 {
     return is_ascii(c) && is_mmml_special(char8_t(c));
+}
+
+inline constexpr Charset256 is_mmml_escapeable_set = is_mmml_special_set;
+
+/// @brief Returns `true` if `c` is an escapable MMML character.
+/// That is, if `\\c` would corresponds to the literal character `c`,
+/// rather than starting a directive or being treated as literal text.
+[[nodiscard]]
+constexpr bool is_mmml_escapeable(char8_t c) noexcept
+{
+    return is_mmml_special(c);
+}
+
+[[nodiscard]]
+constexpr bool is_mmml_escapeable(char32_t c) noexcept
+{
+    return is_mmml_special(c);
 }
 
 inline constexpr Charset256 is_mmml_ascii_argument_name_set

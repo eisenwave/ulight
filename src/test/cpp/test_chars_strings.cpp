@@ -209,20 +209,6 @@ TEST(Charsets, all_cpp_whitespace)
     }
 }
 
-TEST(Charsets, all_mmml_escapeable8)
-{
-    for (char8_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_mmml_escapeable8, c), is_mmml_escapeable(c));
-    }
-}
-
-TEST(Charsets, all_mmml_escapeable)
-{
-    for (char32_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_mmml_escapeable, c), is_mmml_escapeable(c));
-    }
-}
-
 TEST(Strings, trim_cpp_whitespace_left)
 {
     EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace_left(u8"awoo"));

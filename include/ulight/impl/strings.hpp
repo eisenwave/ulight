@@ -43,10 +43,6 @@ inline constexpr std::u8string_view all_ascii_whitespace8 = u8"\t\n\f\r ";
 inline constexpr std::u32string_view all_cpp_whitespace = U"\t\n\f\r\v ";
 inline constexpr std::u8string_view all_cpp_whitespace8 = u8"\t\n\f\r\v ";
 
-// see is_mmml_escapeable
-inline constexpr std::u32string_view all_mmml_escapeable = U"\\{}";
-inline constexpr std::u8string_view all_mmml_escapeable8 = u8"\\{}";
-
 // see is_mmml_special_character
 inline constexpr std::u32string_view all_mmml_special = U"\\{}[],";
 inline constexpr std::u8string_view all_mmml_special8 = u8"\\{}[],";
