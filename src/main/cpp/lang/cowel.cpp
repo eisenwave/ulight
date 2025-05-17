@@ -13,21 +13,21 @@
 #include "ulight/impl/unicode.hpp"
 #include "ulight/impl/unicode_algorithm.hpp"
 
-#include "ulight/impl/lang/mmml.hpp"
-#include "ulight/impl/lang/mmml_chars.hpp"
+#include "ulight/impl/lang/cowel.hpp"
+#include "ulight/impl/lang/cowel_chars.hpp"
 
 namespace ulight {
-namespace mmml {
+namespace cowel {
 
 std::size_t match_directive_name(std::u8string_view str)
 {
-    constexpr auto predicate = [](char32_t c) { return is_mmml_directive_name(c); };
+    constexpr auto predicate = [](char32_t c) { return is_cowel_directive_name(c); };
     return str.empty() || is_ascii_digit(str[0]) ? 0 : utf8::length_if(str, predicate);
 }
 
 std::size_t match_argument_name(std::u8string_view str)
 {
-    constexpr auto predicate = [](char32_t c) { return is_mmml_argument_name(c); };
+    constexpr auto predicate = [](char32_t c) { return is_cowel_argument_name(c); };
     return str.empty() || is_ascii_digit(str[0]) ? 0 : utf8::length_if(str, predicate);
 }
 
@@ -42,11 +42,11 @@ bool starts_with_escape_or_directive(std::u8string_view str)
     if (str.length() < 2 || str[0] != u8'\\') {
         return false;
     }
-    if (is_mmml_escapeable(str[1])) {
+    if (is_cowel_escapeable(str[1])) {
         return true;
     }
     const auto [next_point, _] = utf8::decode_and_length_or_throw(str.substr(1));
-    return is_mmml_directive_name_start(next_point);
+    return is_cowel_directive_name_start(next_point);
 }
 
 Named_Argument_Result match_named_argument_prefix(const std::u8string_view str)
@@ -134,7 +134,7 @@ struct Consumer {
 std::size_t match_escape(Consumer& out, const std::u8string_view str)
 {
     constexpr std::size_t sequence_length = 2;
-    if (str.length() < sequence_length || str[0] != u8'\\' || !is_mmml_escapeable(str[1])) {
+    if (str.length() < sequence_length || str[0] != u8'\\' || !is_cowel_escapeable(str[1])) {
         return 0;
     }
     out.escape();
@@ -589,16 +589,16 @@ bool Highlighter::operator()()
 }
 
 } // namespace
-} // namespace mmml
+} // namespace cowel
 
-bool highlight_mmml(
+bool highlight_cowel(
     Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
     std::pmr::memory_resource*,
     const Highlight_Options& options
 )
 {
-    return mmml::Highlighter { out, source, options }();
+    return cowel::Highlighter { out, source, options }();
 }
 
 } // namespace ulight

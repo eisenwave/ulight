@@ -22,7 +22,7 @@ struct Highlight_Options {
     bool strict = false;
 };
 
-bool highlight_mmml(
+bool highlight_cowel(
     Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
     std::pmr::memory_resource* memory,
@@ -113,8 +113,8 @@ inline Status highlight(
     switch (language) {
     case Lang::cpp: //
         return to_result(highlight_cpp(out, source, memory, options));
-    case Lang::mmml: //
-        return to_result(highlight_mmml(out, source, memory, options));
+    case Lang::cowel: //
+        return to_result(highlight_cowel(out, source, memory, options));
     case Lang::lua: //
         return to_result(highlight_lua(out, source, memory, options));
     case Lang::html: //

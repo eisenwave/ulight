@@ -1,10 +1,10 @@
-#ifndef ULIGHT_MMML_HPP
-#define ULIGHT_MMML_HPP
+#ifndef ULIGHT_COWEL_HPP
+#define ULIGHT_COWEL_HPP
 
 #include <cstddef>
 #include <string_view>
 
-namespace ulight::mmml {
+namespace ulight::cowel {
 
 [[nodiscard]]
 std::size_t match_directive_name(std::u8string_view str);
@@ -37,6 +37,6 @@ struct Named_Argument_Result {
 [[nodiscard]]
 Named_Argument_Result match_named_argument_prefix(std::u8string_view str);
 
-} // namespace ulight::mmml
+} // namespace ulight::cowel
 
 #endif

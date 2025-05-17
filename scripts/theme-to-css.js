@@ -90,8 +90,8 @@ function generateCss(
 ) {
     const indent = isMmml ? " " : "    ";
     if (isMmml) {
-        const systemCss = doGenerateCss(path, theme, themeName, noBlockBackground, noBlockForeground, "mmml-system", indent);
-        const themedCss = doGenerateCss(path, theme, themeName, noBlockBackground, noBlockForeground, "mmml-themed", indent);
+        const systemCss = doGenerateCss(path, theme, themeName, noBlockBackground, noBlockForeground, "cowel-system", indent);
+        const themedCss = doGenerateCss(path, theme, themeName, noBlockBackground, noBlockForeground, "cowel-themed", indent);
         return `${systemCss}\n\n${themedCss}`;
     }
     return doGenerateCss(path, theme, themeName, noBlockBackground, noBlockForeground, "ulight", indent);
@@ -103,7 +103,7 @@ function generateCss(
  * @param {string} themeName
  * @param {boolean} noBlockBackground
  * @param {boolean} noBlockForeground
- * @param {"ulight"|"mmml-system"|"mmml-themed"} passType
+ * @param {"ulight"|"cowel-system"|"cowel-themed"} passType
  * @param {string} indent
  * @returns {string}
  */
@@ -133,12 +133,12 @@ function doGenerateCss(
             css += "\n\n";
         }
 
-        const hasMediaQuery = themeName.length === 0 && passType !== "mmml-themed";
+        const hasMediaQuery = themeName.length === 0 && passType !== "cowel-themed";
         if (hasMediaQuery) {
             css += variantToMediaQuery(variant);
         }
         const themePrefix = themeName.length !== 0 ? `[data-ulight-theme=${variant}-${themeName}]`
-            : passType === "mmml-themed" ? `html.${variant}`
+            : passType === "cowel-themed" ? `html.${variant}`
                 : "";
 
         const sortedEntries = Object.entries(data)
@@ -247,10 +247,10 @@ function filePathToThemeName(path) {
  * @param {boolean} isThemed
  * @param {boolean} noBlockBackground
  * @param {boolean} noBlockForeground
- * @param {boolean} isMmml
+ * @param {boolean} isCowel
  * @returns {string}
  */
-function fileToCss(path, isThemed, noBlockBackground, noBlockForeground, isMmml) {
+function fileToCss(path, isThemed, noBlockBackground, noBlockForeground, isCowel) {
     const themeName = isThemed ? filePathToThemeName(path) : "";
     if (themeName.includes(".")) {
         console.error(`${path}: Unable to generate theme name from input file "${path}"`);
@@ -259,7 +259,7 @@ function fileToCss(path, isThemed, noBlockBackground, noBlockForeground, isMmml)
     const jsonData = fs.readFileSync(path, "utf8");
     const theme = JSON.parse(jsonData);
 
-    return generateCss(path, theme, themeName, noBlockBackground, noBlockForeground, isMmml);
+    return generateCss(path, theme, themeName, noBlockBackground, noBlockForeground, isCowel);
 }
 
 function main() {
@@ -291,9 +291,9 @@ function main() {
             describe: "Ignore code block foreground",
             type: "boolean"
         })
-        .option("mmml", {
+        .option("cowel", {
             alias: "M",
-            describe: "Output CSS for use in MMML",
+            describe: "Output CSS for use in COWEL",
             type: "boolean"
         })
         .argv;
@@ -301,14 +301,14 @@ function main() {
     const isThemed = argv.themed ?? false;
     const noBlockBackground = !(argv.blockBackground ?? true);
     const noBlockForeground = !(argv.blockForeground ?? true);
-    const isMmml = argv.mmml ?? false;
+    const isCowel = argv.cowel ?? false;
 
     const inputStats = fs.lstatSync(argv.input);
     const files = inputStats.isDirectory() ?
         fs.readdirSync(argv.input).map(f => `${argv.input}/${f}`) : [argv.input];
 
     try {
-        const css = files.map(f => fileToCss(f, isThemed, noBlockBackground, noBlockForeground, isMmml))
+        const css = files.map(f => fileToCss(f, isThemed, noBlockBackground, noBlockForeground, isCowel))
             .join("\n");
         if (argv.output !== undefined) {
             fs.writeFileSync(argv.output, css, "utf8");

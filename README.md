@@ -110,6 +110,7 @@ and a stable numeric ID whose value can be found in `include/ulight.h`.
 | ------------ | ----------- | ------------- |
 | Bash | `bash`, `sh`, `zsh` | `ULIGHT_LANG_BASH` |
 | C | `c`, `h` | `ULIGHT_LANG_C` |
+| COWEL | `cow`, `cowel` | `ULIGHT_LANG_COWEL` |
 | C++ | `c++`, `cc`, `cplusplus`, `cpp`, `cxx`, `h++`, `hpp` | `ULIGHT_LANG_CPP` |
 | CSS | `css` | `ULIGHT_LANG_CSS` |
 | Diff | `diff`, `patch` | `ULIGHT_LANG_DIFF` |
@@ -118,7 +119,6 @@ and a stable numeric ID whose value can be found in `include/ulight.h`.
 | JSON | `json` | `ULIGHT_LANG_JSON` |
 | JSON with Comments | `jsonc` | `ULIGHT_LANG_JSONC` |
 | Lua | `lua` | `ULIGHT_LANG_LUA` |
-| MMML | `mmml` | `ULIGHT_LANG_MMML` |
 | XML | `atom`, `plist`, `rss`, `svg`, `xbj`, `xhtml`, `xml`, `xsd`, `xsl` | `ULIGHT_LANG_XML` |
 
 The long-term plan is to get support for at least 100 languages.

@@ -63,6 +63,8 @@ typedef enum ulight_lang {
     ULIGHT_LANG_BASH = 8,
     /// @brief C.
     ULIGHT_LANG_C = 6,
+    /// @brief COWEL (Compact Web Language).
+    ULIGHT_LANG_COWEL = 1,
     /// @brief C++.
     ULIGHT_LANG_CPP = 2,
     /// @brief CSS.
@@ -79,8 +81,6 @@ typedef enum ulight_lang {
     ULIGHT_LANG_JSONC = 11,
     /// @brief Lua.
     ULIGHT_LANG_LUA = 3,
-    /// @brief MMML (Missing Middle Markup Language).
-    ULIGHT_LANG_MMML = 1,
     /// @brief XML.
     ULIGHT_LANG_XML = 12,
     /// @brief No langage (null result).

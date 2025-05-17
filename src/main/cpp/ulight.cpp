@@ -86,6 +86,8 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("c", ULIGHT_LANG_C),
     make_lang_entry("c++", ULIGHT_LANG_CPP),
     make_lang_entry("cc", ULIGHT_LANG_CPP),
+    make_lang_entry("cow", ULIGHT_LANG_COWEL),
+    make_lang_entry("cowel", ULIGHT_LANG_COWEL),
     make_lang_entry("cplusplus", ULIGHT_LANG_CPP),
     make_lang_entry("cpp", ULIGHT_LANG_CPP),
     make_lang_entry("css", ULIGHT_LANG_CSS),
@@ -105,7 +107,6 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("jsonc", ULIGHT_LANG_JSONC),
     make_lang_entry("jsx", ULIGHT_LANG_JS),
     make_lang_entry("lua", ULIGHT_LANG_LUA),
-    make_lang_entry("mmml", ULIGHT_LANG_MMML),
     // make_lang_entry( u8"mts", ULIGHT_LANG_typescript ),
     // make_lang_entry( u8"ts", ULIGHT_LANG_typescript ),
     // make_lang_entry( u8"tsx", ULIGHT_LANG_typescript ),
@@ -129,7 +130,7 @@ constexpr std::size_t ulight_lang_list_length = std::size(ulight_lang_list);
 ULIGHT_EXPORT
 constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("N/A"),
-    make_sv("MMML"),
+    make_sv("COWEL"),
     make_sv("C++"),
     make_sv("Lua"),
     make_sv("HTML"),

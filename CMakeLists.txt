@@ -49,7 +49,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/lang/js.cpp
     src/main/cpp/lang/json.cpp
     src/main/cpp/lang/lua.cpp
-    src/main/cpp/lang/mmml.cpp
+    src/main/cpp/lang/cowel.cpp
     src/main/cpp/lang/html.cpp
     src/main/cpp/lang/xml.cpp
 

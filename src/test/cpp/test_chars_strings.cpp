@@ -7,9 +7,9 @@
 #include "ulight/impl/parse_utils.hpp"
 #include "ulight/impl/strings.hpp"
 
+#include "ulight/impl/lang/cowel_chars.hpp"
 #include "ulight/impl/lang/cpp_chars.hpp"
 #include "ulight/impl/lang/html_chars.hpp"
-#include "ulight/impl/lang/mmml_chars.hpp"
 
 namespace ulight {
 namespace {
@@ -98,16 +98,16 @@ TEST(Chars, is_ascii_alpha)
     }
 }
 
-TEST(Chars, is_mmml_directive_name)
+TEST(Chars, is_cowel_directive_name)
 {
     for (const char32_t c : all_mmml_special) {
-        EXPECT_FALSE(is_mmml_directive_name(c));
+        EXPECT_FALSE(is_cowel_directive_name(c));
     }
     for (const char32_t c : all_ascii_alpha) {
-        EXPECT_TRUE(is_mmml_directive_name(c));
+        EXPECT_TRUE(is_cowel_directive_name(c));
     }
     for (const char32_t c : all_ascii_digit) {
-        EXPECT_TRUE(is_mmml_directive_name(c));
+        EXPECT_TRUE(is_cowel_directive_name(c));
     }
 }
 

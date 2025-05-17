@@ -19,6 +19,7 @@ using Underlying = unsigned char;
 enum struct Lang : Underlying {
     bash = ULIGHT_LANG_BASH,
     c = ULIGHT_LANG_C,
+    cowel = ULIGHT_LANG_COWEL,
     cpp = ULIGHT_LANG_CPP,
     css = ULIGHT_LANG_CSS,
     diff = ULIGHT_LANG_DIFF,
@@ -27,7 +28,6 @@ enum struct Lang : Underlying {
     json = ULIGHT_LANG_JSON,
     jsonc = ULIGHT_LANG_JSONC,
     lua = ULIGHT_LANG_LUA,
-    mmml = ULIGHT_LANG_MMML,
     xml = ULIGHT_LANG_XML,
     none = ULIGHT_LANG_NONE,
 };
