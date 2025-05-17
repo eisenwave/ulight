@@ -100,6 +100,22 @@ constexpr bool starts_with_ascii_ignore_case(std::u8string_view str, std::u8stri
     return true;
 }
 
+/// @brief Returns `true` iff `haystack` contains `needle`,
+/// ignoring any case differences between ASCII alphabetic characters.
+[[nodiscard]]
+constexpr bool contains_ascii_ignore_case(std::u8string_view haystack, std::u8string_view needle)
+{
+    if (needle.empty()) {
+        return true;
+    }
+    for (std::size_t i = 0; i + needle.length() <= haystack.length(); ++i) {
+        if (equals_ascii_ignore_case(haystack.substr(0, needle.length()), needle)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 namespace detail {
 
 /// @brief Rudimentary version of `std::ranges::all_of` to avoid including all of `<algorithm>`
