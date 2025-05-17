@@ -86,10 +86,10 @@ function generateCss(
     themeName,
     noBlockBackground,
     noBlockForeground,
-    isMmml
+    isCowel
 ) {
-    const indent = isMmml ? " " : "    ";
-    if (isMmml) {
+    const indent = isCowel ? " " : "    ";
+    if (isCowel) {
         const systemCss = doGenerateCss(path, theme, themeName, noBlockBackground, noBlockForeground, "cowel-system", indent);
         const themedCss = doGenerateCss(path, theme, themeName, noBlockBackground, noBlockForeground, "cowel-themed", indent);
         return `${systemCss}\n\n${themedCss}`;
