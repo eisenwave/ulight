@@ -94,6 +94,15 @@ bool highlight_jsonc(
     std::pmr::memory_resource* memory,
     const Highlight_Options& options = {}
 );
+inline bool highlight_txt(
+    Non_Owning_Buffer<Token>&,
+    std::u8string_view,
+    std::pmr::memory_resource*,
+    const Highlight_Options& = {}
+)
+{
+    return true;
+}
 
 inline Status highlight(
     Non_Owning_Buffer<Token>& out,
@@ -135,6 +144,8 @@ inline Status highlight(
         return to_result(highlight_json(out, source, memory, options));
     case Lang::jsonc: //
         return to_result(highlight_jsonc(out, source, memory, options));
+    case Lang::txt: //
+        return to_result(highlight_txt(out, source, memory, options));
     default: //
         return Status::bad_lang;
     }

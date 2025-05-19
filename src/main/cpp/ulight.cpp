@@ -112,10 +112,13 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     // make_lang_entry( u8"tsx", ULIGHT_LANG_typescript ),
     // make_lang_entry( u8"typescript", ULIGHT_LANG_typescript ),
     make_lang_entry("patch", ULIGHT_LANG_DIFF),
+    make_lang_entry("plaintext", ULIGHT_LANG_TXT),
     make_lang_entry("plist", ULIGHT_LANG_XML),
     make_lang_entry("rss", ULIGHT_LANG_XML),
     make_lang_entry("sh", ULIGHT_LANG_BASH),
     make_lang_entry("svg", ULIGHT_LANG_XML),
+    make_lang_entry("text", ULIGHT_LANG_TXT),
+    make_lang_entry("txt", ULIGHT_LANG_TXT),
     make_lang_entry("xbj", ULIGHT_LANG_XML),
     make_lang_entry("xhtml", ULIGHT_LANG_XML),
     make_lang_entry("xml", ULIGHT_LANG_XML),
@@ -142,6 +145,7 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("JSON"),
     make_sv("JSON with Comments"),
     make_sv("XML"),
+    make_sv("Plaintext"),
 };
 // clang-format on
 
