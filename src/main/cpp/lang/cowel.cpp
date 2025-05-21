@@ -377,14 +377,14 @@ struct Highlighter::Normal_Consumer final : Consumer {
 };
 
 struct Highlighter::Comment_Consumer final : Consumer {
-    std::size_t prefix = 0;
-    std::size_t content = 0;
-    std::size_t suffix = 0;
+    std::size_t prefix_length = 0;
+    std::size_t content_length = 0;
+    std::size_t suffix_length = 0;
 
 private:
     std::size_t arguments_level = 0;
     std::size_t brace_level = 0;
-    std::size_t* active_length = &prefix;
+    std::size_t* active_length = &prefix_length;
 
 public:
     Comment_Consumer() = default;
@@ -395,18 +395,18 @@ public:
 
     void reset()
     {
-        prefix = 0;
-        content = 0;
-        suffix = 0;
+        prefix_length = 0;
+        content_length = 0;
+        suffix_length = 0;
         arguments_level = 0;
         brace_level = 0;
-        active_length = &prefix;
+        active_length = &prefix_length;
     }
 
     [[nodiscard]]
     bool done() const
     {
-        return active_length == &suffix;
+        return active_length == &suffix_length;
     }
 
     void whitespace(std::size_t w) final
@@ -445,18 +445,24 @@ public:
     {
         *active_length += 1;
         if (arguments_level == 0 && brace_level == 0) {
-            ULIGHT_DEBUG_ASSERT(prefix != 0);
-            active_length = &content;
+            ULIGHT_DEBUG_ASSERT(prefix_length != 0);
+            active_length = &content_length;
         }
         ++brace_level;
     }
     void closing_brace() final
     {
         --brace_level;
-        if (arguments_level == 0 && brace_level == 0 && active_length == &content) {
-            active_length = &suffix;
+        if (arguments_level == 0 && brace_level == 0 && active_length == &content_length) {
+            active_length = &suffix_length;
         }
         *active_length += 1;
+    }
+    void pop_directive() final
+    {
+        if (arguments_level == 0 && brace_level == 0) {
+            active_length = &suffix_length;
+        }
     }
     void escape() final
     {
@@ -472,7 +478,7 @@ public:
     }
     void unexpected_eof() final
     {
-        active_length = &suffix;
+        active_length = &suffix_length;
         ULIGHT_DEBUG_ASSERT(done());
     }
 };
@@ -542,10 +548,11 @@ struct Highlighter::Dispatch_Consumer final : Consumer {
 
     void push_directive() final
     {
-        // deliberately do nothing; we need full control over this
+        current->push_directive();
     }
     void pop_directive() final
     {
+        current->pop_directive();
         try_flush_special_consumer();
     }
     void push_arguments() final
@@ -566,14 +573,14 @@ struct Highlighter::Dispatch_Consumer final : Consumer {
     {
         Highlighter& self = normal.self;
         if (current == &comment && comment.done()) {
-            ULIGHT_ASSERT(comment.prefix != 0);
-            self.emit_and_advance(comment.prefix, Highlight_Type::comment_delim);
-            if (comment.content) {
-                self.emit_and_advance(comment.content, Highlight_Type::comment);
+            ULIGHT_ASSERT(comment.prefix_length != 0);
+            self.emit_and_advance(comment.prefix_length, Highlight_Type::comment_delim);
+            if (comment.content_length) {
+                self.emit_and_advance(comment.content_length, Highlight_Type::comment);
             }
-            if (comment.suffix) {
-                ULIGHT_ASSERT(comment.suffix == 1);
-                self.emit_and_advance(comment.suffix, Highlight_Type::comment_delim);
+            if (comment.suffix_length) {
+                ULIGHT_ASSERT(comment.suffix_length == 1);
+                self.emit_and_advance(comment.suffix_length, Highlight_Type::comment_delim);
             }
             comment.reset();
             current = &normal;
