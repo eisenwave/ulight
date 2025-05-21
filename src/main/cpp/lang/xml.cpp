@@ -37,7 +37,7 @@ std::size_t match_whitespace(std::u8string_view str)
 std::size_t match_text(std::u8string_view str)
 {
     const std::size_t result
-        = ascii::length_if_not(str, [](char32_t c) { return c == u8'<' || c == u8'&'; });
+        = ascii::length_if_not(str, [](char8_t c) { return c == u8'<' || c == u8'&'; });
 
     return result == std::u8string_view::npos ? str.length() : result;
 }
