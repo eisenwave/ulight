@@ -12,6 +12,16 @@
 #include <string>
 #include <string_view>
 
+#if defined(__BMI2__)
+#define ULIGHT_X86_BMI2
+#include <immintrin.h>
+#endif
+
+#if defined(__ARM_FEATURE_SVE2)
+#include <arm_sve.h>
+#define ULIGHT_ARM_SVE2
+#endif
+
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/assert.hpp"
@@ -86,6 +96,33 @@ struct Code_Point_And_Length {
     int length;
 };
 
+namespace detail {
+
+[[nodiscard]]
+inline std::uint32_t bit_compress(std::uint32_t x, std::uint32_t m) noexcept
+{
+#ifdef ULIGHT_X86_BMI2
+#define ULIGHT_HAS_BIT_COMPRESS 1
+    return std::uint32_t(_pext_u32(x, m));
+#elifdef ULIGHT_ARM_SVE2
+#define ULIGHT_HAS_BIT_COMPRESS 1
+    auto sv_result = svbext_u32(svdup_u32(x), svdup_u32(m));
+    return std::uint32_t(svorv_u32(svptrue_b32(), sv_result));
+#else
+#define ULIGHT_HAS_BIT_COMPRESS 0
+    static_cast<void>(x);
+    static_cast<void>(m);
+    return 0;
+#endif
+}
+
+inline constexpr bool has_bit_compress = ULIGHT_HAS_BIT_COMPRESS;
+
+template <typename T>
+using array_t = T[];
+
+} // namespace detail
+
 /// @brief Extracts the next code point from UTF-8 data,
 /// given a known `length`.
 /// No checks for the validity of the UTF-8 data are performed,
@@ -97,26 +134,43 @@ struct Code_Point_And_Length {
 [[nodiscard]]
 constexpr char32_t decode_unchecked(std::array<char8_t, 4> str, int length)
 {
-    ULIGHT_ASSERT(length >= 1 && length <= 4);
-    // TODO: this could be optimized using bit_compress (i.e. PEXT instruction)
+    ULIGHT_DEBUG_ASSERT(length >= 1 && length <= 4);
+
+    if !consteval {
+        if constexpr (detail::has_bit_compress) {
+            static constexpr std::uint32_t bit_compress_masks[4] = {
+                std::bit_cast<std::uint32_t>(detail::array_t<char8_t> { 0x00, 0x00, 0x00, 0x7f }),
+                std::bit_cast<std::uint32_t>(detail::array_t<char8_t> { 0x00, 0x00, 0x3f, 0x1f }),
+                std::bit_cast<std::uint32_t>(detail::array_t<char8_t> { 0x00, 0x3f, 0x3f, 0x0f }),
+                std::bit_cast<std::uint32_t>(detail::array_t<char8_t> { 0x3f, 0x3f, 0x3f, 0x07 }),
+            };
+
+            // The byteswap is necessary because the most significant bits of the code point
+            // are encoded in the least significant UTF-8 code unit.
+            // The masks are already "pre-reversed" to match the reversed bits.
+            const auto bits = std::byteswap(std::bit_cast<std::uint32_t>(str));
+            const auto mask = bit_compress_masks[length - 1];
+            return detail::bit_compress(bits, mask);
+        }
+    }
     // clang-format off
     switch (length) {
-    case 1:
-        return str[0];
-    case 2:
-        return (char32_t(str[0] & 0x1f) << 6)
-             | (char32_t(str[1] & 0x3f) << 0);
-    case 3:
-        return (char32_t(str[0] & 0x0f) << 12)
-             | (char32_t(str[1] & 0x3f) << 6)
-             | (char32_t(str[2] & 0x3f) << 0);
-    case 4:
-        return (char32_t(str[0] & 0x07) << 18)
-             | (char32_t(str[1] & 0x3f) << 12)
-             | (char32_t(str[2] & 0x3f) << 6)
-             | (char32_t(str[3] & 0x3f) << 0);
-    default:
-        return 0;
+        case 1:
+            return char32_t(str[0]);
+        case 2:
+            return (char32_t(str[0] & 0x1f) << 6)
+                 | (char32_t(str[1] & 0x3f) << 0);
+        case 3:
+            return (char32_t(str[0] & 0x0f) << 12)
+                 | (char32_t(str[1] & 0x3f) << 6)
+                 | (char32_t(str[2] & 0x3f) << 0);
+        case 4:
+            return (char32_t(str[0] & 0x07) << 18)
+                 | (char32_t(str[1] & 0x3f) << 12)
+                 | (char32_t(str[2] & 0x3f) << 6)
+                 | (char32_t(str[3] & 0x3f) << 0);
+        default:
+            return 0;
     }
     // clang-format on
 }
@@ -130,7 +184,7 @@ namespace detail {
 /// For example, for a sequence length of `1`,
 /// the uppermost bit in the first byte is expected to be zero,
 /// so the mask at `[0]` contains a `1`-bit in that position and a `0`-bit everywhere else.
-inline constexpr char8_t expectation_masks[][4] = {
+alignas(std::uint32_t) inline constexpr char8_t expectation_masks[][4] = {
     { 0x80, 0x00, 0x00, 0x00 },
     { 0xE0, 0xC0, 0x00, 0x00 },
     { 0xF0, 0xC0, 0xC0, 0x00 },
@@ -139,7 +193,7 @@ inline constexpr char8_t expectation_masks[][4] = {
 
 /// @brief For any sequence length minus one,
 /// contains the bit patterns of any constant bits in the code units.
-inline constexpr char8_t expectation_values[][4] = {
+alignas(std::uint32_t) inline constexpr char8_t expectation_values[][4] = {
     { 0x00, 0x00, 0x00, 0x00 },
     { 0xC0, 0x80, 0x00, 0x00 },
     { 0xE0, 0x80, 0x80, 0x00 },
