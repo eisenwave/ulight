@@ -62,6 +62,14 @@ public:
     constexpr Function_Ref_Base()
         = default;
 
+    /// @brief Constructs a `Function_Ref` piecewise from its invoker and entity.
+    [[nodiscard]]
+    constexpr Function_Ref_Base(Invoker* invoker, Storage* entity) noexcept
+        : m_invoker { invoker }
+        , m_entity { entity }
+    {
+    }
+
     /// @brief Constructs a `Function_Ref` from a compile-time constant which is convertible
     /// to a function pointer.
     ///
@@ -93,6 +101,7 @@ public:
         } }
         , m_entity { entity }
     {
+        // FIXME: this seems overconstrained
     }
 
     /// @brief Constructs a `Function_Ref` from some callable type.
