@@ -158,7 +158,7 @@ constexpr char8_t to_ascii_upper(char8_t c) noexcept
 [[nodiscard]]
 constexpr char32_t to_ascii_upper(char32_t c) noexcept
 {
-    return is_ascii(c) ? to_ascii_upper(char8_t(c)) : c;
+    return is_ascii(c) ? char32_t(to_ascii_upper(char8_t(c))) : c;
 }
 
 /// @brief If `is_ascii_upper_alpha(c)` is `true`,
@@ -174,7 +174,7 @@ constexpr char8_t to_ascii_lower(char8_t c) noexcept
 [[nodiscard]]
 constexpr char32_t to_ascii_lower(char32_t c) noexcept
 {
-    return is_ascii(c) ? to_ascii_lower(char8_t(c)) : c;
+    return is_ascii(c) ? char32_t(to_ascii_lower(char8_t(c))) : c;
 }
 
 /// @brief Returns `true` if `c` is a latin character (`[a-zA-Z]`).
