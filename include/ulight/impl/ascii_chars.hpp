@@ -153,12 +153,28 @@ constexpr char8_t to_ascii_upper(char8_t c) noexcept
     return is_ascii_lower_alpha(c) ? c & 0xdf : c;
 }
 
+/// @brief If `is_ascii_lower_alpha(c)` is `true`,
+/// returns the corresponding upper case alphabetic character, otherwise `c`.
+[[nodiscard]]
+constexpr char32_t to_ascii_upper(char32_t c) noexcept
+{
+    return is_ascii(c) ? to_ascii_upper(char8_t(c)) : c;
+}
+
 /// @brief If `is_ascii_upper_alpha(c)` is `true`,
 /// returns the corresponding lower case alphabetic character, otherwise `c`.
 [[nodiscard]]
 constexpr char8_t to_ascii_lower(char8_t c) noexcept
 {
     return is_ascii_upper_alpha(c) ? c | 0x20 : c;
+}
+
+/// @brief If `is_ascii_upper_alpha(c)` is `true`,
+/// returns the corresponding lower case alphabetic character, otherwise `c`.
+[[nodiscard]]
+constexpr char32_t to_ascii_lower(char32_t c) noexcept
+{
+    return is_ascii(c) ? to_ascii_lower(char8_t(c)) : c;
 }
 
 /// @brief Returns `true` if `c` is a latin character (`[a-zA-Z]`).
