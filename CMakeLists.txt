@@ -43,14 +43,15 @@ endif()
 
 set(LIBRARY_SOURCES
     src/main/cpp/lang/bash.cpp
+    src/main/cpp/lang/cowel.cpp
     src/main/cpp/lang/cpp.cpp
     src/main/cpp/lang/css.cpp
     src/main/cpp/lang/diff.cpp
+    src/main/cpp/lang/html.cpp
     src/main/cpp/lang/js.cpp
     src/main/cpp/lang/json.cpp
     src/main/cpp/lang/lua.cpp
-    src/main/cpp/lang/cowel.cpp
-    src/main/cpp/lang/html.cpp
+    src/main/cpp/lang/tex.cpp
     src/main/cpp/lang/xml.cpp
 
     src/main/cpp/chars.cpp

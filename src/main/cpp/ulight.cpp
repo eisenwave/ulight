@@ -106,6 +106,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("json", ULIGHT_LANG_JSON),
     make_lang_entry("jsonc", ULIGHT_LANG_JSONC),
     make_lang_entry("jsx", ULIGHT_LANG_JS),
+    make_lang_entry("latex", ULIGHT_LANG_LATEX),
     make_lang_entry("lua", ULIGHT_LANG_LUA),
     // make_lang_entry( u8"mts", ULIGHT_LANG_typescript ),
     // make_lang_entry( u8"ts", ULIGHT_LANG_typescript ),
@@ -117,6 +118,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("rss", ULIGHT_LANG_XML),
     make_lang_entry("sh", ULIGHT_LANG_BASH),
     make_lang_entry("svg", ULIGHT_LANG_XML),
+    make_lang_entry("tex", ULIGHT_LANG_TEX),
     make_lang_entry("text", ULIGHT_LANG_TXT),
     make_lang_entry("txt", ULIGHT_LANG_TXT),
     make_lang_entry("xbj", ULIGHT_LANG_XML),
@@ -146,6 +148,8 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("JSON with Comments"),
     make_sv("XML"),
     make_sv("Plaintext"),
+    make_sv("TeX"),
+    make_sv("LaTeX"),
 };
 // clang-format on
 

@@ -118,8 +118,10 @@ and a stable numeric ID whose value can be found in `include/ulight.h`.
 | JavaScript | `javascript`, `js`, `jsx` | `ULIGHT_LANG_JS` |
 | JSON | `json` | `ULIGHT_LANG_JSON` |
 | JSON with Comments | `jsonc` | `ULIGHT_LANG_JSONC` |
-| Plaintext | `plaintext`, `text`, `txt` | `ULIGHT_LANG_TXT` |
+| LaTeX | `latex` | `ULIGHT_LANG_LATEX` |
 | Lua | `lua` | `ULIGHT_LANG_LUA` |
+| TeX | `tex` | `ULIGHT_LANG_TEX` |
+| Plaintext | `plaintext`, `text`, `txt` | `ULIGHT_LANG_TXT` |
 | XML | `atom`, `plist`, `rss`, `svg`, `xbj`, `xhtml`, `xml`, `xsd`, `xsl` | `ULIGHT_LANG_XML` |
 
 The long-term plan is to get support for at least 100 languages.
