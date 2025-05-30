@@ -417,7 +417,7 @@ typedef enum ulight_highlight_type {
     /// @brief Operators like `+` in languages where they have special meaning.
     ULIGHT_HL_SYM_OP = 0xc7,
 
-    // 0xd0..0xdf Shell languages, build systems, etc.
+    // 0xd0..0xd7 Shell languages, build systems, etc.
     // -------------------------------------------------------------------------
 
     /// @brief A command in a shell or build system.
@@ -428,6 +428,16 @@ typedef enum ulight_highlight_type {
     /// @brief An option in a shell command,
     /// such as `-r` in `rm -r`.
     ULIGHT_HL_SHELL_OPTION = 0xd2,
+
+    // 0xd8..0xdf Assembly
+    // -------------------------------------------------------------------------
+
+    /// @brief In assembly languages, an instruction.
+    ULIGHT_HL_ASM_INSTRUCTION = 0xe0,
+    /// @brief In assembly languages, a pseudo-instruction.
+    /// That is, an instruction like `db` which doesn't correspond to any CPU instruction,
+    /// but acts as command to the assembler itself.
+    ULIGHT_HL_ASM_INSTRUCTION_PSEUDO = 0xe1,
 
     // 0xe0..0xff Unused
     // -------------------------------------------------------------------------

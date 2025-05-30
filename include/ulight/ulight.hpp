@@ -191,6 +191,9 @@ constexpr Flag operator|(Flag x, Flag y) noexcept
     F(shell_command, "shell-command", "sh_cmd", ULIGHT_HL_SHELL_COMMAND)                           \
     F(shell_command_builtin, "shell-command-builtin", "sh_cmd_bltn",                               \
       ULIGHT_HL_SHELL_COMMAND_BUILTIN)                                                             \
+    F(asm_instruction, "asm-instruction", "asm_ins", ULIGHT_HL_ASM_INSTRUCTION)                    \
+    F(asm_instruction_pseudo, "asm-instruction-pseudo", "asm_ins_psu",                             \
+      ULIGHT_HL_ASM_INSTRUCTION_PSEUDO)                                                            \
     F(shell_option, "shell-option", "sh-opt", ULIGHT_HL_SHELL_OPTION)
 
 // NOLINTNEXTLINE(bugprone-macro-parentheses)

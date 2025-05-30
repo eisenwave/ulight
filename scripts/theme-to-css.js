@@ -75,7 +75,9 @@ const longNameToShort = {
     "sym-op": "sym_op",
     "shell-command": "sh_cmd",
     "shell-command-builtin": "sh_cmd_bltn",
-    "shell-option": "sh-opt"
+    "shell-option": "sh-opt",
+    "asm-instruction": "asm_ins",
+    "asm-instruction-pseudo": "asm_ins_psu",
 };
 
 const variants = ["light", "dark"];
