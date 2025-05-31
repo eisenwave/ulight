@@ -882,6 +882,12 @@
 [data-ulight-theme=light-wg21] h-[data-h^=esc] {
     color: #9f6807;
 }
+[data-ulight-theme=light-wg21] h-[data-h^=id] {
+    color: #000000;
+}
+[data-ulight-theme=light-wg21] h-[data-h^=id_labl] {
+    color: #517a0b;
+}
 [data-ulight-theme=light-wg21] h-[data-h^=kw] {
     color: #00607c;
 }
@@ -1047,6 +1053,12 @@
 }
 [data-ulight-theme=dark-wg21] h-[data-h^=esc] {
     color: #e6aee6;
+}
+[data-ulight-theme=dark-wg21] h-[data-h^=id] {
+    color: #d0d0d0;
+}
+[data-ulight-theme=dark-wg21] h-[data-h^=id_labl] {
+    color: #d8eda6;
 }
 [data-ulight-theme=dark-wg21] h-[data-h^=kw] {
     color: #62ded6;
