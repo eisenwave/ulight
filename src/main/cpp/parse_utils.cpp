@@ -248,14 +248,16 @@ match_common_number(std::u8string_view str, const Common_Number_Options& options
     return result;
 }
 
-/// @brief Matches an integer number whose base is identified by a suffix rather than a prefix.
-/// This format is common in some assembly languages.
-/// For example, NASM supports hexadecimal numbers like `ff_ffh`, where `h`.
 [[nodiscard]]
-Suffix_Number_Result
-match_suffix_number(const std::u8string_view str, const Suffix_Number_Options& options)
+Suffix_Number_Result match_suffix_number(
+    const std::u8string_view str,
+    Function_Ref<Base_Suffix(std::u8string_view)> determine_suffix,
+    char8_t digit_separator
+)
 {
-    const std::size_t length = ascii::length_if(str, [s = options.digit_separator](char8_t c) {
+    ULIGHT_ASSERT(determine_suffix);
+
+    const std::size_t length = ascii::length_if(str, [s = digit_separator](char8_t c) {
         return s == 0 || c == s || is_ascii_alphanumeric(c);
     });
 
@@ -264,51 +266,45 @@ match_suffix_number(const std::u8string_view str, const Suffix_Number_Options& o
     }
 
     const std::u8string_view number = str.substr(0, length);
-    for (const String_And_Base& suffix : options.suffixes) {
-        ULIGHT_DEBUG_ASSERT(!suffix.str.empty());
-        if (length == suffix.str.length() || !number.ends_with(suffix.str)) {
-            continue;
-        }
-
-        const bool erroneous = [&] {
-            for (std::size_t i = 0; i < length; ++i) {
-                const char8_t c = number[i];
-                // clang-format off
-                const bool too_large =
-                       (c >= u8'0' && c <= u8'9' && c - u8'0'      > suffix.base)
-                    || (c >= u8'A' && c <= u8'Z' && c - u8'A' + 10 > suffix.base)
-                    || (c >= u8'a' && c <= u8'z' && c - u8'a' + 10 > suffix.base);
-                // clang-format on
-                if (too_large) {
-                    return true;
-                }
-                const bool repeated_separator = options.digit_separator != 0
-                    && c == options.digit_separator //
-                    && i != 0 //
-                    && number[i - 1] == options.digit_separator;
-                if (repeated_separator) {
-                    return true;
-                }
-            }
-            return false;
-        }();
-
-        // This covers cases like "zh" or "__h" where "h" is treated as a hexadecimal prefix.
-        // "z" would be too large, and "__" would be leading and consecutive digit separators.
-        // However, rather than aggressively interpreting these as suffixed numbers,
-        // we say that there is no match in this scenario.
-        if (erroneous && is_ascii_digit(number[0])) {
-            return {};
-        }
-        // On the contrary, if we have something like 0__h or 0zh with an "h" suffix for hex
-        // numbers, this could not be interpreted as an identifier anyway,
-        // so we consider it a match, but erroneous.
-        return { .digits = length - suffix.str.length(),
-                 .suffix = suffix.str.length(),
-                 .erroneous = erroneous };
+    const Base_Suffix suffix = determine_suffix(number);
+    if (!suffix || length == suffix.length) {
+        return {};
     }
 
-    return {};
+    const bool erroneous = [&] {
+        for (std::size_t i = 0; i + suffix.length < length; ++i) {
+            const char8_t c = number[i];
+
+            const int digit_value = c >= u8'A' && c <= u8'Z' ? c - u8'A' + 10
+                : c >= u8'a' && c <= u8'z'                   ? c - u8'a' + 10
+                                                             : c - u8'0';
+            if (digit_value >= suffix.base) {
+                return true;
+            }
+            const bool repeated_separator = digit_separator != 0 && c == digit_separator //
+                && i != 0 //
+                && number[i - 1] == digit_separator;
+            if (repeated_separator) {
+                return true;
+            }
+        }
+        return false;
+    }();
+
+    // This covers cases like "zh" or "__h" where "h" is treated as a hexadecimal prefix.
+    // "z" would be too large, and "__" would be leading and consecutive digit separators.
+    // However, rather than aggressively interpreting these as suffixed numbers,
+    // we say that there is no match in this scenario.
+    if (erroneous && !is_ascii_digit(number[0])) {
+        return {};
+    }
+    // On the contrary, if we have something like 0__h or 0zh with an "h" suffix for hex
+    // numbers, this could not be interpreted as an identifier anyway,
+    // so we consider it a match, but erroneous.
+    return { .digits = length - suffix.length,
+             .suffix = suffix.length,
+             .base = suffix.base,
+             .erroneous = erroneous };
 }
 
 } // namespace ulight

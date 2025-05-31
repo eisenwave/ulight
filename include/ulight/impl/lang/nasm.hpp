@@ -28,6 +28,11 @@ Escape_Result match_escape_sequence(std::u8string_view str);
 [[nodiscard]]
 std::size_t match_identifier(std::u8string_view str);
 
+[[nodiscard]]
+int base_of_suffix_char(char8_t c);
+
+int base_of_suffix_char(char32_t) = delete;
+
 } // namespace ulight::nasm
 
 #endif

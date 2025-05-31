@@ -102,6 +102,30 @@ std::size_t match_identifier(std::u8string_view str)
     return ascii::length_if_head_tail(str, head, tail);
 }
 
+[[nodiscard]]
+int base_of_suffix_char(char8_t c)
+{
+    switch (c) {
+    case u8'b':
+    case u8'B':
+    case u8'y':
+    case u8'Y': return 2;
+    case u8'q':
+    case u8'Q':
+    case u8'o':
+    case u8'O': return 8;
+    case u8'd':
+    case u8'D':
+    case u8't':
+    case u8'T': return 10;
+    case u8'h':
+    case u8'H':
+    case u8'x':
+    case u8'X': return 16;
+    default: return 0;
+    }
+}
+
 namespace {
 
 constexpr std::u8string_view pseudo_instructions[] {
@@ -117,8 +141,8 @@ constexpr std::u8string_view pseudo_instructions[] {
 static_assert(std::ranges::is_sorted(pseudo_instructions));
 
 constexpr std::u8string_view types[] {
-    u8"byte",  u8"dword", u8"oword", u8"qword", //
-    u8"tword", u8"word",  u8"yword", u8"zword",
+    u8"byte",  u8"dword", u8"far",  u8"oword", u8"ptr",
+    u8"qword", u8"tword", u8"word", u8"yword", u8"zword",
 };
 
 static_assert(std::ranges::is_sorted(types));
@@ -251,6 +275,19 @@ constexpr bool binary_search_case_insensitive(
         return compare_ascii_to_lower(x, y) < 0;
     };
     return std::ranges::binary_search(haystack, needle, case_insensitive_less);
+}
+
+[[nodiscard]]
+constexpr Base_Suffix determine_suffix(std::u8string_view str)
+{
+    if (str.empty()) {
+        return {};
+    }
+    const int base = base_of_suffix_char(str.back());
+    if (base <= 0) {
+        return {};
+    }
+    return { .length = 1, .base = base };
 }
 
 } // namespace
@@ -492,18 +529,26 @@ private:
     bool expect_suffixed_number()
     {
         // https://www.nasm.us/xdoc/2.16.03/html/nasmdoc3.html#section-3.4.1
-        static constexpr String_And_Base suffixes[] {
-            { u8"b", 2 },  { u8"B", 2 },  { u8"c", 2 },  { u8"C", 2 }, //
-            { u8"q", 8 },  { u8"Q", 8 },  { u8"o", 8 },  { u8"O", 8 }, //
-            { u8"d", 10 }, { u8"D", 10 }, { u8"t", 10 }, { u8"T", 10 }, //
-            { u8"h", 16 }, { u8"H", 16 }, { u8"x", 16 }, { u8"X", 16 }, //
-        };
-        static constexpr Suffix_Number_Options options { .suffixes = suffixes,
-                                                         .digit_separator = u8'_' };
-
-        const Suffix_Number_Result suffixed = match_suffix_number(remainder, options);
+        const Suffix_Number_Result suffixed
+            = match_suffix_number(remainder, Constant<&determine_suffix> {}, u8'_');
         if (!suffixed) {
             return false;
+        }
+        if (suffixed.base == 16) {
+            // In the case of hex numbers, there are actually some insane ambiguities.
+            // For example, "eax" could technically be parsed as hexadecimal digits
+            // "ea" followed by the suffix "x".
+            // The only thing we can really do in this case is detect special cases that shouldn't
+            // be parsed as numbers.
+            const std::u8string_view number = remainder.substr(0, suffixed.digits + 1);
+            if (is_pseudo_instruction(number)) {
+                emit_and_advance(number.length(), Highlight_Type::asm_instruction_pseudo);
+                return true;
+            }
+            if (is_register(number)) {
+                emit_and_advance(number.length(), Highlight_Type::id_var);
+                return true;
+            }
         }
         if (suffixed.erroneous) {
             emit_and_advance(suffixed.digits + suffixed.suffix, Highlight_Type::error);

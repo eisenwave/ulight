@@ -5,6 +5,8 @@
 #include <span>
 #include <string_view>
 
+#include "ulight/function_ref.hpp"
+
 namespace ulight {
 
 struct Digits_Result {
@@ -103,15 +105,10 @@ struct Common_Number_Result {
 Common_Number_Result
 match_common_number(std::u8string_view str, const Common_Number_Options& options);
 
-struct Suffix_Number_Options {
-    std::span<const String_And_Base> suffixes;
-    int default_base = 10;
-    char8_t digit_separator = 0;
-};
-
 struct Suffix_Number_Result {
     std::size_t digits;
     std::size_t suffix;
+    int base;
     bool erroneous = false;
 
     [[nodiscard]]
@@ -125,12 +122,31 @@ struct Suffix_Number_Result {
         = default;
 };
 
+struct Base_Suffix {
+    std::size_t length;
+    int base;
+
+    [[nodiscard]]
+    constexpr operator bool() const
+    {
+        return length != 0;
+    }
+};
+
 /// @brief Matches an integer number whose base is identified by a suffix rather than a prefix.
 /// This format is common in some assembly languages.
 /// For example, NASM supports hexadecimal numbers like `ff_ffh`, where `h`.
+/// @param str The string at whose start the number may be.
+/// @param determine_suffix A function which determines the suffix of the number once parsed.
+/// This function is invoked with the raw alphanumeric sequence of characters.
+/// @param digit_separator A separator code unit between digits,
+/// or zero if separators are not allowed.
 [[nodiscard]]
-Suffix_Number_Result
-match_suffix_number(std::u8string_view str, const Suffix_Number_Options& options);
+Suffix_Number_Result match_suffix_number(
+    std::u8string_view str,
+    Function_Ref<Base_Suffix(std::u8string_view)> determine_suffix,
+    char8_t digit_separator = 0
+);
 
 } // namespace ulight
 
