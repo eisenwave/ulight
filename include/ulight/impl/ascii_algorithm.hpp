@@ -31,7 +31,7 @@ find_if(std::u8string_view str, std::size_t start, F predicate, bool expected, s
 /// If none could be found, returns `std::u8string_view::npos`.
 /// @throws Unicode_Error If decoding failed.
 template <typename F>
-    requires std::is_invocable_r_v<bool, F, char32_t>
+    requires std::is_invocable_r_v<bool, F, char8_t>
 [[nodiscard]]
 constexpr std::size_t find_if(std::u8string_view str, F predicate, std::size_t start = 0)
 {
@@ -43,7 +43,7 @@ constexpr std::size_t find_if(std::u8string_view str, F predicate, std::size_t s
 /// If none could be found, returns `std::u8string_view::npos`.
 /// @throws Unicode_Error If decoding failed.
 template <typename F>
-    requires std::is_invocable_r_v<bool, F, char32_t>
+    requires std::is_invocable_r_v<bool, F, char8_t>
 [[nodiscard]]
 constexpr std::size_t find_if_not(std::u8string_view str, F predicate, std::size_t start = 0)
 {
@@ -52,20 +52,50 @@ constexpr std::size_t find_if_not(std::u8string_view str, F predicate, std::size
 
 /// @brief Like `find_if`, but returns `str.length()` instead of `npos`.
 template <typename F>
-    requires std::is_invocable_r_v<bool, F, char32_t>
+    requires std::is_invocable_r_v<bool, F, char8_t>
 [[nodiscard]]
 constexpr std::size_t length_if(std::u8string_view str, F predicate, std::size_t start = 0)
 {
     return detail::find_if(str, start, predicate, false, str.length());
 }
 
+/// @brief Like `length_if`, but uses `head` as a predicate for the first code unit,
+/// and `tail` for all subseqent code units.
+template <typename Head_Predicate, typename Tail_Predicate>
+    requires std::is_invocable_r_v<bool, Head_Predicate, char8_t>
+    && std::is_invocable_r_v<bool, Head_Predicate, char8_t>
+[[nodiscard]]
+constexpr std::size_t
+length_if_head_tail(std::u8string_view str, Head_Predicate head, Tail_Predicate tail)
+{
+    if (str.empty() || !head(str[0])) {
+        return 0;
+    }
+    return detail::find_if(str, 1, tail, false, str.length());
+}
+
 /// @brief Like `find_if_not`, but returns `str.length()` instead of `npos`.
 template <typename F>
-    requires std::is_invocable_r_v<bool, F, char32_t>
+    requires std::is_invocable_r_v<bool, F, char8_t>
 [[nodiscard]]
 constexpr std::size_t length_if_not(std::u8string_view str, F predicate, std::size_t start = 0)
 {
     return detail::find_if(str, start, predicate, true, str.length());
+}
+
+/// @brief Like `length_if`, but uses `head` as a predicate for the first code unit,
+/// and `tail` for all subseqent code units.
+template <typename Head_Predicate, typename Tail_Predicate>
+    requires std::is_invocable_r_v<bool, Head_Predicate, char8_t>
+    && std::is_invocable_r_v<bool, Head_Predicate, char8_t>
+[[nodiscard]]
+constexpr std::size_t
+length_if_not_head_tail(std::u8string_view str, Head_Predicate head, Tail_Predicate tail)
+{
+    if (str.empty() || !head(str[0])) {
+        return 0;
+    }
+    return detail::find_if(str, 1, tail, true, str.length());
 }
 
 /// @brief Like `str.find(delimiter, start)`,
