@@ -265,6 +265,19 @@ constexpr std::u8string_view registers[] {
 
 static_assert(std::ranges::is_sorted(registers));
 
+constexpr std::u8string_view label_instructions[] {
+    u8"call",
+
+    u8"ja",   u8"jae",   u8"jb",     u8"jbe",    u8"jc",    u8"je",   u8"jg",  u8"jge",
+    u8"jl",   u8"jle",   u8"jmp",    u8"jna",    u8"jna",   u8"jnae", u8"jnb", u8"jnbe",
+    u8"jnc",  u8"jne",   u8"jng",    u8"jnge",   u8"jnl",   u8"jnle", u8"jno", u8"jnp",
+    u8"jnz",  u8"jo",    u8"jp",     u8"jpe",    u8"jpo",   u8"js",   u8"jz",
+
+    u8"loop", u8"loope", u8"loopne", u8"loopnz", u8"loopz",
+};
+
+static_assert(std::ranges::is_sorted(label_instructions));
+
 [[nodiscard]]
 constexpr bool binary_search_case_insensitive(
     std::span<const std::u8string_view> haystack,
@@ -314,6 +327,12 @@ bool is_operator_keyword(std::u8string_view name) noexcept
 bool is_register(std::u8string_view name) noexcept
 {
     return binary_search_case_insensitive(registers, name);
+}
+
+[[nodiscard]]
+bool is_label_instruction(std::u8string_view name) noexcept
+{
+    return binary_search_case_insensitive(label_instructions, name);
 }
 
 namespace {
@@ -480,6 +499,11 @@ private:
         if (is_register(identifier)) {
             emit_and_advance(length, Highlight_Type::id_var);
             id_highlight = Highlight_Type::id_var;
+            return;
+        }
+        if (is_label_instruction(identifier)) {
+            emit_and_advance(length, Highlight_Type::asm_instruction);
+            id_highlight = Highlight_Type::id_label;
             return;
         }
         if (identifier.starts_with(u8'$')) {

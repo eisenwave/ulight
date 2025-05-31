@@ -20,6 +20,9 @@ bool is_operator_keyword(std::u8string_view name) noexcept;
 bool is_register(std::u8string_view name) noexcept;
 
 [[nodiscard]]
+bool is_label_instruction(std::u8string_view name) noexcept;
+
+[[nodiscard]]
 std::size_t match_operator(std::u8string_view str);
 
 [[nodiscard]]
