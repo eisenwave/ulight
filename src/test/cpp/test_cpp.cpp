@@ -19,7 +19,11 @@ std::ostream& operator<<(std::ostream& out, Escape_Type type)
 [[maybe_unused]]
 std::ostream& operator<<(std::ostream& out, Escape_Result result) // NOLINT
 {
-    return out << "{ .length = " << result.length << ", .type = " << result.type << " }";
+    out << "{ .length = " << result.length << ", .type = " << result.type;
+    if (result.erroneous) {
+        out << ", .erroneous = true";
+    }
+    return out << " }";
 }
 
 namespace {
@@ -73,13 +77,13 @@ TEST(Cpp, match_escape_sequence)
     EXPECT_EQ(match_escape_sequence(u8"\\U12345678"), Escape_Result(10, Escape_Type::universal));
     EXPECT_EQ(match_escape_sequence(u8"\\U123456789"), Escape_Result(10, Escape_Type::universal));
 
-    EXPECT_EQ(match_escape_sequence(u8"\\u{}"), Escape_Result(4, Escape_Type::universal));
+    EXPECT_EQ(match_escape_sequence(u8"\\u{}"), Escape_Result(4, Escape_Type::universal, true));
     EXPECT_EQ(match_escape_sequence(u8"\\u{0}"), Escape_Result(5, Escape_Type::universal));
     EXPECT_EQ(
         match_escape_sequence(u8"\\u{0123456789abcdef}"), Escape_Result(20, Escape_Type::universal)
     );
 
-    EXPECT_EQ(match_escape_sequence(u8"\\N{}"), Escape_Result(4, Escape_Type::universal));
+    EXPECT_EQ(match_escape_sequence(u8"\\N{}"), Escape_Result(4, Escape_Type::universal, true));
     EXPECT_EQ(match_escape_sequence(u8"\\N{DELETE}"), Escape_Result(10, Escape_Type::universal));
     EXPECT_EQ(
         match_escape_sequence(u8"\\N{EQUALS SIGN}"), Escape_Result(15, Escape_Type::universal)
@@ -87,14 +91,14 @@ TEST(Cpp, match_escape_sequence)
 
     EXPECT_EQ(match_escape_sequence(u8"\\x0x"), Escape_Result(3, Escape_Type::hexadecimal));
     EXPECT_EQ(match_escape_sequence(u8"\\xffffx"), Escape_Result(6, Escape_Type::hexadecimal));
-    EXPECT_EQ(match_escape_sequence(u8"\\x{}"), Escape_Result(4, Escape_Type::hexadecimal));
+    EXPECT_EQ(match_escape_sequence(u8"\\x{}"), Escape_Result(4, Escape_Type::hexadecimal, true));
     EXPECT_EQ(match_escape_sequence(u8"\\x{0}"), Escape_Result(5, Escape_Type::hexadecimal));
     EXPECT_EQ(
         match_escape_sequence(u8"\\x{0123456789abcdef}"),
         Escape_Result(20, Escape_Type::hexadecimal)
     );
 
-    EXPECT_EQ(match_escape_sequence(u8"\\o{}"), Escape_Result(4, Escape_Type::octal));
+    EXPECT_EQ(match_escape_sequence(u8"\\o{}"), Escape_Result(4, Escape_Type::octal, true));
     EXPECT_EQ(match_escape_sequence(u8"\\o{0}"), Escape_Result(5, Escape_Type::octal));
     EXPECT_EQ(match_escape_sequence(u8"\\o{01234567}"), Escape_Result(12, Escape_Type::octal));
 
