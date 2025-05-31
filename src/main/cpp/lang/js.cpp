@@ -217,9 +217,6 @@ std::size_t match_hashbang_comment(std::u8string_view s)
 
 Escape_Result match_escape_sequence(const std::u8string_view str)
 {
-    static constexpr auto is_ascii_hex_digit_lambda
-        = [](char8_t c) { return is_ascii_hex_digit(c); };
-
     // https://262.ecma-international.org/15.0/index.html#prod-EscapeSequence
     // All escape sequences must start with backslash.
     if (str.length() < 2 || str[0] != u8'\\') {
@@ -229,31 +226,15 @@ Escape_Result match_escape_sequence(const std::u8string_view str)
     switch (str[1]) {
     case u8'x': {
         // https://262.ecma-international.org/15.0/index.html#prod-HexEscapeSequence
-        if (str.length() < 4) {
-            return { .length = str.length(), .erroneous = true };
-        }
-        return { .length = 4,
-                 .erroneous = !is_ascii_hex_digit(str[2]) || !is_ascii_hex_digit(str[3]) };
+        return match_common_escape<Common_Escape::hex_2>(str, 2);
     }
     case u8'u': {
         // https://262.ecma-international.org/15.0/index.html#prod-UnicodeEscapeSequence
         if (str.length() >= 3 && str[2] == u8'{') {
-            const std::size_t length_without_brace = ascii::length_before(str, u8'}', 3);
-            const std::u8string_view digits = str.substr(3, length_without_brace - 3);
-            const bool erroneous = length_without_brace <= 3 || length_without_brace > 9
-                || !std::ranges::all_of(digits, is_ascii_hex_digit_lambda);
-            const std::size_t length
-                = length_without_brace == str.length() || str[length_without_brace] != u8'}'
-                ? length_without_brace
-                : length_without_brace + 1;
-            return { .length = length, .erroneous = erroneous };
+            return match_common_escape<Common_Escape::hex_braced>(str, 2);
         }
-
         // \uXXXX
-        const std::size_t length = ascii::length_if(
-            str.substr(0, std::min(str.length(), 6uz)), is_ascii_hex_digit_lambda, 2
-        );
-        return { .length = length, .erroneous = length != 6 };
+        return match_common_escape<Common_Escape::hex_4>(str, 2);
     }
 
     case u8'0':

@@ -2,15 +2,16 @@
 #include <cstdlib>
 #include <string_view>
 
-#include "ulight/impl/strings.hpp"
 #include "ulight/json.hpp"
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/ascii_chars.hpp"
 #include "ulight/impl/buffer.hpp"
+#include "ulight/impl/escapes.hpp"
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/highlighter.hpp"
+#include "ulight/impl/strings.hpp"
 
 #include "ulight/impl/lang/json.hpp"
 #include "ulight/impl/lang/json_chars.hpp"
@@ -45,17 +46,15 @@ Escape_Result match_escape_sequence(std::u8string_view str, Escape_Policy policy
         return { .length = 2, .value = char32_t(str[1]) };
     }
     // "\", "u", hex, hex, hex, hex
-    constexpr auto is_hex = [](char8_t c) { return is_ascii_hex_digit(c); };
-    const std::u8string_view relevant = str.substr(0, std::min(str.length(), 6uz));
-    const std::size_t length = ascii::length_if(relevant, is_hex, 2);
-    if (length != 6) {
+    const auto [length, erroneous] = match_common_escape<Common_Escape::hex_4>(str, 2);
+    if (erroneous) {
         return { .length = length };
     }
 
     if (policy == Escape_Policy::match_only) {
         return { .length = length, .value = 0 };
     }
-    const auto hex_digits = as_string_view(relevant.substr(2));
+    const auto hex_digits = as_string_view(str.substr(2, 4));
     ULIGHT_DEBUG_ASSERT(hex_digits.length() == 4);
     std::uint32_t code_point;
     const auto result = std::from_chars(hex_digits.data(), hex_digits.data() + 4, code_point, 16);

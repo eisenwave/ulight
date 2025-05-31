@@ -50,7 +50,7 @@ struct Highlighter : Highlighter_Base {
     bool operator()()
     {
         while (!remainder.empty()) {
-            const Line_Result line = match_line(remainder);
+            const Line_Result line = match_crlf_line(remainder);
             // If there are remaining characters in the file,
             // how could there not be a remaining line?!
             ULIGHT_ASSERT(line.content_length != 0 || line.terminator_length != 0);

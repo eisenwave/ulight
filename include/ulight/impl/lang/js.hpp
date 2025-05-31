@@ -9,6 +9,8 @@
 
 #include "ulight/ulight.hpp"
 
+#include "ulight/impl/escapes.hpp"
+
 namespace ulight::js {
 
 enum struct Feature_Source : Underlying {
@@ -195,21 +197,6 @@ std::size_t match_line_comment(std::u8string_view str);
 /// JavaScript hashbang comments start with #! and are only valid as the first line
 [[nodiscard]]
 std::size_t match_hashbang_comment(std::u8string_view str);
-
-struct Escape_Result {
-    std::size_t length;
-    bool erroneous = false;
-
-    [[nodiscard]]
-    constexpr explicit operator bool() const
-    {
-        return length != 0;
-    }
-
-    [[nodiscard]]
-    friend constexpr bool operator==(Escape_Result, Escape_Result)
-        = default;
-};
 
 /// @brief Returns the length of a JavaScript escape sequence at the start of `str`, if any.
 /// Returns zero if there is no escape sequence.

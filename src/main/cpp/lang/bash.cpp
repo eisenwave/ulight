@@ -88,19 +88,9 @@ bool starts_with_substitution(std::u8string_view str)
 
 std::size_t match_identifier(std::u8string_view str)
 {
-    if (str.empty()) {
-        return 0;
-    }
-    if (!is_bash_identifier_start(str[0])) {
-        return 0;
-    }
-    std::size_t length = 1;
-    for (; length < str.length(); ++length) {
-        if (!is_bash_identifier(str[length])) {
-            return length;
-        }
-    }
-    return length;
+    constexpr auto head = [](char8_t c) { return is_bash_identifier_start(c); };
+    constexpr auto tail = [](char8_t c) { return is_bash_identifier(c); };
+    return ascii::length_if_head_tail(str, head, tail);
 }
 
 std::optional<Token_Type> match_operator(std::u8string_view str)

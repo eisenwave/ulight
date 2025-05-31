@@ -6,13 +6,14 @@
 #include <string_view>
 #include <vector>
 
-#include "ulight/impl/ascii_algorithm.hpp"
-#include "ulight/impl/buffer.hpp"
-#include "ulight/impl/highlight.hpp"
-#include "ulight/impl/parse_utils.hpp"
 #include "ulight/ulight.hpp"
 
+#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/assert.hpp"
+#include "ulight/impl/buffer.hpp"
+#include "ulight/impl/escapes.hpp"
+#include "ulight/impl/highlight.hpp"
+#include "ulight/impl/numbers.hpp"
 #include "ulight/impl/unicode.hpp"
 
 #include "ulight/impl/lang/cpp.hpp"
@@ -345,10 +346,11 @@ std::size_t match_identifier(std::u8string_view str)
 
 Escape_Result match_escape_sequence(std::u8string_view str)
 {
-    static constexpr auto is_ascii_octal_digit_lambda
-        = [](char8_t c) { return is_ascii_octal_digit(c); };
-    static constexpr auto is_ascii_hex_digit_lambda
-        = [](char8_t c) { return is_ascii_hex_digit(c); };
+    constexpr auto with_type = [](ulight::Escape_Result result, Escape_Type type) {
+        return Escape_Result { .length = result.length,
+                               .type = type,
+                               .erroneous = result.erroneous };
+    };
 
     // https://eel.is/c++draft/lex.literal#nt:escape-sequence
     if (!str.starts_with(u8'\\') || str.length() < 2) {
@@ -386,20 +388,14 @@ Escape_Result match_escape_sequence(std::u8string_view str)
     case u8'u': {
         // https://eel.is/c++draft/lex.universal.char#nt:universal-character-name
         if (str.length() >= 3 && str[2] == u8'{') {
-            const std::size_t end_pos = ascii::find_if_not(str, is_ascii_hex_digit_lambda, 3);
-            if (end_pos == std::u8string_view::npos || str[end_pos] != u8'}') {
-                return { .length = 3, .type = Escape_Type::universal, .erroneous = true };
-            }
-            return { .length = end_pos + 1, .type = Escape_Type::universal };
+            return with_type(
+                match_common_escape<Common_Escape::hex_braced>(str, 2), Escape_Type::universal
+            );
         }
-        const std::u8string_view rem = str.substr(0, std::min(str.length(), 6uz));
-        const std::size_t length = ascii::length_if(rem, is_ascii_hex_digit_lambda, 2);
-        return { .length = length, .type = Escape_Type::universal, .erroneous = length != 6 };
+        return with_type(match_common_escape<Common_Escape::hex_4>(str, 2), Escape_Type::universal);
     }
     case u8'U': {
-        const std::u8string_view rem = str.substr(0, std::min(str.length(), 10uz));
-        const std::size_t length = ascii::length_if(rem, is_ascii_hex_digit_lambda, 2);
-        return { .length = length, .type = Escape_Type::universal, .erroneous = length != 10 };
+        return with_type(match_common_escape<Common_Escape::hex_8>(str, 2), Escape_Type::universal);
     }
     case u8'N': {
         // https://eel.is/c++draft/lex.universal.char#nt:named-universal-character
@@ -408,30 +404,28 @@ Escape_Result match_escape_sequence(std::u8string_view str)
             if (end == std::u8string_view::npos || str[end] != u8'}') {
                 return { .length = 3, .type = Escape_Type::universal, .erroneous = true };
             }
-            return { .length = end + 1, .type = Escape_Type::universal };
+            const std::size_t length = end + 1;
+            return { .length = length, .type = Escape_Type::universal, .erroneous = length <= 4 };
         }
         return { .length = 2, .type = Escape_Type::universal, .erroneous = true };
     }
     case u8'x': {
         // https://eel.is/c++draft/lex.literal#nt:hexadecimal-escape-sequence
         if (str.length() >= 3 && str[2] == u8'{') {
-            const std::size_t end_pos = ascii::find_if_not(str, is_ascii_hex_digit_lambda, 3);
-            if (end_pos == std::u8string_view::npos || str[end_pos] != u8'}') {
-                return { .length = 3, .type = Escape_Type::hexadecimal, .erroneous = true };
-            }
-            return { .length = end_pos + 1, .type = Escape_Type::hexadecimal };
+            return with_type(
+                match_common_escape<Common_Escape::hex_braced>(str, 2), Escape_Type::hexadecimal
+            );
         }
-        const std::size_t length = ascii::length_if(str, is_ascii_hex_digit_lambda, 2);
-        return { .length = length, .type = Escape_Type::hexadecimal, .erroneous = length == 2 };
+        return with_type(
+            match_common_escape<Common_Escape::hex_1_to_inf>(str, 2), Escape_Type::hexadecimal
+        );
     }
     case u8'o': {
         // https://eel.is/c++draft/lex.literal#nt:octal-escape-sequence
         if (str.length() >= 3 && str[2] == u8'{') {
-            const std::size_t end_pos = ascii::find_if_not(str, is_ascii_octal_digit_lambda, 3);
-            if (end_pos == std::u8string_view::npos || str[end_pos] != u8'}') {
-                return { .length = 3, .type = Escape_Type::octal, .erroneous = true };
-            }
-            return { .length = end_pos + 1, .type = Escape_Type::octal };
+            return with_type(
+                match_common_escape<Common_Escape::octal_braced>(str, 2), Escape_Type::octal
+            );
         }
         return { .length = 2, .type = Escape_Type::octal, .erroneous = true };
     }
@@ -444,9 +438,9 @@ Escape_Result match_escape_sequence(std::u8string_view str)
     case u8'6':
     case u8'7': {
         // https://eel.is/c++draft/lex.literal#nt:octal-escape-sequence
-        const std::u8string_view rem = str.substr(0, std::min(4uz, str.length()));
-        const std::size_t length = ascii::length_if(rem, is_ascii_octal_digit_lambda, 2);
-        return { .length = length, .type = Escape_Type::octal };
+        return with_type(
+            match_common_escape<Common_Escape::octal_1_to_3>(str, 1), Escape_Type::octal
+        );
     }
 
     default: {
