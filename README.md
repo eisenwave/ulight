@@ -120,6 +120,7 @@ and a stable numeric ID whose value can be found in `include/ulight.h`.
 | JSON with Comments | `jsonc` | `ULIGHT_LANG_JSONC` |
 | LaTeX | `latex` | `ULIGHT_LANG_LATEX` |
 | Lua | `lua` | `ULIGHT_LANG_LUA` |
+| NASM | `asm`, `assembler`, `assembly`, `nasm`, `x86asm` | `ULIGHT_LANG_NASM` |
 | TeX | `tex` | `ULIGHT_LANG_TEX` |
 | Plaintext | `plaintext`, `text`, `txt` | `ULIGHT_LANG_TXT` |
 | XML | `atom`, `plist`, `rss`, `svg`, `xbj`, `xhtml`, `xml`, `xsd`, `xsl` | `ULIGHT_LANG_XML` |
