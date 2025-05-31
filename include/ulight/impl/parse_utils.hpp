@@ -50,15 +50,7 @@ struct Line_Result {
 /// @brief Matches a line at the start of `str`.
 /// A line is considered to be terminated by LF, CR, or CRLF.
 [[nodiscard]]
-Line_Result match_line(std::u8string_view str);
-
-/// @brief Matches as many digits as possible, in a base of choice.
-/// For bases above 10, lower and upper case characters are permitted.
-/// @param str the string with digits at the beginning
-/// @param base in range [2, 16]
-/// @return The number of digits that belong to a numeric literal of the given base.
-[[nodiscard]]
-std::size_t match_digits(std::u8string_view str, int base = 10);
+Line_Result match_crlf_line(std::u8string_view str);
 
 /// @brief Like `parse_integer_literal`, but does not permit negative numbers and results
 /// in an unsigned integer.
