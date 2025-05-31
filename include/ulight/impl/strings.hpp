@@ -84,6 +84,21 @@ constexpr bool equals_ascii_ignore_case(std::u8string_view x, std::u8string_view
     return true;
 }
 
+/// @brief Returns the result of a comparison between `x` and `y`
+/// where both strings are mapped to lower case for the purpose of comparison.
+[[nodiscard]]
+constexpr std::strong_ordering compare_ascii_to_lower(std::u8string_view x, std::u8string_view y)
+{
+    for (std::size_t i = 0; i < x.length() && i < y.length(); ++i) {
+        const char8_t x_low = to_ascii_lower(x[i]);
+        const char8_t y_low = to_ascii_lower(y[i]);
+        if (x_low != y_low) {
+            return x_low <=> y_low;
+        }
+    }
+    return x.length() <=> y.length();
+}
+
 /// @brief Returns `true` iff `str` starts with `prefix`,
 /// ignoring any case differences between ASCII alphabetic characters.
 [[nodiscard]]
