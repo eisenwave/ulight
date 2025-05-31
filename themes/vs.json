@@ -99,6 +99,7 @@
         "sym": "d4d4d4",
         "sym-parens": "#ffd700",
         "sym-square": "#ffd700",
-        "sym-brace": "#ffd700"
+        "sym-brace": "#ffd700",
+        "asm-instruction": "#b5cea8"
     }
 }

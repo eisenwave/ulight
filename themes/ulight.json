@@ -121,7 +121,9 @@
             "text-decoration": "underline line-through"
         },
         "shell-command": "#c80032",
-        "shell-option": "#5c477e"
+        "shell-option": "#5c477e",
+        "asm-instruction": "#c80032",
+        "asm-instruction-pseudo": "#94b500"
     },
     "dark": {
         "foreground": "#e7e7e7",
@@ -240,6 +242,8 @@
             "text-decoration": "underline line-through"
         },
         "shell-command": "#ff5a82",
-        "shell-option": "#a4c4de"
+        "shell-option": "#a4c4de",
+        "asm-instruction": "#ff5a82",
+        "asm-instruction-pseudo": "#edc385"
     }
 }

@@ -109,6 +109,7 @@
         "sym-square": "#ffd700",
         "sym-brace": "#ffd700",
         "shell-command": "#d7ba7d",
-        "shell-option": "#569cd6"
+        "shell-option": "#569cd6",
+        "asm-instruction": "#b5cea8"
     }
 }

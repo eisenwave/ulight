@@ -126,6 +126,12 @@
 [data-ulight-theme=light-ulight].ulight-code, [data-ulight-theme=light-ulight].ulight-code-block {
     color: #000000;
 }
+[data-ulight-theme=light-ulight] h-[data-h^=asm_ins] {
+    color: #c80032;
+}
+[data-ulight-theme=light-ulight] h-[data-h^=asm_ins_psu] {
+    color: #94b500;
+}
 [data-ulight-theme=light-ulight] h-[data-h^=attr] {
     color: #966c1c;
 }
@@ -310,6 +316,12 @@
 [data-ulight-theme=dark-ulight].ulight-code, [data-ulight-theme=dark-ulight].ulight-code-block {
     color: #e7e7e7;
 }
+[data-ulight-theme=dark-ulight] h-[data-h^=asm_ins] {
+    color: #ff5a82;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=asm_ins_psu] {
+    color: #edc385;
+}
 [data-ulight-theme=dark-ulight] h-[data-h^=attr] {
     color: #ea91d4;
 }
@@ -493,6 +505,9 @@
 [data-ulight-theme=dark-vs].ulight-code, [data-ulight-theme=dark-vs].ulight-code-block {
     color: #d4d4d4;
 }
+[data-ulight-theme=dark-vs] h-[data-h^=asm_ins] {
+    color: #b5cea8;
+}
 [data-ulight-theme=dark-vs] h-[data-h^=bool] {
     color: #569cd6;
 }
@@ -641,6 +656,9 @@
 }
 [data-ulight-theme=dark-vs-plus].ulight-code, [data-ulight-theme=dark-vs-plus].ulight-code-block {
     color: #d4d4d4;
+}
+[data-ulight-theme=dark-vs-plus] h-[data-h^=asm_ins] {
+    color: #b5cea8;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=bool] {
     color: #569cd6;
@@ -821,6 +839,12 @@
 [data-ulight-theme=light-wg21].ulight-code, [data-ulight-theme=light-wg21].ulight-code-block {
     color: #000000;
 }
+[data-ulight-theme=light-wg21] h-[data-h^=asm_ins] {
+    color: #00607c;
+}
+[data-ulight-theme=light-wg21] h-[data-h^=asm_ins_psu] {
+    color: #9f6807;
+}
 [data-ulight-theme=light-wg21] h-[data-h^=bool] {
     color: #9f6807;
 }
@@ -980,6 +1004,12 @@
 }
 [data-ulight-theme=dark-wg21].ulight-code, [data-ulight-theme=dark-wg21].ulight-code-block {
     color: #d0d0d0;
+}
+[data-ulight-theme=dark-wg21] h-[data-h^=asm_ins] {
+    color: #62ded6;
+}
+[data-ulight-theme=dark-wg21] h-[data-h^=asm_ins_psu] {
+    color: #e6aee6;
 }
 [data-ulight-theme=dark-wg21] h-[data-h^=bool] {
     color: #f2d18d;
