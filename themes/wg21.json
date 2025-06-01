@@ -121,7 +121,7 @@
     },
     "dark": {
         "background": "#171717",
-        "foreground": "#d0d0d0",
+        "foreground": "#f0f0f0",
         "error": "#ff0000",
         "comment": {
             "color": "#a2e08d",
@@ -142,7 +142,7 @@
         "bool": "#f2d18d",
         "this": "#62ded6",
         "macro": "#cc946e",
-        "id": "#d0d0d0",
+        "id": "#f0f0f0",
         "id-label": "#d8eda6",
         "keyword": "#62ded6",
         "sym": "#baa6b9",
@@ -234,7 +234,7 @@
             "text-decoration": "underline line-through"
         },
         "shell-command": "#62ded6",
-        "shell-option": "#d0d0d0",
+        "shell-option": "#f0f0f0",
         "asm-instruction": "#62ded6",
         "asm-instruction-pseudo": "#e6aee6"
     }

@@ -1009,7 +1009,7 @@
     border-color: #171717;
 }
 [data-ulight-theme=dark-wg21].ulight-code, [data-ulight-theme=dark-wg21].ulight-code-block {
-    color: #d0d0d0;
+    color: #f0f0f0;
 }
 [data-ulight-theme=dark-wg21] h-[data-h^=asm_ins] {
     color: #62ded6;
@@ -1055,7 +1055,7 @@
     color: #e6aee6;
 }
 [data-ulight-theme=dark-wg21] h-[data-h^=id] {
-    color: #d0d0d0;
+    color: #f0f0f0;
 }
 [data-ulight-theme=dark-wg21] h-[data-h^=id_labl] {
     color: #d8eda6;
@@ -1154,7 +1154,7 @@
     color: #62ded6;
 }
 [data-ulight-theme=dark-wg21] h-[data-h^=sh-opt] {
-    color: #d0d0d0;
+    color: #f0f0f0;
 }
 [data-ulight-theme=dark-wg21] h-[data-h^=str] {
     color: #f2d18d;
