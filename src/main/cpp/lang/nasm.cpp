@@ -455,6 +455,7 @@ private:
             emit_and_advance(line.content_length, Highlight_Type::comment);
         }
         advance(line.terminator_length);
+        id_highlight = Highlight_Type::asm_instruction;
     }
 
     void consume_macro()
@@ -464,6 +465,7 @@ private:
         const Line_Result line = match_crlf_line(remainder.substr(1));
         emit_and_advance(line.content_length + 1, Highlight_Type::macro);
         advance(line.terminator_length);
+        id_highlight = Highlight_Type::asm_instruction;
     }
 
     void consume_identifier()
