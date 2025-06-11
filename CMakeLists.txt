@@ -61,6 +61,12 @@ set(LIBRARY_SOURCES
     src/main/cpp/ulight.cpp
 )
 
+add_library(ulight STATIC ${LIBRARY_SOURCES})
+target_include_directories(ulight PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
+
+target_compile_options(ulight PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
+target_link_options(ulight PUBLIC ${SANITIZER_OPTIONS})
+
 if(DEFINED EMSCRIPTEN)
     # https://stunlock.gg/posts/emscripten_with_cmake/
     add_executable(ulight-wasm ${LIBRARY_SOURCES})
@@ -96,7 +102,7 @@ if(DEFINED EMSCRIPTEN)
         "--no-entry"
         ${SANITIZER_OPTIONS}
     )
-    set(COPY_DESTINATION "${CMAKE_SOURCE_DIR}/www")
+    set(COPY_DESTINATION "${CMAKE_CURRENT_LIST_DIR}/www")
     add_custom_command(
         TARGET ulight-wasm POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:ulight-wasm>" "${COPY_DESTINATION}/"
@@ -112,12 +118,6 @@ else(NOT DEFINED EMSCRIPTEN)
     else()
         message(STATUS "GTest not found. Skipping tests.")
     endif()
-
-    add_library(ulight STATIC ${LIBRARY_SOURCES})
-    target_include_directories(ulight PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
-
-    target_compile_options(ulight PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
-    target_link_options(ulight PUBLIC ${SANITIZER_OPTIONS})
 
     add_executable(ulight-cli ${HEADERS}
         src/main/cpp/main.cpp
