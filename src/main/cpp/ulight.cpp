@@ -401,7 +401,9 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     ulight::Global_Memory_Resource memory;
     const ulight::Highlight_Options options = ulight::to_options(state->flags);
 
+#ifdef ULIGHT_EXCEPTIONS
     try {
+#endif
         const ulight::Status result
             = ulight::highlight(buffer, source, ulight::Lang(state->lang), &memory, options);
         // We've already checked for language validity.
@@ -409,6 +411,7 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
         ULIGHT_ASSERT(result != ulight::Status::bad_lang);
         buffer.flush();
         return ulight_status(result);
+#ifdef ULIGHT_EXCEPTIONS
     } catch (const ulight::utf8::Unicode_Error&) {
         return error(
             state, ULIGHT_STATUS_BAD_TEXT, u8"The given source code is not correctly UTF-8-encoded."
@@ -421,6 +424,7 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     } catch (...) {
         return error(state, ULIGHT_STATUS_INTERNAL_ERROR, u8"An internal error occurred.");
     }
+#endif
 }
 
 ULIGHT_EXPORT
@@ -510,7 +514,9 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
     if (result != ULIGHT_STATUS_OK) {
         return result;
     }
+#ifdef ULIGHT_EXCEPTIONS
     try {
+#endif
         // It is common that the final token doesn't encompass the last code unit in the source.
         // For example, there can be a trailing '\n' at the end of the file, without highlighting.
         ULIGHT_ASSERT(previous_end <= state->source_length);
@@ -519,9 +525,11 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
         }
         buffer.flush();
         return ULIGHT_STATUS_OK;
+#ifdef ULIGHT_EXCEPTIONS
     } catch (...) {
         return error(state, ULIGHT_STATUS_INTERNAL_ERROR, u8"An internal error occurred.");
     }
+#endif
 }
 
 } // extern "C"
