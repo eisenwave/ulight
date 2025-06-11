@@ -97,7 +97,6 @@ if(DEFINED EMSCRIPTEN)
         "SHELL:-s AUTO_JS_LIBRARIES=0"
         "SHELL:-s SIDE_MODULE=0"
         "SHELL:-s STANDALONE_WASM=1"
-#       "SHELL:-s \"EXPORTED_FUNCTIONS=['_bm_foreign_alloc','_bm_foreign_free','_bm_plus','_bm_length_as_string','_bm_length_as_string_result','_bm_translate_code','_bm_translate_code_result','_bm_syntax_highlight','_bm_syntax_highlight_result']\""
         "SHELL:-s \"EXPORTED_RUNTIME_METHODS=[]\""
         "--no-entry"
         ${SANITIZER_OPTIONS}
