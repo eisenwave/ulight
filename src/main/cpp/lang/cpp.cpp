@@ -306,7 +306,7 @@ std::size_t match_pp_number(const std::u8string_view str)
         // pp-number identifier-continue
         default: {
             const std::u8string_view remainder = str.substr(length);
-            const auto [code_point, units] = utf8::decode_and_length_or_throw(remainder);
+            const auto [code_point, units] = utf8::decode_and_length_or_replacement(remainder);
             if (is_identifier_continue_likely_ascii(code_point)) {
                 length += std::size_t(units);
                 break;
@@ -324,7 +324,7 @@ std::size_t match_identifier(std::u8string_view str)
     std::size_t length = 0;
 
     if (!str.empty()) {
-        const auto [code_point, units] = utf8::decode_and_length_or_throw(str);
+        const auto [code_point, units] = utf8::decode_and_length_or_replacement(str);
         if (!is_identifier_start_likely_ascii(code_point)) {
             return length;
         }
@@ -333,7 +333,7 @@ std::size_t match_identifier(std::u8string_view str)
     }
 
     while (!str.empty()) {
-        const auto [code_point, units] = utf8::decode_and_length_or_throw(str);
+        const auto [code_point, units] = utf8::decode_and_length_or_replacement(str);
         if (!is_identifier_continue_likely_ascii(code_point)) {
             return length;
         }

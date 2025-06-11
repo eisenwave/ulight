@@ -404,7 +404,7 @@ std::size_t match_identifier(std::u8string_view str)
     }
 
     // Check first character.
-    const auto [first_char, first_units] = utf8::decode_and_length_or_throw(str);
+    const auto [first_char, first_units] = utf8::decode_and_length_or_replacement(str);
     if (!is_lua_identifier_start(first_char)) {
         return 0;
     }
@@ -413,7 +413,7 @@ std::size_t match_identifier(std::u8string_view str)
 
     // Check rest of the characters.
     while (length < str.length()) {
-        const auto [code_point, units] = utf8::decode_and_length_or_throw(str.substr(length));
+        const auto [code_point, units] = utf8::decode_and_length_or_replacement(str.substr(length));
         if (!is_lua_identifier_continue(code_point)) {
             break;
         }

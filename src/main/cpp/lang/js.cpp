@@ -513,7 +513,7 @@ std::size_t match_name(std::u8string_view str, Name_Type type)
         return 0;
     }
 
-    const auto [first_char, first_units] = utf8::decode_and_length_or_throw(str);
+    const auto [first_char, first_units] = utf8::decode_and_length_or_replacement(str);
     if (!is_js_identifier_start(first_char)) {
         return 0;
     }

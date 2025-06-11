@@ -45,7 +45,7 @@ bool starts_with_escape_or_directive(std::u8string_view str)
     if (is_cowel_escapeable(str[1])) {
         return true;
     }
-    const auto [next_point, _] = utf8::decode_and_length_or_throw(str.substr(1));
+    const char32_t next_point = utf8::decode_or_replacement(str.substr(1));
     return is_cowel_directive_name_start(next_point);
 }
 

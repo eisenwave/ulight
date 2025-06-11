@@ -365,7 +365,7 @@ private:
 
         while (piece_length < remainder.length() && !is_stop(remainder.substr(piece_length))) {
             const auto [code_point, length]
-                = utf8::decode_and_length_or_throw(remainder.substr(piece_length));
+                = utf8::decode_and_length_or_replacement(remainder.substr(piece_length));
             if ((total_length == 0 && !is_xml_name_start(code_point)) || !is_xml_name(code_point)) {
                 if (piece_length) {
                     emit_and_advance(piece_length, type);
