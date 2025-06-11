@@ -58,6 +58,10 @@ using Underlying = unsigned char;
 #define ULIGHT_EXPORT
 #endif
 
+#ifdef __EXCEPTIONS
+#define ULIGHT_EXCEPTIONS 1
+#endif
+
 // https://stackoverflow.com/q/45762357/5740428
 #define ULIGHT_PRAGMA_STR_IMPL(...) _Pragma(#__VA_ARGS__)
 #define ULIGHT_PRAGMA_STR(...) ULIGHT_PRAGMA_STR_IMPL(__VA_ARGS__)
