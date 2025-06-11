@@ -6,6 +6,13 @@
 
 #include "ulight/impl/platform.h"
 
+#ifdef ULIGHT_EXCEPTIONS
+#define ULIGHT_RAISE_ASSERTION_ERROR(...) (throw __VA_ARGS__)
+#else
+#define ULIGHT_RAISE_ASSERTION_ERROR(...) ::std::exit(3)
+#include <cstdlib> // for std::exit
+#endif
+
 namespace ulight {
 
 enum struct Assertion_Error_Type : Underlying {
@@ -18,12 +25,6 @@ struct Assertion_Error {
     std::u8string_view message;
     std::source_location location;
 };
-
-#ifdef __EXCEPTIONS
-#define ULIGHT_RAISE_ASSERTION_ERROR(...) (throw __VA_ARGS__)
-#else
-#define ULIGHT_RAISE_ASSERTION_ERROR(...) ::std::exit(3)
-#endif
 
 // Expects an expression.
 // If this expression (after contextual conversion to `bool`) is `false`,
