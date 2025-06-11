@@ -14,11 +14,13 @@ namespace detail {
 template <typename F>
     requires std::is_invocable_r_v<bool, F, char32_t>
 [[nodiscard]]
-std::size_t find_if(std::u8string_view str, F predicate, bool expected, std::size_t npos)
+std::size_t find_if(std::u8string_view str, F predicate, bool expected, std::size_t npos) noexcept(
+    noexcept(predicate(char32_t {}))
+)
 {
     std::size_t code_units = 0;
     while (!str.empty()) {
-        const auto [code_point, length] = decode_and_length_or_throw(str);
+        const auto [code_point, length] = decode_and_length_or_replacement(str);
         if (bool(predicate(code_point)) == expected) {
             return code_units;
         }
@@ -37,7 +39,8 @@ std::size_t find_if(std::u8string_view str, F predicate, bool expected, std::siz
 template <typename F>
     requires std::is_invocable_r_v<bool, F, char32_t>
 [[nodiscard]]
-constexpr std::size_t find_if(std::u8string_view str, F predicate)
+constexpr std::size_t
+find_if(std::u8string_view str, F predicate) noexcept(noexcept(predicate(char32_t {})))
 {
     return detail::find_if(str, predicate, true, std::u8string_view::npos);
 }
@@ -49,7 +52,8 @@ constexpr std::size_t find_if(std::u8string_view str, F predicate)
 template <typename F>
     requires std::is_invocable_r_v<bool, F, char32_t>
 [[nodiscard]]
-constexpr std::size_t find_if_not(std::u8string_view str, F predicate)
+constexpr std::size_t
+find_if_not(std::u8string_view str, F predicate) noexcept(noexcept(predicate(char32_t {})))
 {
     return detail::find_if(str, predicate, false, std::u8string_view::npos);
 }
@@ -58,7 +62,8 @@ constexpr std::size_t find_if_not(std::u8string_view str, F predicate)
 template <typename F>
     requires std::is_invocable_r_v<bool, F, char32_t>
 [[nodiscard]]
-constexpr std::size_t length_if(std::u8string_view str, F predicate)
+constexpr std::size_t
+length_if(std::u8string_view str, F predicate) noexcept(noexcept(predicate(char32_t {})))
 {
     return detail::find_if(str, predicate, false, str.length());
 }
@@ -67,7 +72,8 @@ constexpr std::size_t length_if(std::u8string_view str, F predicate)
 template <typename F>
     requires std::is_invocable_r_v<bool, F, char32_t>
 [[nodiscard]]
-constexpr std::size_t length_if_not(std::u8string_view str, F predicate)
+constexpr std::size_t
+length_if_not(std::u8string_view str, F predicate) noexcept(noexcept(predicate(char32_t {})))
 {
     return detail::find_if(str, predicate, true, str.length());
 }
