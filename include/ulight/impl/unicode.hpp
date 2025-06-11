@@ -282,6 +282,13 @@ decode_and_length(std::u8string_view str) noexcept // NOLINT(bugprone-exception-
     return Code_Point_And_Length { .code_point = *result, .length = length };
 }
 
+[[nodiscard]]
+constexpr std::expected<char32_t, Error_Code> //
+decode(std::u8string_view str) noexcept
+{
+    return decode_and_length(str).transform([](Code_Point_And_Length r) { return r.code_point; });
+}
+
 #ifdef ULIGHT_EXCEPTIONS
 [[nodiscard]]
 constexpr Code_Point_And_Length decode_and_length_or_throw(std::u8string_view str)
@@ -300,7 +307,7 @@ constexpr Code_Point_And_Length decode_and_length_or_throw(std::u8string_view st
 ///
 /// Note that U+FFFD conventionally indicates that a decoding error has occurred.
 [[nodiscard]]
-constexpr Code_Point_And_Length decode_and_length_or_replacement(std::u8string_view str)
+constexpr Code_Point_And_Length decode_and_length_or_replacement(std::u8string_view str) noexcept
 {
     const std::expected<Code_Point_And_Length, Error_Code> result = decode_and_length(str);
     if (!result) [[unlikely]] {
@@ -308,6 +315,13 @@ constexpr Code_Point_And_Length decode_and_length_or_replacement(std::u8string_v
                  .length = std::max(1, int(str.length())) };
     }
     return *result;
+}
+
+/// @brief Equivalent to `decode_and_length_or_replacement(str).code_point`.
+[[nodiscard]]
+constexpr char32_t decode_or_replacement(std::u8string_view str) noexcept
+{
+    return decode_and_length_or_replacement(str).code_point;
 }
 
 [[nodiscard]]
