@@ -282,12 +282,30 @@ decode_and_length(std::u8string_view str) noexcept // NOLINT(bugprone-exception-
     return Code_Point_And_Length { .code_point = *result, .length = length };
 }
 
+#ifdef ULIGHT_EXCEPTIONS
 [[nodiscard]]
 constexpr Code_Point_And_Length decode_and_length_or_throw(std::u8string_view str)
 {
     const std::expected<Code_Point_And_Length, Error_Code> result = decode_and_length(str);
-    if (!result) {
+    if (!result) [[unlikely]] {
         throw Unicode_Error { result.error() };
+    }
+    return *result;
+}
+#endif
+
+/// @brief If `decode_and_length(str)` succeeds, returns the resulting value.
+/// Otherwise, returns a result where the `code_point` is U+FFFD REPLACEMENT CHARACTER,
+/// and where the length is `1` if `str` is nonempty, otherwise `0`.
+///
+/// Note that U+FFFD conventionally indicates that a decoding error has occurred.
+[[nodiscard]]
+constexpr Code_Point_And_Length decode_and_length_or_replacement(std::u8string_view str)
+{
+    const std::expected<Code_Point_And_Length, Error_Code> result = decode_and_length(str);
+    if (!result) [[unlikely]] {
+        return { .code_point = U'\N{REPLACEMENT CHARACTER}',
+                 .length = std::max(1, int(str.length())) };
     }
     return *result;
 }
@@ -353,8 +371,12 @@ public:
     {
         const int length = sequence_length(*m_pointer);
         if (length == 0 || length > m_end - m_pointer) {
+#ifdef ULIGHT_EXCEPTIONS
             throw Unicode_Error { Error_Code::illegal_bits,
                                   "Corrupted UTF-8 string or past the end." };
+#else
+            ULIGHT_ASSERT_UNREACHABLE(u8"Corrupted UTF-8 string or past the end.");
+#endif
         }
         m_pointer += length;
         return *this;
@@ -371,9 +393,13 @@ public:
     char32_t operator*() const
     {
         const std::expected<Code_Point_And_Length, Error_Code> result = next();
+#ifdef ULIGHT_EXCEPTIONS
         if (!result) {
             throw Unicode_Error { result.error(), "Corrupted UTF-8 string or past the end." };
         }
+#else
+        ULIGHT_ASSERT_UNREACHABLE(u8"Corrupted UTF-8 string or past the end.");
+#endif
         return result->code_point;
     }
 
