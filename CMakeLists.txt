@@ -81,13 +81,13 @@ if(DEFINED EMSCRIPTEN)
         "SHELL:-s SIDE_MODULE=0"
         "-stdlib=libc++"
         "-Os"
-#       "-fno-exceptions"
+        "-fno-exceptions"
         ${WARNING_OPTIONS}
         ${SANITIZER_OPTIONS}
     )
     target_link_options(ulight-wasm PRIVATE
         "-Os"
-#       "-fno-exceptions"
+        "-fno-exceptions"
         "-static-libc++"
         "-stdlib=libc++"
         "SHELL:-s WASM=1"
