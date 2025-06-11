@@ -6,6 +6,9 @@
 
 #include "ulight/ulight.hpp"
 
+#include "ulight/impl/assert.hpp"
+#include "ulight/impl/platform.h"
+
 namespace ulight {
 
 /// @brief A `std::pmr::memory_resource` which uses
@@ -15,9 +18,14 @@ struct Global_Memory_Resource final : std::pmr::memory_resource {
     [[nodiscard]]
     void* do_allocate(std::size_t bytes, std::size_t alignment) final
     {
+        ULIGHT_DEBUG_ASSERT(alignment != 0);
         void* const result = ulight::alloc(bytes, alignment);
         if (!result) {
+#ifdef ULIGHT_EXCEPTIONS
             throw std::bad_alloc();
+#else
+            ULIGHT_ASSERT_UNREACHABLE(u8"Allocation failure.");
+#endif
         }
         return result;
     }
