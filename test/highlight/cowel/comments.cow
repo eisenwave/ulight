@@ -1,6 +1,7 @@
-Plain sentence.
-\comment{Commented text.}
-\comment[some, pointless = arguments]{Commented text.}
-\comment[\b{}]{sss}
-\comment
-Not a comment.
+\:Comment
+\: xzy
+\: { awoo
+\dir\:}
+\: nested \: comment
+trailing \: comment
+\: \dir[]{}
