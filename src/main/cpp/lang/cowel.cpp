@@ -10,7 +10,6 @@
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/highlighter.hpp"
-#include "ulight/impl/unicode.hpp"
 #include "ulight/impl/unicode_algorithm.hpp"
 
 #include "ulight/impl/lang/cowel.hpp"
@@ -21,8 +20,9 @@ namespace cowel {
 
 std::size_t match_directive_name(std::u8string_view str)
 {
-    constexpr auto predicate = [](char32_t c) { return is_cowel_directive_name(c); };
-    return str.empty() || is_ascii_digit(str[0]) ? 0 : utf8::length_if(str, predicate);
+    constexpr auto head = [](char8_t c) { return is_cowel_directive_name_start(c); };
+    constexpr auto tail = [](char8_t c) { return is_cowel_directive_name(c); };
+    return ascii::length_if_head_tail(str, head, tail);
 }
 
 std::size_t match_argument_name(std::u8string_view str)
@@ -31,22 +31,42 @@ std::size_t match_argument_name(std::u8string_view str)
     return str.empty() || is_ascii_digit(str[0]) ? 0 : utf8::length_if(str, predicate);
 }
 
+std::size_t match_escape(std::u8string_view str)
+{
+    constexpr std::size_t sequence_length = 2;
+    if (str.length() < sequence_length || str[0] != u8'\\' || !is_cowel_escapeable(str[1])) {
+        return 0;
+    }
+    return str.starts_with(u8"\\\r\n") ? 3 : 2;
+}
+
 std::size_t match_whitespace(std::u8string_view str)
 {
     constexpr auto predicate = [](char8_t c) { return is_html_whitespace(c); };
     return ascii::length_if(str, predicate);
 }
 
-bool starts_with_escape_or_directive(std::u8string_view str)
+std::size_t match_line_comment(std::u8string_view str)
+{
+    static constexpr char8_t comment_prefix[] { u8'\\', cowel_comment_char };
+    static constexpr std::u8string_view comment_prefix_string { comment_prefix,
+                                                                std::size(comment_prefix) };
+    if (!str.starts_with(comment_prefix_string)) {
+        return 0;
+    }
+
+    constexpr auto is_terminator = [](char8_t c) { return c == u8'\r' || c == u8'\n'; };
+    return ascii::length_if_not(str, is_terminator, 2);
+}
+
+bool starts_with_escape_comment_directive(std::u8string_view str)
 {
     if (str.length() < 2 || str[0] != u8'\\') {
         return false;
     }
-    if (is_cowel_escapeable(str[1])) {
-        return true;
-    }
-    const char32_t next_point = utf8::decode_or_replacement(str.substr(1));
-    return is_cowel_directive_name_start(next_point);
+    return is_cowel_escapeable(str[1]) //
+        || is_cowel_directive_name_start(str[1]) //
+        || str[1] == cowel_comment_char;
 }
 
 Named_Argument_Result match_named_argument_prefix(const std::u8string_view str)
@@ -113,6 +133,9 @@ bool is_terminated_by(Content_Context context, char8_t c)
 struct Consumer {
     virtual void whitespace(std::size_t length) = 0;
     virtual void text(std::size_t length) = 0;
+    virtual void escape(std::size_t length) = 0;
+    virtual void comment(std::size_t length) = 0;
+
     virtual void opening_square() = 0;
     virtual void closing_square() = 0;
     virtual void comma() = 0;
@@ -121,7 +144,6 @@ struct Consumer {
     virtual void directive_name(std::size_t length) = 0;
     virtual void opening_brace() = 0;
     virtual void closing_brace() = 0;
-    virtual void escape() = 0;
 
     virtual void push_directive() { }
     virtual void pop_directive() { }
@@ -133,12 +155,31 @@ struct Consumer {
 [[nodiscard]]
 std::size_t match_escape(Consumer& out, const std::u8string_view str)
 {
-    constexpr std::size_t sequence_length = 2;
-    if (str.length() < sequence_length || str[0] != u8'\\' || !is_cowel_escapeable(str[1])) {
-        return 0;
+    const std::size_t e = cowel::match_escape(str);
+    if (e) {
+        const std::u8string_view escape = str.substr(0, e);
+        // Even though the escape sequence technically includes newlines and carriage returns,
+        // we do not want those to be part of the token for the purpose of syntax highlighting.
+        // That is because cross-line tokens are ugly.
+        // Therefore, we underreport the escape sequence as only consisting of the backslash.
+        if (escape.ends_with(u8'\n') || escape.ends_with(u8'\r')) {
+            out.escape(1);
+            return 1;
+        }
+        out.escape(e);
+        return e;
     }
-    out.escape();
-    return sequence_length;
+    return e;
+}
+
+[[nodiscard]]
+std::size_t match_comment(Consumer& out, const std::u8string_view str)
+{
+    const std::size_t c = match_line_comment(str);
+    if (c) {
+        out.comment(c);
+    }
+    return c;
 }
 
 std::size_t match_directive(Consumer& out, std::u8string_view str);
@@ -156,12 +197,16 @@ std::size_t match_content(
     if (const std::size_t d = match_directive(out, str)) {
         return d;
     }
+    if (const std::size_t c = match_comment(out, str)) {
+        return c;
+    }
+
     std::size_t plain_length = 0;
 
     for (; plain_length < str.length(); ++plain_length) {
         const char8_t c = str[plain_length];
         if (c == u8'\\') {
-            if (starts_with_escape_or_directive(str.substr(plain_length))) {
+            if (starts_with_escape_comment_directive(str.substr(plain_length))) {
                 break;
             }
             continue;
@@ -337,6 +382,19 @@ struct Highlighter::Normal_Consumer final : Consumer {
     {
         self.advance(t);
     }
+    void escape(std::size_t e) final
+    {
+        self.emit_and_advance(e, Highlight_Type::escape);
+    }
+    void comment(std::size_t c) final
+    {
+        ULIGHT_ASSERT(c >= 2);
+        self.emit_and_advance(2, Highlight_Type::comment_delim);
+        if (c > 2) {
+            self.emit_and_advance(c - 2, Highlight_Type::comment);
+        }
+    }
+
     void opening_square() final
     {
         self.emit_and_advance(1, Highlight_Type::sym_square);
@@ -368,10 +426,6 @@ struct Highlighter::Normal_Consumer final : Consumer {
     void closing_brace() final
     {
         self.emit_and_advance(1, Highlight_Type::sym_brace);
-    }
-    void escape() final
-    {
-        self.emit_and_advance(2, Highlight_Type::escape);
     }
     void unexpected_eof() final { }
 };
@@ -417,6 +471,15 @@ public:
     {
         *active_length += t;
     }
+    void escape(std::size_t e) final
+    {
+        *active_length += e;
+    }
+    void comment(std::size_t c) final
+    {
+        *active_length += c;
+    }
+
     void opening_square() final
     {
         *active_length += 1;
@@ -464,10 +527,6 @@ public:
             active_length = &suffix_length;
         }
     }
-    void escape() final
-    {
-        *active_length += 1;
-    }
     void push_arguments() final
     {
         ++arguments_level;
@@ -484,106 +543,113 @@ public:
 };
 
 struct Highlighter::Dispatch_Consumer final : Consumer {
-    Normal_Consumer normal;
-    Comment_Consumer comment;
-    Consumer* current = &normal;
+private:
+    Normal_Consumer m_normal;
+    Comment_Consumer m_comment;
+    Consumer* m_current = &m_normal;
 
+public:
     Dispatch_Consumer(Highlighter& self)
-        : normal { self }
+        : m_normal { self }
     {
     }
 
     void whitespace(std::size_t w) final
     {
         ULIGHT_DEBUG_ASSERT(w != 0);
-        current->whitespace(w);
+        m_current->whitespace(w);
     }
     void text(std::size_t t) final
     {
         ULIGHT_DEBUG_ASSERT(t != 0);
-        current->text(t);
+        m_current->text(t);
     }
+    void escape(std::size_t e) final
+    {
+        m_current->escape(e);
+    }
+    void comment(std::size_t c) final
+    {
+        m_current->comment(c);
+    }
+
     void opening_square() final
     {
-        current->opening_square();
+        m_current->opening_square();
     }
     void closing_square() final
     {
-        current->closing_square();
+        m_current->closing_square();
     }
     void comma() final
     {
-        current->comma();
+        m_current->comma();
     }
     void argument_name(std::size_t a) final
     {
         ULIGHT_DEBUG_ASSERT(a != 0);
-        current->argument_name(a);
+        m_current->argument_name(a);
     }
     void equals() final
     {
-        current->equals();
+        m_current->equals();
     }
     void directive_name(std::size_t d) final
     {
         ULIGHT_DEBUG_ASSERT(d != 0);
-        const std::u8string_view name = normal.self.remainder.substr(0, d);
+        const std::u8string_view name = m_normal.self.remainder.substr(0, d);
         if (name == u8"\\comment" || name == u8"\\-comment") {
-            current = &comment;
+            m_current = &m_comment;
         }
-        current->directive_name(d);
+        m_current->directive_name(d);
     }
     void opening_brace() final
     {
-        current->opening_brace();
+        m_current->opening_brace();
     }
     void closing_brace() final
     {
-        current->closing_brace();
-    }
-    void escape() final
-    {
-        current->escape();
+        m_current->closing_brace();
     }
 
     void push_directive() final
     {
-        current->push_directive();
+        m_current->push_directive();
     }
     void pop_directive() final
     {
-        current->pop_directive();
+        m_current->pop_directive();
         try_flush_special_consumer();
     }
     void push_arguments() final
     {
-        current->push_arguments();
+        m_current->push_arguments();
     }
     void pop_arguments() final
     {
-        current->pop_arguments();
+        m_current->pop_arguments();
     }
     void unexpected_eof() final
     {
-        current->unexpected_eof();
+        m_current->unexpected_eof();
         try_flush_special_consumer();
     }
 
     void try_flush_special_consumer()
     {
-        Highlighter& self = normal.self;
-        if (current == &comment && comment.done()) {
-            ULIGHT_ASSERT(comment.prefix_length != 0);
-            self.emit_and_advance(comment.prefix_length, Highlight_Type::comment_delim);
-            if (comment.content_length) {
-                self.emit_and_advance(comment.content_length, Highlight_Type::comment);
+        Highlighter& self = m_normal.self;
+        if (m_current == &m_comment && m_comment.done()) {
+            ULIGHT_ASSERT(m_comment.prefix_length != 0);
+            self.emit_and_advance(m_comment.prefix_length, Highlight_Type::comment_delim);
+            if (m_comment.content_length) {
+                self.emit_and_advance(m_comment.content_length, Highlight_Type::comment);
             }
-            if (comment.suffix_length) {
-                ULIGHT_ASSERT(comment.suffix_length == 1);
-                self.emit_and_advance(comment.suffix_length, Highlight_Type::comment_delim);
+            if (m_comment.suffix_length) {
+                ULIGHT_ASSERT(m_comment.suffix_length == 1);
+                self.emit_and_advance(m_comment.suffix_length, Highlight_Type::comment_delim);
             }
-            comment.reset();
-            current = &normal;
+            m_comment.reset();
+            m_current = &m_normal;
         }
     }
 };
