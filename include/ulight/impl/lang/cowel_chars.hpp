@@ -1,6 +1,7 @@
 #ifndef ULIGHT_COWEL_CHARS_HPP
 #define ULIGHT_COWEL_CHARS_HPP
 
+#include "ulight/impl/ascii_chars.hpp"
 #include "ulight/impl/chars.hpp"
 #include "ulight/impl/lang/html_chars.hpp"
 
@@ -22,8 +23,10 @@ constexpr bool is_cowel_special(char32_t c) noexcept
     return is_ascii(c) && is_cowel_special(char8_t(c));
 }
 
-inline constexpr Charset256 is_cowel_escapeable_set
-    = is_cowel_special_set | detail::to_charset256(u8" \t\v\r\n");
+inline constexpr Charset256 is_cowel_escapeable_set = is_ascii_punctuation_set //
+        - detail::to_charset256(u8"-_") //
+        - detail::to_charset256(cowel_comment_char) //
+    | detail::to_charset256(u8" \t\v\r\n");
 
 /// @brief Returns `true` if `c` is an escapable cowel character.
 /// That is, if `\c` would be treated specially,

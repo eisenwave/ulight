@@ -211,6 +211,21 @@ constexpr bool is_ascii_alphanumeric(char32_t c) noexcept
     return is_ascii(c) && is_ascii_alphanumeric(char8_t(c));
 }
 
+inline constexpr Charset256 is_ascii_punctuation_set
+    = detail::to_charset256(u8"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~");
+
+[[nodiscard]]
+constexpr bool is_ascii_punctuation(char8_t c) noexcept
+{
+    return is_ascii_punctuation_set.contains(c);
+}
+
+[[nodiscard]]
+constexpr bool is_ascii_punctuation(char32_t c) noexcept
+{
+    return is_ascii(c) && is_ascii_punctuation(char8_t(c));
+}
+
 } // namespace ulight
 
 #endif
