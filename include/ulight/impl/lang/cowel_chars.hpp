@@ -116,6 +116,21 @@ constexpr bool is_cowel_directive_name(char32_t c) noexcept
     return is_ascii(c) && is_cowel_directive_name(char8_t(c));
 }
 
+inline constexpr Charset256 is_cowel_allowed_after_backslash_set = is_cowel_escapeable_set
+    | is_cowel_directive_name_start_set | detail::to_charset256(cowel_comment_char);
+
+[[nodiscard]]
+constexpr bool is_cowel_allowed_after_backslash(char8_t c) noexcept
+{
+    return is_cowel_allowed_after_backslash_set.contains(c);
+}
+
+[[nodiscard]]
+constexpr bool is_cowel_allowed_after_backslash(char32_t c) noexcept
+{
+    return is_ascii(c) && is_cowel_allowed_after_backslash(char8_t(c));
+}
+
 } // namespace ulight
 
 #endif

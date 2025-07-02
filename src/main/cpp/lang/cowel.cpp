@@ -61,12 +61,7 @@ std::size_t match_line_comment(std::u8string_view str)
 
 bool starts_with_escape_comment_directive(std::u8string_view str)
 {
-    if (str.length() < 2 || str[0] != u8'\\') {
-        return false;
-    }
-    return is_cowel_escapeable(str[1]) //
-        || is_cowel_directive_name_start(str[1]) //
-        || str[1] == cowel_comment_char;
+    return str.length() >= 2 && str[0] == u8'\\' && is_cowel_allowed_after_backslash(str[1]);
 }
 
 Named_Argument_Result match_named_argument_prefix(const std::u8string_view str)
