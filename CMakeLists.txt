@@ -114,6 +114,25 @@ else(NOT DEFINED EMSCRIPTEN)
         message(STATUS "GTest found. Building tests.")
         include(GoogleTest)
         enable_testing()
+
+        add_executable(ulight-test ${HEADERS}
+            src/test/cpp/main.cpp
+            src/test/cpp/test_buffer.cpp
+            src/test/cpp/test_chars_strings.cpp
+            src/test/cpp/test_cpp.cpp
+            src/test/cpp/test_css.cpp
+            src/test/cpp/test_highlight.cpp
+            src/test/cpp/test_html.cpp
+            src/test/cpp/test_js.cpp
+            src/test/cpp/test_json.cpp
+            src/test/cpp/test_unicode.cpp
+            src/test/cpp/test_unicode_algorithm.cpp
+        )
+        target_link_libraries(ulight-test ulight GTest::GTest GTest::Main)
+        gtest_discover_tests(ulight-test
+            WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
+            DISCOVERY_TIMEOUT 30
+        )
     else()
         message(STATUS "GTest not found. Skipping tests.")
     endif()
@@ -121,33 +140,9 @@ else(NOT DEFINED EMSCRIPTEN)
     add_executable(ulight-cli ${HEADERS}
         src/main/cpp/main.cpp
     )
-
     target_compile_options(ulight-cli PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
     target_link_options(ulight-cli PUBLIC ${SANITIZER_OPTIONS})
-
-    add_executable(ulight-test ${HEADERS}
-        src/test/cpp/main.cpp
-        src/test/cpp/test_buffer.cpp
-        src/test/cpp/test_chars_strings.cpp
-        src/test/cpp/test_cpp.cpp
-        src/test/cpp/test_css.cpp
-        src/test/cpp/test_highlight.cpp
-        src/test/cpp/test_html.cpp
-        src/test/cpp/test_js.cpp
-        src/test/cpp/test_json.cpp
-        src/test/cpp/test_unicode.cpp
-        src/test/cpp/test_unicode_algorithm.cpp
-    )
-
     target_link_libraries(ulight-cli ulight)
-    target_link_libraries(ulight-test ulight GTest::GTest GTest::Main)
-
-    if (GTest_FOUND)
-        gtest_discover_tests(ulight-test
-            WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
-            DISCOVERY_TIMEOUT 30
-        )
-    endif()
 
     add_subdirectory(examples)
 endif()
