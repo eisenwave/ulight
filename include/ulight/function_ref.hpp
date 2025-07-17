@@ -161,11 +161,14 @@ public:
         }
     }
 
+    ULIGHT_DIAGNOSTIC_PUSH()
+    ULIGHT_DIAGNOSTIC_IGNORED("-Wexceptions")
     constexpr R operator()(Args... args) const noexcept(nothrow)
     {
         ULIGHT_ASSERT(m_invoker);
         return m_invoker(m_entity, std::forward<Args>(args)...);
     }
+    ULIGHT_DIAGNOSTIC_POP()
 
     [[nodiscard]]
     constexpr bool has_value() const noexcept
