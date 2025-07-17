@@ -3,7 +3,7 @@
 #include <new>
 #include <string_view>
 
-#include "ulight/impl/strings.hpp"
+#include "ulight/function_ref.hpp"
 #include "ulight/ulight.h"
 #include "ulight/ulight.hpp"
 
@@ -12,6 +12,7 @@
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/memory.hpp"
 #include "ulight/impl/platform.h"
+#include "ulight/impl/strings.hpp"
 #include "ulight/impl/unicode.hpp"
 
 namespace ulight {
@@ -471,7 +472,7 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
 
     std::size_t previous_end = 0;
     auto flush_text = // clang-format off
-    [&](const ulight_token* tokens, std::size_t amount) mutable  {
+    [&](ulight_token* tokens, std::size_t amount) mutable  {
         #ifndef NDEBUG
         check_flush_validity(state, {tokens, amount}); 
         #endif
@@ -502,13 +503,11 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
             previous_end = t.begin + t.length;
         }
     };
+    ulight::Function_Ref<void( ulight_token*, std::size_t)> flush_text_ref = flush_text;
 
     // clang-format on
-    state->flush_tokens_data = &flush_text;
-    state->flush_tokens = [](void* erased_flush_text, ulight_token* tokens, std::size_t amount) {
-        auto& flush_text_ref = *static_cast<decltype(flush_text)*>(erased_flush_text);
-        flush_text_ref(tokens, amount);
-    };
+    state->flush_tokens_data = flush_text_ref.get_entity();
+    state->flush_tokens = flush_text_ref.get_invoker();
 
     const ulight_status result = ulight_source_to_tokens(state);
     if (result != ULIGHT_STATUS_OK) {
