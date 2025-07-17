@@ -384,7 +384,7 @@ struct [[nodiscard]] State {
         impl.text_buffer_length = buffer.size();
     }
 
-    void on_flush_text(void* data, void action(void*, char*, std::size_t))
+    void on_flush_text(const void* data, void action(const void*, char*, std::size_t))
     {
         impl.flush_text = action;
         impl.flush_text_data = data;

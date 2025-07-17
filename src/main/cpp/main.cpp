@@ -57,9 +57,10 @@ int main(int argc, const char** argv)
     state.set_token_buffer(token_buffer);
     state.set_text_buffer(text_buffer);
 
-    state.on_flush_text(out_file, [](void* file, char* str, std::size_t length) {
-        std::fwrite(str, 1, length, static_cast<std::FILE*>(file));
-    });
+    constexpr auto on_flush_text_lambda = [](std::FILE* file, char* str, std::size_t length) { //
+        std::fwrite(str, 1, length, file);
+    };
+    state.on_flush_text({ Constant<on_flush_text_lambda> {}, out_file });
 
     Status status = state.source_to_html();
     if (status != Status::ok) {

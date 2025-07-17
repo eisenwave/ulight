@@ -21,8 +21,8 @@ struct Non_Owning_Buffer {
 private:
     value_type* m_buffer;
     std::size_t m_capacity;
-    void* m_flush_data;
-    void (*m_flush)(void*, value_type*, std::size_t);
+    const void* m_flush_data;
+    void (*m_flush)(const void*, value_type*, std::size_t);
     std::size_t m_size = 0;
 
 public:
@@ -30,8 +30,8 @@ public:
     constexpr Non_Owning_Buffer(
         value_type* buffer,
         std::size_t capacity,
-        void* flush_data,
-        void (*flush)(void*, value_type*, std::size_t)
+        const void* flush_data,
+        void (*flush)(const void*, value_type*, std::size_t)
     )
         : m_buffer { buffer }
         , m_capacity { capacity }

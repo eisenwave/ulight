@@ -522,10 +522,10 @@ typedef struct ulight_state {
     /// @brief The length of `token_buffer`.
     size_t token_buffer_length;
     /// @brief  Passed as the first argument into `flush_tokens`.
-    void* flush_tokens_data;
+    const void* flush_tokens_data;
     /// @brief When `token_buffer` is full,
     /// is invoked with `flush_tokens_data`, `token_buffer`, and `token_buffer_length`.
-    void (*flush_tokens)(void*, ulight_token*, size_t);
+    void (*flush_tokens)(const void*, ulight_token*, size_t);
 
     /// @brief For HTML generation, the UTF-8-encoded name of tags.
     const char* html_tag_name;
@@ -541,10 +541,10 @@ typedef struct ulight_state {
     /// @brief The length of `text_buffer`.
     size_t text_buffer_length;
     /// @brief Passed as the first argument into `flush_text`.
-    void* flush_text_data;
+    const void* flush_text_data;
     /// @brief When `text_buffer` is full,
     /// is invoked with `flush_text_data`, `text_buffer`, and `text_buffer_length`.
-    void (*flush_text)(void*, char*, size_t);
+    void (*flush_text)(const void*, char*, size_t);
 
     /// @brief A brief UTF-8-encoded error text.
     const char* error;

@@ -4,7 +4,7 @@
 #include "ulight/ulight.h"
 
 // See below.
-static void on_flush(void*, char* str, size_t length)
+static void on_flush(const void*, char* str, size_t length)
 {
     fwrite(str, 1, length, stdout);
 }

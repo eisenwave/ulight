@@ -149,8 +149,8 @@ protected:
     [[nodiscard]]
     Non_Owning_Buffer<Token> sub_buffer(std::span<Token> data)
     {
-        constexpr auto flush = +[](void* this_pointer, Token* tokens, std::size_t amount) {
-            auto& self = *static_cast<Highlighter_Base*>(this_pointer);
+        constexpr auto flush = +[](const void* this_pointer, Token* tokens, std::size_t amount) {
+            const auto& self = *static_cast<const Highlighter_Base*>(this_pointer);
             for (std::size_t i = 0; i < amount; ++i) {
                 tokens[i].begin += self.index;
             }
