@@ -58,5 +58,42 @@ TEST(Function_Ref, from_constant_with_entity)
     ASSERT_EQ(r_lambda(2), 4 + s);
 }
 
+TEST(Function_Ref, from_callable)
+{
+    struct Sqr {
+        int operator()(int x) const
+        {
+            return x * x;
+        }
+    };
+
+    Function_Ref<int(int)> r_dangling = Sqr {};
+
+    Sqr sqr;
+    Function_Ref<int(int)> r = sqr;
+    ASSERT_EQ(r(2), 4);
+
+    const Sqr sqr_const;
+    Function_Ref<int(int)> cr0 = sqr_const;
+    Function_Ref<int(int) const> cr1 = sqr_const;
+    ASSERT_EQ(cr0(2), 4);
+    ASSERT_EQ(cr1(2), 4);
+
+    static constexpr Sqr sqr_constexpr;
+    constexpr Function_Ref<int(int)> r_constexpr = sqr_constexpr;
+    ASSERT_EQ(r_constexpr(2), 4);
+
+    constexpr auto lambda = [](int x) { return x * x; };
+    Function_Ref<int(int)> cl = lambda;
+    ASSERT_EQ(cl(2), 4);
+
+    int s = 1;
+    const auto lambda_cap = [&](int x) { return (x * x) + s; };
+    Function_Ref<int(int)> cl_cap0 = lambda_cap;
+    Function_Ref<int(int) const> cl_cap1 = lambda_cap;
+    ASSERT_EQ(cl_cap0(2), 5);
+    ASSERT_EQ(cl_cap1(2), 5);
+}
+
 } // namespace
 } // namespace ulight
