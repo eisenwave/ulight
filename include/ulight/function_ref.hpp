@@ -16,7 +16,7 @@ concept function_pointer = std::is_pointer_v<T> && std::is_function_v<std::remov
 
 template <typename T, typename R, typename... Args>
 concept invocable_r
-    = std::invocable<T, Args...> && std::same_as<std::invoke_result_t<T, Args...>, R>;
+    = std::invocable<T, Args...> && std::convertible_to<std::invoke_result_t<T, Args...>, R>;
 
 template <typename T, typename... Args>
 concept nothrow_invocable = std::invocable<T, Args...> && std::is_nothrow_invocable_v<T, Args...>;
@@ -32,7 +32,7 @@ template <bool constant, bool nothrow, typename R, typename... Args>
 struct Function_Ref_Base {
 public:
     using Function = R(Args...) noexcept(nothrow);
-    using Storage = const_if_t<void, constant>;
+    using Storage = const void;
     using Invoker = R(Storage*, Args...) noexcept(nothrow);
 
 private:
@@ -50,7 +50,9 @@ private:
             return R((*reinterpret_cast<F>(entity_raw))(std::forward<Args>(args)...));
         }
         else {
-            return R((*reinterpret_cast<F>(entity))(std::forward<Args>(args)...));
+            using Const_F = const std::remove_pointer_t<F>*;
+            F f = const_cast<F>(reinterpret_cast<Const_F>(entity));
+            return R((*f)(std::forward<Args>(args)...));
         }
     }
 
@@ -75,11 +77,10 @@ public:
     ///
     /// This will create a `Function_Ref` which is bound to nothing,
     /// and when called, simply forwards to `F`.
-    template <std::convertible_to<Function*> auto F>
-        requires requires(Args&&... args) { F(std::forward<Args>(args)...); }
+    template <invocable_n_r<nothrow, R, Args...> auto F>
     [[nodiscard]]
     constexpr Function_Ref_Base(Constant<F>) noexcept
-        : m_invoker { [](Storage*, Args... args) noexcept(nothrow) { //
+        : m_invoker { [](Storage*, Args... args) noexcept(nothrow) -> R { //
             return F(std::forward<Args>(args)...);
         } }
     {
@@ -90,14 +91,13 @@ public:
     ///
     /// This will create a `Function_Ref` which is bound to nothing,
     /// and when called, simply forwards to `F`.
-    template <std::convertible_to<Function*> auto F, typename T>
-        requires requires(Args&&... args, const_if_t<T, constant>* e) {
-            F(e, std::forward<Args>(args)...);
-        } && std::convertible_to<T*, Storage*>
+    template <auto F, typename T>
+        requires invocable_n_r<decltype(F), nothrow, R, T*, Args...>
+                     && std::convertible_to<T*, Storage*>
     [[nodiscard]]
     constexpr Function_Ref_Base(Constant<F>, T* entity) noexcept
         : m_invoker { [](Storage* entity, Args... args) noexcept(nothrow) { //
-            return F(static_cast<T*>(entity), std::forward<Args>(args)...);
+            return F(const_cast<T*>(static_cast<const T*>(entity)), std::forward<Args>(args)...);
         } }
         , m_entity { entity }
     {
@@ -111,8 +111,8 @@ public:
     /// `reinterpret_cast`.
     [[nodiscard]]
     Function_Ref_Base(Function* f) noexcept
-        : m_invoker(&call<Function>)
-        , m_entity(reinterpret_cast<Storage*>(&f))
+        : m_invoker(&call<Function*>)
+        , m_entity(reinterpret_cast<Storage*>(f))
     {
     }
 
