@@ -104,6 +104,18 @@ public:
         // FIXME: this seems overconstrained
     }
 
+    /// @brief Constructs a `Function_Ref` from non-constant function pointer.
+    ///
+    /// Unlike most other constructors,
+    /// this is not marked `constexpr` because it unconditionally requires the use of
+    /// `reinterpret_cast`.
+    [[nodiscard]]
+    Function_Ref_Base(Function* f) noexcept
+        : m_invoker(&call<Function>)
+        , m_entity(reinterpret_cast<Storage*>(&f))
+    {
+    }
+
     /// @brief Constructs a `Function_Ref` from some callable type.
     ///
     /// If `f` is convertible to `R(*)(Args...)`,
