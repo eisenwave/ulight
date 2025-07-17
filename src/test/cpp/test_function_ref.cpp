@@ -67,7 +67,9 @@ TEST(Function_Ref, from_callable)
         }
     };
 
-    Function_Ref<int(int)> r_dangling = Sqr {};
+    [[maybe_unused]]
+    Function_Ref<int(int)> r_dangling
+        = Sqr {};
 
     Sqr sqr;
     Function_Ref<int(int)> r = sqr;
