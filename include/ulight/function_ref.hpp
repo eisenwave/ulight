@@ -51,7 +51,7 @@ private:
         }
         else {
             using Const_F = const std::remove_pointer_t<F>*;
-            F f = const_cast<F>(reinterpret_cast<Const_F>(entity));
+            F f = const_cast<F>(static_cast<Const_F>(entity));
             return R((*f)(std::forward<Args>(args)...));
         }
     }
