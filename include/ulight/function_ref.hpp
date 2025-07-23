@@ -102,7 +102,6 @@ public:
         } }
         , m_entity { entity }
     {
-        // FIXME: this seems overconstrained
     }
 
     /// @brief Constructs a `Function_Ref` from non-constant function pointer.
