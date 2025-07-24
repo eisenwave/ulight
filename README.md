@@ -103,7 +103,7 @@ Open `http://localhost:8000/` in your browser.
 
 µlight is still in its early stages, so not a lot of languages are supported.
 Every supported language has a "display name",
-one ore more "short names",
+one or more "short names",
 and a stable numeric ID whose value can be found in `include/ulight.h`.
 
 | Display name | Short names | `ulight_lang` |
