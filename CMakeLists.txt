@@ -111,15 +111,19 @@ if(DEFINED EMSCRIPTEN)
 else(NOT DEFINED EMSCRIPTEN)
     include(FetchContent)
 
-    FetchContent_Declare(
-        googletest
-        URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
-        DOWNLOAD_EXTRACT_TIMESTAMP true
-    )
-    set(INSTALL_GTEST OFF)
-    set(BUILD_GMOCK OFF)
-    set(BUILD_GTEST ON)
-    FetchContent_MakeAvailable(googletest)
+    # Let parent project provide gtest if available
+    if(NOT TARGET gtest)
+        FetchContent_Declare(
+            googletest
+            URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
+            DOWNLOAD_EXTRACT_TIMESTAMP true
+        )
+        set(INSTALL_GTEST OFF)
+        set(BUILD_GMOCK OFF)
+        set(BUILD_GTEST ON)
+        FetchContent_MakeAvailable(googletest)
+    endif()
+    
     if (googletest_POPULATED)
         message(STATUS "GTest found. Building ulight tests.")
         include(GoogleTest)
