@@ -109,9 +109,19 @@ if(DEFINED EMSCRIPTEN)
         COMMENT "Copying ulight.wasm and function.wasm to ${COPY_DESTINATION}"
     )
 else(NOT DEFINED EMSCRIPTEN)
-    find_package(GTest QUIET)
-    if (GTest_FOUND)
-        message(STATUS "GTest found. Building tests.")
+    include(FetchContent)
+
+    FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
+        DOWNLOAD_EXTRACT_TIMESTAMP true
+    )
+    set(INSTALL_GTEST OFF)
+    set(BUILD_GMOCK OFF)
+    set(BUILD_GTEST ON)
+    FetchContent_MakeAvailable(googletest)
+    if (googletest_POPULATED)
+        message(STATUS "GTest found. Building ulight tests.")
         include(GoogleTest)
         enable_testing()
 
@@ -129,7 +139,7 @@ else(NOT DEFINED EMSCRIPTEN)
             src/test/cpp/test_unicode.cpp
             src/test/cpp/test_unicode_algorithm.cpp
         )
-        target_link_libraries(ulight-test ulight GTest::GTest GTest::Main)
+        target_link_libraries(ulight-test ulight gtest gtest_main)
         gtest_discover_tests(ulight-test
             WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
             DISCOVERY_TIMEOUT 30
