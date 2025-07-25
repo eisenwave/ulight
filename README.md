@@ -5,6 +5,8 @@
 # µlight
 µlight or "u-light" is a zero-dependency, lightweight, and portable syntax highlighter.
 
+Get support on [our official Discord server][discord].
+
 ## Usage
 
 µlight provides a C API for the library,
@@ -195,3 +197,5 @@ The obvious benefit is that this approach has almost no overhead.
 If you only want to traverse the file without storing any objects permanently,
 you don't pay the cost of building a `std::vector<JSON_Object>` or something.
 You have full control.
+
+[discord]: https://discord.gg/fx8r5mP3Y9
