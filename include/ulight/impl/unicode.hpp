@@ -407,13 +407,13 @@ public:
     char32_t operator*() const
     {
         const std::expected<Code_Point_And_Length, Error_Code> result = next();
-#ifdef ULIGHT_EXCEPTIONS
         if (!result) {
+#ifdef ULIGHT_EXCEPTIONS
             throw Unicode_Error { result.error(), "Corrupted UTF-8 string or past the end." };
-        }
 #else
-        ULIGHT_ASSERT_UNREACHABLE(u8"Corrupted UTF-8 string or past the end.");
+            ULIGHT_ASSERT_UNREACHABLE(u8"Corrupted UTF-8 string or past the end.");
 #endif
+        }
         return result->code_point;
     }
 
