@@ -53,8 +53,12 @@ using Underlying = unsigned char;
 
 #ifdef __GNUC__
 #define ULIGHT_EXPORT [[gnu::used]]
+#define ULIGHT_HOT [[gnu::hot]]
+#define ULIGHT_COLD [[gnu::cold]]
 #else
 #define ULIGHT_EXPORT
+#define ULIGHT_HOT
+#define ULIGHT_COLD
 #endif
 
 #ifdef __EXCEPTIONS
