@@ -25,6 +25,7 @@
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/assert.hpp"
+#include "ulight/impl/platform.h"
 
 namespace ulight::utf8 {
 
@@ -80,15 +81,27 @@ public:
 /// @brief Returns the length of the UTF-8 unit sequence (including `c`)
 /// that is encoded when `c` is the first unit in that sequence.
 ///
-/// Returns `fallback` if `c` is not a valid leading code unit,
+/// Returns `0` if `c` is not a valid leading code unit,
 /// such as if it begins with `10` or `111110`.
-[[nodiscard]]
-constexpr int sequence_length(char8_t c, int fallback = 0) noexcept
+ULIGHT_HOT [[nodiscard]]
+constexpr int sequence_length(char8_t c) noexcept
 {
     /// @brief `{ 1, 0, 2, 3, 4, 0... }`
-    constexpr unsigned long lookup = 0b100'011'010'000'001;
+    constexpr std::int_fast32_t lookup = 0b100'011'010'000'001;
     const int leading_ones = std::countl_one(static_cast<unsigned char>(c));
-    return leading_ones > 4 ? fallback : int((lookup >> (leading_ones * 3)) & 0b111);
+    return int((lookup >> (leading_ones * 3)) & 0b111);
+}
+
+/// @brief Returns the length of the UTF-8 unit sequence (including `c`)
+/// that is encoded when `c` is the first unit in that sequence.
+///
+/// Returns `fallback` if `c` is not a valid leading code unit,
+/// such as if it begins with `10` or `111110`.
+ULIGHT_HOT [[nodiscard]]
+constexpr int sequence_length(char8_t c, int fallback) noexcept
+{
+    const int result = sequence_length(c);
+    return result == 0 ? fallback : result;
 }
 
 struct Code_Point_And_Length {
@@ -98,7 +111,7 @@ struct Code_Point_And_Length {
 
 namespace detail {
 
-[[nodiscard]]
+ULIGHT_HOT [[nodiscard]]
 inline std::uint32_t bit_compress(std::uint32_t x, std::uint32_t m) noexcept
 {
 #ifdef ULIGHT_X86_BMI2
@@ -131,7 +144,7 @@ using array_t = T[];
 /// Only the first `length` units are used for decoding.
 /// @param length The amount of UTF-8 units stored in `str`,
 /// in range `[1, 4]`.
-[[nodiscard]]
+ULIGHT_HOT [[nodiscard]]
 constexpr char32_t decode_unchecked(std::array<char8_t, 4> str, int length)
 {
     ULIGHT_DEBUG_ASSERT(length >= 1 && length <= 4);
@@ -206,10 +219,10 @@ alignas(std::uint32_t) inline constexpr char8_t expectation_values[][4] = {
 /// for a known sequence length.
 /// @param str The UTF-8 code units. Paddings bits need not be zero.
 /// @param length The length of the code unit sequence, in `[1, 4]`.
-[[nodiscard]]
+ULIGHT_HOT [[nodiscard]]
 constexpr bool is_valid(std::array<char8_t, 4> str, int length)
 {
-    ULIGHT_ASSERT(length >= 1 && length <= 4);
+    ULIGHT_DEBUG_ASSERT(length >= 1 && length <= 4);
 
     const auto str32 = std::bit_cast<std::uint32_t>(str);
     const auto mask = std::bit_cast<std::uint32_t>(detail::expectation_masks[length - 1]);
@@ -219,22 +232,53 @@ constexpr bool is_valid(std::array<char8_t, 4> str, int length)
     return (str32 & mask) == expected;
 }
 
+template <std::size_t size>
+ULIGHT_HOT [[nodiscard]]
+constexpr std::array<char8_t, size> first_n_unchecked(const char8_t* str)
+{
+    std::array<char8_t, size> result {};
+    for (std::size_t i = 0; i < size; ++i) {
+        // NOLINTNEXTLINE(readability-simplify-subscript-expr) to avoid hardened bounds checks
+        result.data()[i] = str[i];
+    }
+    return result;
+}
+
+template <std::size_t size>
+ULIGHT_HOT [[nodiscard]]
+constexpr std::array<char8_t, size> first_n_unchecked(std::u8string_view str)
+{
+    ULIGHT_DEBUG_ASSERT(str.size() >= size);
+    return first_n_unchecked<size>(str.data());
+}
+
+template <std::size_t size>
+ULIGHT_HOT [[nodiscard]]
+constexpr std::array<char8_t, size> first_n_padded(std::u8string_view str) noexcept
+{
+    std::array<char8_t, size> result {};
+    const std::size_t n = std::min(size, str.size());
+    // NOLINTNEXTLINE(readability-simplify-subscript-expr) to avoid hardened bounds checks
+    for (std::size_t i = 0; i < n; ++i) {
+        result.data()[i] = str[i];
+    }
+    return result;
+}
+
 /// @brief Returns the UTF-8-encoded code point within the units pointed to by `str`,
 /// as well as the amount of UTF-8 units encoding that code point.
-[[nodiscard]]
+ULIGHT_HOT [[nodiscard]]
 constexpr Code_Point_And_Length decode_and_length_unchecked(const char8_t* str)
 {
+    ULIGHT_DEBUG_ASSERT(str != nullptr);
     const int length = sequence_length(*str);
-    std::array<char8_t, 4> padded {};
-    for (int i = 0; i < length; ++i) {
-        padded[std::size_t(i)] = str[i];
-    }
+    const std::array<char8_t, 4> padded = first_n_padded<4>({ str, str + length });
     return { .code_point = decode_unchecked(padded, length), .length = length };
 }
 
 /// @brief Returns the UTF-8-encoded code point within the units pointed to by `str`.
 /// No bounds checks are performed.
-[[nodiscard]]
+ULIGHT_HOT [[nodiscard]]
 constexpr char32_t decode_unchecked(const char8_t* str)
 {
     return decode_and_length_unchecked(str).code_point;
@@ -247,42 +291,49 @@ constexpr char32_t decode_unchecked(const char8_t* str)
 /// Only the first `length` units are used for decoding.
 /// @param length The amount of UTF-8 units stored in `str`,
 /// in range `[1, 4]`.
-[[nodiscard]]
+ULIGHT_HOT [[nodiscard]]
 constexpr std::expected<char32_t, Error_Code> decode(std::array<char8_t, 4> str, int length)
 {
-    ULIGHT_ASSERT(length >= 1 && length <= 4);
-    if (!is_valid(str, length)) {
+    ULIGHT_DEBUG_ASSERT(length >= 1 && length <= 4);
+    if (!is_valid(str, length)) [[unlikely]] {
         return std::unexpected { Error_Code::illegal_bits };
     }
-
     return decode_unchecked(str, length);
 }
 
-[[nodiscard]]
+ULIGHT_HOT [[nodiscard]]
+constexpr char32_t decode_or_replacement(std::array<char8_t, 4> str, int length)
+{
+    ULIGHT_DEBUG_ASSERT(length >= 1 && length <= 4);
+    if (!is_valid(str, length)) [[unlikely]] {
+        return U'\N{REPLACEMENT CHARACTER}';
+    }
+    return decode_unchecked(str, length);
+}
+
+ULIGHT_HOT [[nodiscard]]
 constexpr std::expected<Code_Point_And_Length, Error_Code> //
 decode_and_length(std::u8string_view str) noexcept // NOLINT(bugprone-exception-escape)
 {
-    if (str.empty()) {
+    if (str.empty()) [[unlikely]] {
         return std::unexpected { Error_Code::no_data };
     }
     const int length = sequence_length(str[0]);
-    if (length == 0) {
+    if (length == 0) [[unlikely]] {
         return std::unexpected { Error_Code::illegal_bits };
     }
-    if (str.size() < std::size_t(length)) {
+    if (str.size() < std::size_t(length)) [[unlikely]] {
         return std::unexpected { Error_Code::missing_units };
     }
-    std::array<char8_t, 4> padded {};
-    std::copy(str.data(), str.data() + length, padded.data());
-    const std::expected<char32_t, Error_Code> result = decode(padded, length);
-    if (!result) {
+    const std::expected<char32_t, Error_Code> result = decode(first_n_padded<4>(str), length);
+    if (!result) [[unlikely]] {
         return std::unexpected(result.error());
     }
 
     return Code_Point_And_Length { .code_point = *result, .length = length };
 }
 
-[[nodiscard]]
+ULIGHT_HOT [[nodiscard]]
 constexpr std::expected<char32_t, Error_Code> //
 decode(std::u8string_view str) noexcept
 {
@@ -290,7 +341,7 @@ decode(std::u8string_view str) noexcept
 }
 
 #ifdef ULIGHT_EXCEPTIONS
-[[nodiscard]]
+ULIGHT_HOT [[nodiscard]]
 constexpr Code_Point_And_Length decode_and_length_or_throw(std::u8string_view str)
 {
     const std::expected<Code_Point_And_Length, Error_Code> result = decode_and_length(str);
@@ -306,20 +357,55 @@ constexpr Code_Point_And_Length decode_and_length_or_throw(std::u8string_view st
 /// and where the length is `1` if `str` is nonempty, otherwise `0`.
 ///
 /// Note that U+FFFD conventionally indicates that a decoding error has occurred.
-[[nodiscard]]
+ULIGHT_HOT [[nodiscard]]
 constexpr Code_Point_And_Length decode_and_length_or_replacement(std::u8string_view str) noexcept
 {
-    const std::expected<Code_Point_And_Length, Error_Code> result = decode_and_length(str);
-    if (!result) [[unlikely]] {
-        return { .code_point = U'\N{REPLACEMENT CHARACTER}',
-                 .length = std::max(1, int(str.length())) };
+    if (str.empty()) [[unlikely]] {
+        return { U'\N{REPLACEMENT CHARACTER}', 0 };
     }
-    return *result;
+    // NOLINTNEXTLINE(readability-simplify-subscript-expr) to avoid hardened bounds checks
+    const int length = sequence_length(str.data()[0]);
+    if (length == 0) [[unlikely]] {
+        return { U'\N{REPLACEMENT CHARACTER}', 1 };
+    }
+    if (str.size() < std::size_t(length)) [[unlikely]] {
+        return { U'\N{REPLACEMENT CHARACTER}', 1 };
+    }
+    const std::array<char8_t, 4> padded = first_n_padded<4>(str);
+    const char32_t code_point = is_valid(padded, length) ? decode_unchecked(padded, length)
+                                                         : U'\N{REPLACEMENT CHARACTER}';
+    return { code_point, length };
+}
+
+/// @brief Equivalent to the overload taking `std::u8string_view`,
+/// but may be substantially faster because `str` never has to be checked for emptiness
+/// or insufficient size for the decoded UTF-8 sequence length.
+ULIGHT_HOT [[nodiscard]]
+constexpr Code_Point_And_Length // NOLINTNEXTLINE(bugprone-exception-escape)
+decode_and_length_or_replacement(std::array<char8_t, 4> str) noexcept
+{
+    // NOLINTNEXTLINE(readability-simplify-subscript-expr) to avoid hardened bounds checks
+    const int length = sequence_length(str.data()[0]);
+    ULIGHT_DEBUG_ASSERT(length <= 4);
+    if (length == 0) [[unlikely]] {
+        return { U'\N{REPLACEMENT CHARACTER}', 1 };
+    }
+    if (!is_valid(str, length)) [[unlikely]] {
+        return { U'\N{REPLACEMENT CHARACTER}', 1 };
+    }
+    return { decode_unchecked(str, length), length };
 }
 
 /// @brief Equivalent to `decode_and_length_or_replacement(str).code_point`.
-[[nodiscard]]
+ULIGHT_HOT [[nodiscard]]
 constexpr char32_t decode_or_replacement(std::u8string_view str) noexcept
+{
+    return decode_and_length_or_replacement(str).code_point;
+}
+
+/// @brief Equivalent to `decode_and_length_or_replacement(str).code_point`.
+ULIGHT_HOT [[nodiscard]]
+constexpr char32_t decode_or_replacement(std::array<char8_t, 4> str) noexcept
 {
     return decode_and_length_or_replacement(str).code_point;
 }
@@ -493,7 +579,7 @@ struct Code_Units_And_Length {
 /// If `is_surrogate(code_point)` is `true`,
 /// the contents of `code_units` in the result are unspecified,
 /// but the code point can be decoded using e.g. `decode_unchecked` again.
-[[nodiscard]]
+ULIGHT_HOT [[nodiscard]]
 constexpr Code_Units_And_Length encode8_unchecked(char32_t code_point) noexcept
 {
     Code_Units_And_Length result {};
