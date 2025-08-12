@@ -16,6 +16,9 @@ std::size_t match_argument_name(std::u8string_view str);
 std::size_t match_escape(std::u8string_view str);
 
 [[nodiscard]]
+std::size_t match_ellipsis(std::u8string_view str);
+
+[[nodiscard]]
 std::size_t match_whitespace(std::u8string_view str);
 
 /// @brief Matches a line comment, starting with `\:` and continuing until the end of the line.

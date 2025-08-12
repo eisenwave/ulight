@@ -40,6 +40,12 @@ std::size_t match_escape(std::u8string_view str)
     return str.starts_with(u8"\\\r\n") ? 3 : 2;
 }
 
+std::size_t match_ellipsis(std::u8string_view str)
+{
+    constexpr std::u8string_view ellipsis = u8"...";
+    return str.starts_with(ellipsis) ? ellipsis.length() : 0;
+}
+
 std::size_t match_whitespace(std::u8string_view str)
 {
     constexpr auto predicate = [](char8_t c) { return is_html_whitespace(c); };
@@ -136,6 +142,7 @@ struct Consumer {
     virtual void comma() = 0;
     virtual void argument_name(std::size_t length) = 0;
     virtual void equals() = 0;
+    virtual void argument_ellipsis(std::size_t length) = 0;
     virtual void directive_name(std::size_t length) = 0;
     virtual void opening_brace() = 0;
     virtual void closing_brace() = 0;
@@ -248,8 +255,8 @@ std::size_t match_content_sequence(Consumer& out, std::u8string_view str, Conten
 
 std::size_t match_argument(Consumer& out, std::u8string_view str)
 {
-    Named_Argument_Result name = match_named_argument_prefix(str);
-    if (name) {
+    // TODO: unify handling of leading whitespace/comment sequence
+    if (Named_Argument_Result name = match_named_argument_prefix(str)) {
         if (name.leading_whitespace) {
             out.whitespace(name.leading_whitespace);
         }
@@ -258,10 +265,25 @@ std::size_t match_argument(Consumer& out, std::u8string_view str)
             out.whitespace(name.trailing_whitespace);
         }
         out.equals();
+        const std::size_t content_length
+            = match_content_sequence(out, str.substr(name.length), Content_Context::argument_value);
+        return name.length + content_length;
     }
-    const std::size_t content_length
-        = match_content_sequence(out, str.substr(name.length), Content_Context::argument_value);
-    return name.length + content_length;
+
+    const std::size_t leading_whitespace = match_whitespace(str);
+    if (leading_whitespace) {
+        out.whitespace(leading_whitespace);
+    }
+
+    const std::size_t ellipsis_length = match_ellipsis(str.substr(leading_whitespace));
+    if (ellipsis_length) {
+        out.argument_ellipsis(ellipsis_length);
+    }
+
+    const std::size_t content_length = match_content_sequence(
+        out, str.substr(leading_whitespace + ellipsis_length), Content_Context::argument_value
+    );
+    return leading_whitespace + ellipsis_length + content_length;
 }
 
 std::size_t match_argument_list(Consumer& out, std::u8string_view str)
@@ -410,6 +432,10 @@ struct Highlighter::Normal_Consumer final : Consumer {
     {
         self.emit_and_advance(1, Highlight_Type::sym_punc);
     }
+    void argument_ellipsis(std::size_t e) final
+    {
+        self.emit_and_advance(e, Highlight_Type::attr);
+    }
     void directive_name(std::size_t d) final
     {
         self.emit_and_advance(d, Highlight_Type::markup_tag);
@@ -494,6 +520,10 @@ public:
     void equals() final
     {
         *active_length += 1;
+    }
+    void argument_ellipsis(std::size_t e) final
+    {
+        *active_length += e;
     }
     void directive_name(std::size_t d) final
     {
@@ -588,6 +618,11 @@ public:
     void equals() final
     {
         m_current->equals();
+    }
+    void argument_ellipsis(std::size_t e) final
+    {
+        ULIGHT_DEBUG_ASSERT(e != 0);
+        m_current->argument_ellipsis(e);
     }
     void directive_name(std::size_t d) final
     {
