@@ -25,7 +25,7 @@ constexpr bool is_cowel_special(char32_t c) noexcept
 
 inline constexpr Charset256 is_cowel_escapeable_set
     = (is_ascii_punctuation_set //
-       - detail::to_charset256(u8"-_") //
+       - detail::to_charset256(u8'_') //
        - detail::to_charset256(cowel_comment_char)) //
     | detail::to_charset256(u8" \t\v\r\n");
 
