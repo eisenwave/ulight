@@ -105,7 +105,7 @@ Named_Argument_Result match_named_argument_prefix(const std::u8string_view str)
 namespace {
 
 struct Bracket_Levels {
-    std::size_t square = 0;
+    std::size_t arguments = 0;
     std::size_t brace = 0;
 };
 
@@ -123,7 +123,7 @@ bool is_terminated_by(Content_Context context, char8_t c)
 {
     switch (context) {
     case Content_Context::argument_value: //
-        return c == u8',' || c == u8']' || c == u8'}';
+        return c == u8',' || c == u8')' || c == u8'}';
     case Content_Context::block: //
         return c == u8'}';
     default: //
@@ -137,8 +137,8 @@ struct Consumer {
     virtual void escape(std::size_t length) = 0;
     virtual void comment(std::size_t length) = 0;
 
-    virtual void opening_square() = 0;
-    virtual void closing_square() = 0;
+    virtual void opening_parenthesis() = 0;
+    virtual void closing_parenthesis() = 0;
     virtual void comma() = 0;
     virtual void argument_name(std::size_t length) = 0;
     virtual void equals() = 0;
@@ -217,13 +217,13 @@ std::size_t match_content(
             continue;
         }
         if (context == Content_Context::argument_value && levels.brace == 0) {
-            if (levels.square == 0 && c == u8',') {
+            if (levels.arguments == 0 && c == u8',') {
                 break;
             }
-            if (c == u8'[') {
-                ++levels.square;
+            if (c == u8'(') {
+                ++levels.arguments;
             }
-            if (c == u8']' && levels.square-- == 0) {
+            if (c == u8')' && levels.arguments-- == 0) {
                 break;
             }
         }
@@ -253,7 +253,9 @@ std::size_t match_content_sequence(Consumer& out, std::u8string_view str, Conten
     return length;
 }
 
-std::size_t match_argument(Consumer& out, std::u8string_view str)
+std::size_t match_argument_value(Consumer& out, std::u8string_view str);
+
+std::size_t match_argument(Consumer& out, const std::u8string_view str)
 {
     // TODO: unify handling of leading whitespace/comment sequence
     if (Named_Argument_Result name = match_named_argument_prefix(str)) {
@@ -275,24 +277,16 @@ std::size_t match_argument(Consumer& out, std::u8string_view str)
         out.whitespace(leading_whitespace);
     }
 
-    const std::size_t ellipsis_length = match_ellipsis(str.substr(leading_whitespace));
-    if (ellipsis_length) {
-        out.argument_ellipsis(ellipsis_length);
-    }
-
-    const std::size_t content_length = match_content_sequence(
-        out, str.substr(leading_whitespace + ellipsis_length), Content_Context::argument_value
-    );
-    return leading_whitespace + ellipsis_length + content_length;
+    return leading_whitespace + match_argument_value(out, str.substr(leading_whitespace));
 }
 
 std::size_t match_argument_list(Consumer& out, std::u8string_view str)
 {
-    if (!str.starts_with(u8'[')) {
+    if (!str.starts_with(u8'(')) {
         return 0;
     }
     out.push_arguments();
-    out.opening_square();
+    out.opening_parenthesis();
     str.remove_prefix(1);
 
     std::size_t length = 1;
@@ -308,8 +302,8 @@ std::size_t match_argument_list(Consumer& out, std::u8string_view str)
             out.pop_arguments();
             return length;
         }
-        if (str[0] == u8']') {
-            out.closing_square();
+        if (str[0] == u8')') {
+            out.closing_parenthesis();
             out.pop_arguments();
             ++length;
             return length;
@@ -325,6 +319,19 @@ std::size_t match_argument_list(Consumer& out, std::u8string_view str)
 
     out.unexpected_eof();
     return length;
+}
+
+std::size_t match_argument_value(Consumer& out, std::u8string_view str)
+{
+    const std::size_t ellipsis_length = match_ellipsis(str);
+    if (ellipsis_length) {
+        out.argument_ellipsis(ellipsis_length);
+        str.remove_prefix(ellipsis_length);
+    }
+    const std::size_t trailing_length = str.starts_with(u8'(')
+        ? match_argument_list(out, str)
+        : match_content_sequence(out, str, Content_Context::argument_value);
+    return ellipsis_length + trailing_length;
 }
 
 std::size_t match_block(Consumer& out, std::u8string_view str)
@@ -412,13 +419,13 @@ struct Highlighter::Normal_Consumer final : Consumer {
         }
     }
 
-    void opening_square() final
+    void opening_parenthesis() final
     {
-        self.emit_and_advance(1, Highlight_Type::sym_square);
+        self.emit_and_advance(1, Highlight_Type::sym_parens);
     }
-    void closing_square() final
+    void closing_parenthesis() final
     {
-        self.emit_and_advance(1, Highlight_Type::sym_square);
+        self.emit_and_advance(1, Highlight_Type::sym_parens);
     }
     void comma() final
     {
@@ -501,11 +508,11 @@ public:
         *active_length += c;
     }
 
-    void opening_square() final
+    void opening_parenthesis() final
     {
         *active_length += 1;
     }
-    void closing_square() final
+    void closing_parenthesis() final
     {
         *active_length += 1;
     }
@@ -598,13 +605,13 @@ public:
         m_current->comment(c);
     }
 
-    void opening_square() final
+    void opening_parenthesis() final
     {
-        m_current->opening_square();
+        m_current->opening_parenthesis();
     }
-    void closing_square() final
+    void closing_parenthesis() final
     {
-        m_current->closing_square();
+        m_current->closing_parenthesis();
     }
     void comma() final
     {

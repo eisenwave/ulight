@@ -1,5 +1,15 @@
-\tag[100]
-\tag[id = 500, x, z = y]
-\tag[a, b, c]
-\tag[]{}
-\tag[xzy, abc = 123]{}
+\tag(100)
+\tag(id = 500, x, z = y)
+\tag(a, b, c)
+\tag(){}
+\tag(xzy, abc = 123){}
+
+\tag(()){}
+\tag((())){}
+\tag((,,)){}
+
+\tag((), (), ()){}
+\tag((), (), (),){}
+\tag(group = ()){}
+\tag(a = (), b = (), c = ()){}
+\tag(a = (), b = (), c = (),){}

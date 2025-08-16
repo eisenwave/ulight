@@ -9,7 +9,7 @@ namespace ulight {
 
 inline constexpr char8_t cowel_comment_char = u8':';
 
-inline constexpr Charset256 is_cowel_special_set = detail::to_charset256(u8"{}\\[],=");
+inline constexpr Charset256 is_cowel_special_set = detail::to_charset256(u8"{}\\(),=");
 
 [[nodiscard]]
 constexpr bool is_cowel_special(char8_t c) noexcept
