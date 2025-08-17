@@ -11,5 +11,7 @@
 \tag((), (), ()){}
 \tag((), (), (),){}
 \tag(group = ()){}
+\tag(group = (x, y)){}
+\tag(group = (x = 0, y = 1)){}
 \tag(a = (), b = (), c = ()){}
 \tag(a = (), b = (), c = (),){}

@@ -253,6 +253,10 @@ std::size_t match_content_sequence(Consumer& out, std::u8string_view str, Conten
     return length;
 }
 
+[[nodiscard]]
+std::size_t match_ellipsis_or_argument_value(Consumer& out, std::u8string_view str);
+
+[[nodiscard]]
 std::size_t match_argument_value(Consumer& out, std::u8string_view str);
 
 std::size_t match_argument(Consumer& out, const std::u8string_view str)
@@ -267,9 +271,15 @@ std::size_t match_argument(Consumer& out, const std::u8string_view str)
             out.whitespace(name.trailing_whitespace);
         }
         out.equals();
-        const std::size_t content_length
-            = match_content_sequence(out, str.substr(name.length), Content_Context::argument_value);
-        return name.length + content_length;
+
+        const std::size_t post_equals_whitespace = match_whitespace(str.substr(name.length));
+        if (post_equals_whitespace) {
+            out.whitespace(post_equals_whitespace);
+        }
+
+        const std::size_t value_length
+            = match_argument_value(out, str.substr(name.length + post_equals_whitespace));
+        return name.length + post_equals_whitespace + value_length;
     }
 
     const std::size_t leading_whitespace = match_whitespace(str);
@@ -277,9 +287,11 @@ std::size_t match_argument(Consumer& out, const std::u8string_view str)
         out.whitespace(leading_whitespace);
     }
 
-    return leading_whitespace + match_argument_value(out, str.substr(leading_whitespace));
+    return leading_whitespace
+        + match_ellipsis_or_argument_value(out, str.substr(leading_whitespace));
 }
 
+[[nodiscard]]
 std::size_t match_argument_list(Consumer& out, std::u8string_view str)
 {
     if (!str.starts_with(u8'(')) {
@@ -323,15 +335,19 @@ std::size_t match_argument_list(Consumer& out, std::u8string_view str)
 
 std::size_t match_argument_value(Consumer& out, std::u8string_view str)
 {
+    return str.starts_with(u8'(')
+        ? match_argument_list(out, str)
+        : match_content_sequence(out, str, Content_Context::argument_value);
+}
+
+std::size_t match_ellipsis_or_argument_value(Consumer& out, std::u8string_view str)
+{
     const std::size_t ellipsis_length = match_ellipsis(str);
     if (ellipsis_length) {
         out.argument_ellipsis(ellipsis_length);
         str.remove_prefix(ellipsis_length);
     }
-    const std::size_t trailing_length = str.starts_with(u8'(')
-        ? match_argument_list(out, str)
-        : match_content_sequence(out, str, Content_Context::argument_value);
-    return ellipsis_length + trailing_length;
+    return ellipsis_length + match_argument_value(out, str);
 }
 
 std::size_t match_block(Consumer& out, std::u8string_view str)
