@@ -13,7 +13,6 @@
 #include "ulight/impl/memory.hpp"
 #include "ulight/impl/platform.h"
 #include "ulight/impl/strings.hpp"
-#include "ulight/impl/unicode.hpp"
 
 namespace ulight {
 namespace {
