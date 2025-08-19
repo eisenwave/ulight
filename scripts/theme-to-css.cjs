@@ -36,6 +36,8 @@ const longNameToShort = {
     "id-label-decl": "id_labl_decl",
     "id-parameter": "id_para",
     "id-argument": "id_arg",
+    "id-nonterminal": "id_nt",
+    "id-nonterminal-decl": "id_nt_dcl",
     "keyword": "kw",
     "keyword-control": "kw_ctrl",
     "keyword-type": "kw_type",
