@@ -25,6 +25,13 @@
         "macro": "#6f4e37",
         "id": "#000000",
         "id-label": "#517a0b",
+        "id-nonterminal": {
+            "font-style": "italic"
+        },
+        "id-nonterminal-decl": {
+            "color": "#00607c",
+            "font-style": "italic"
+        },
         "keyword": "#00607c",
         "sym": "#570057",
         "sym-punc": "#000000",
@@ -144,6 +151,13 @@
         "macro": "#cc946e",
         "id": "#f0f0f0",
         "id-label": "#d8eda6",
+        "id-nonterminal": {
+            "font-style": "italic"
+        },
+        "id-nonterminal-decl": {
+            "color": "#62ded6",
+            "font-style": "italic"
+        },
         "keyword": "#62ded6",
         "sym": "#baa6b9",
         "sym-punc": "#d0d0d0",

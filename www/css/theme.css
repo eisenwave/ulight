@@ -181,6 +181,12 @@
 [data-ulight-theme=light-ulight] h-[data-h^=id_fun] {
     color: #853e7a;
 }
+[data-ulight-theme=light-ulight] h-[data-h^=id_nt] {
+    color: #5c477e;
+}
+[data-ulight-theme=light-ulight] h-[data-h^=id_nt_dcl] {
+    color: #c80032;
+}
 [data-ulight-theme=light-ulight] h-[data-h^=id_para] {
     color: #5c477e;
 }
@@ -370,6 +376,12 @@
 }
 [data-ulight-theme=dark-ulight] h-[data-h^=id_fun] {
     color: #ffdc9c;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=id_nt] {
+    color: #a4c4de;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=id_nt_dcl] {
+    color: #ff5a82;
 }
 [data-ulight-theme=dark-ulight] h-[data-h^=id_para] {
     color: #a4c4de;
@@ -696,8 +708,17 @@
 [data-ulight-theme=dark-vs-plus] h-[data-h^=id_cons] {
     color: #4fc1ff;
 }
+[data-ulight-theme=dark-vs-plus] h-[data-h^=id_fun] {
+    color: #dcdcaa;
+}
 [data-ulight-theme=dark-vs-plus] h-[data-h^=id_labl] {
     color: #c8c8c8;
+}
+[data-ulight-theme=dark-vs-plus] h-[data-h^=id_nt] {
+    color: #4fc1ff;
+}
+[data-ulight-theme=dark-vs-plus] h-[data-h^=id_nt_dcl] {
+    color: #dcdcaa;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=id_para] {
     color: #9cdcfe;
@@ -888,6 +909,13 @@
 [data-ulight-theme=light-wg21] h-[data-h^=id_labl] {
     color: #517a0b;
 }
+[data-ulight-theme=light-wg21] h-[data-h^=id_nt] {
+    font-style: italic;
+}
+[data-ulight-theme=light-wg21] h-[data-h^=id_nt_dcl] {
+    color: #00607c;
+    font-style: italic;
+}
 [data-ulight-theme=light-wg21] h-[data-h^=kw] {
     color: #00607c;
 }
@@ -1059,6 +1087,13 @@
 }
 [data-ulight-theme=dark-wg21] h-[data-h^=id_labl] {
     color: #d8eda6;
+}
+[data-ulight-theme=dark-wg21] h-[data-h^=id_nt] {
+    font-style: italic;
+}
+[data-ulight-theme=dark-wg21] h-[data-h^=id_nt_dcl] {
+    color: #62ded6;
+    font-style: italic;
 }
 [data-ulight-theme=dark-wg21] h-[data-h^=kw] {
     color: #62ded6;
