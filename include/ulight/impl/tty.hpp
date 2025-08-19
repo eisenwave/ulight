@@ -1,7 +1,10 @@
 #ifndef ULIGHT_TTY_HPP
 #define ULIGHT_TTY_HPP
 
-#ifndef ULIGHT_EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
+#error I/O functionality should not be included in emscripten builds.
+#endif
+
 #include <cstdio>
 
 namespace ulight {
@@ -22,6 +25,4 @@ extern const bool is_stdout_tty;
 extern const bool is_stderr_tty;
 
 } // namespace ulight
-#endif
-
 #endif

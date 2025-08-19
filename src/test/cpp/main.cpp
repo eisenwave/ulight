@@ -1,3 +1,7 @@
+#ifdef __EMSCRIPTEN__
+#error This file is not meant for emscripten compilation.
+#endif
+
 #ifdef __unix__
 #include "stdio.h" // NOLINT for fileno
 #include <cstdio>

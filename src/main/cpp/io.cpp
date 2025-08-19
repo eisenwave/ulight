@@ -1,4 +1,4 @@
-#ifndef EMSCRIPTEN
+#ifndef __EMSCRIPTEN__
 #include <bit>
 #include <cstddef>
 #include <cstdio>
@@ -92,4 +92,5 @@ std::expected<std::vector<char32_t>, IO_Error_Code> load_utf32le_file(std::strin
 }
 
 } // namespace ulight
+
 #endif
