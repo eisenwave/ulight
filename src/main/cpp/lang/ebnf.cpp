@@ -144,6 +144,11 @@ public:
                 emit_and_advance(1, Highlight_Type::sym_parens);
                 break;
             }
+            case u8'?': {
+                state = State::right_before_name;
+                consume_special_sequence();
+                break;
+            }
             case u8'0':
             case u8'1':
             case u8'2':
