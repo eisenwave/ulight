@@ -71,6 +71,14 @@ set(LIBRARY_SOURCES
     src/main/cpp/ulight.cpp
 )
 
+# This is intentionally defined both for WASM and native builds.
+# For example, COWEL is linked against this library on WASM builds.
+add_library(ulight STATIC ${LIBRARY_SOURCES})
+target_include_directories(ulight PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
+
+target_compile_options(ulight PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
+target_link_options(ulight PUBLIC ${SANITIZER_OPTIONS})
+
 if(DEFINED EMSCRIPTEN)
     # https://stunlock.gg/posts/emscripten_with_cmake/
     add_executable(ulight-wasm ${LIBRARY_SOURCES} src/main/cpp/wasm.cpp)
@@ -111,12 +119,6 @@ if(DEFINED EMSCRIPTEN)
         COMMENT "Copying ulight.wasm and function.wasm to ${COPY_DESTINATION}"
     )
 else(NOT DEFINED EMSCRIPTEN)
-    add_library(ulight STATIC ${LIBRARY_SOURCES})
-    target_include_directories(ulight PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
-
-    target_compile_options(ulight PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
-    target_link_options(ulight PUBLIC ${SANITIZER_OPTIONS})
-
     include(FetchContent)
 
     # Let parent project provide gtest if available
