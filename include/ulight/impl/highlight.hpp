@@ -124,6 +124,12 @@ bool highlight_nasm(
     std::pmr::memory_resource* memory,
     const Highlight_Options& options = {}
 );
+bool highlight_ebnf(
+    Non_Owning_Buffer<Token>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource* memory,
+    const Highlight_Options& options = {}
+);
 
 inline Status highlight(
     Non_Owning_Buffer<Token>& out,
@@ -173,6 +179,8 @@ inline Status highlight(
         return to_result(highlight_latex(out, source, memory, options));
     case Lang::nasm: //
         return to_result(highlight_nasm(out, source, memory, options));
+    case Lang::ebnf: //
+        return to_result(highlight_ebnf(out, source, memory, options));
     default: //
         return Status::bad_lang;
     }

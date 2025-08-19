@@ -47,6 +47,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/lang/cpp.cpp
     src/main/cpp/lang/css.cpp
     src/main/cpp/lang/diff.cpp
+    src/main/cpp/lang/ebnf.cpp
     src/main/cpp/lang/html.cpp
     src/main/cpp/lang/js.cpp
     src/main/cpp/lang/json.cpp

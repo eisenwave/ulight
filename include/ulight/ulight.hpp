@@ -23,6 +23,7 @@ enum struct Lang : Underlying {
     cpp = ULIGHT_LANG_CPP,
     css = ULIGHT_LANG_CSS,
     diff = ULIGHT_LANG_DIFF,
+    ebnf = ULIGHT_LANG_EBNF,
     html = ULIGHT_LANG_HTML,
     javascript = ULIGHT_LANG_JS,
     json = ULIGHT_LANG_JSON,
@@ -142,6 +143,8 @@ constexpr Flag operator|(Flag x, Flag y) noexcept
     F(id_label_decl, "id-label-decl", "id_labl_decl", ULIGHT_HL_ID_LABEL_DECL)                     \
     F(id_parameter, "id-parameter", "id_para", ULIGHT_HL_ID_PARAMETER)                             \
     F(id_argument, "id-argument", "id_arg", ULIGHT_HL_ID_ARGUMENT)                                 \
+    F(id_nonterminal, "id-nonterminal", "id_nt", ULIGHT_HL_ID_NONTERMINAL)                         \
+    F(id_nonterminal_decl, "id-nonterminal-decl", "id_nt_dcl", ULIGHT_HL_ID_NONTERMINAL_DECL)      \
     F(keyword, "keyword", "kw", ULIGHT_HL_KEYWORD)                                                 \
     F(keyword_control, "keyword-control", "kw_ctrl", ULIGHT_HL_KEYWORD_CONTROL)                    \
     F(keyword_type, "keyword-type", "kw_type", ULIGHT_HL_KEYWORD_TYPE)                             \

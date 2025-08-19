@@ -54,7 +54,7 @@ typedef struct ulight_u8string_view {
 enum {
     /// @brief The amount of unique languages supported,
     /// including `ULIGHT_LANG_NONE`.
-    ULIGHT_LANG_COUNT = 17
+    ULIGHT_LANG_COUNT = 18
 };
 
 /// @brief A language supported by ulight for syntax highlighting.
@@ -71,6 +71,8 @@ typedef enum ulight_lang {
     ULIGHT_LANG_CSS = 5,
     /// @brief Unidiff, i.e. GNU `diff` output in Unified Format.
     ULIGHT_LANG_DIFF = 9,
+    /// @brief Extended Backus-Naur Form, SO/IEC 14977.
+    ULIGHT_LANG_EBNF = 17,
     /// @brief HTML.
     ULIGHT_LANG_HTML = 4,
     /// @brief JavaScript.
@@ -306,6 +308,11 @@ typedef enum ulight_highlight_type {
     /// a named argument/designator,
     /// like in `{ .x = 0 }` in C++ or in `f(x = 3)` in Python.
     ULIGHT_HL_ID_ARGUMENT = 0x51,
+    /// @brief A nonterminal symbol in a grammar.
+    ULIGHT_HL_ID_NONTERMINAL = 0x52,
+    /// @brief A nonterminal symbol in a grammar,
+    /// within the declaration or production rule, like `rule = "b"` in EBNF.
+    ULIGHT_HL_ID_NONTERMINAL_DECL = 0x53,
 
     /// @brief In coding languages, a keyword, like `import`.
     ULIGHT_HL_KEYWORD = 0x60,
@@ -316,9 +323,9 @@ typedef enum ulight_highlight_type {
     /// @brief In coding languages, a keyword that represents an operator, like `and`.
     ULIGHT_HL_KEYWORD_OP = 0x63,
 
-    /// @brief In languages with attribute syntax, the attribute content
+    /// @brief In languages with attribute syntax, the attribute content.
     ULIGHT_HL_ATTR = 0x70,
-    /// @brief In languages with attribute syntax, the attribute delimiters
+    /// @brief In languages with attribute syntax, the attribute delimiters.
     ULIGHT_HL_ATTR_DELIM = 0x71,
 
     // 0x80..0x87 Diff highlighting
@@ -341,7 +348,7 @@ typedef enum ulight_highlight_type {
     /// such as a line preceded with `!` in Context Format.
     ULIGHT_HL_DIFF_MODIFICATION = 0x85,
 
-    // 0x88..0x8a Unused
+    // 0x88..0x8f Unused
     // -------------------------------------------------------------------------
 
     // 0x90..0xaf Markup-specific highlighting
