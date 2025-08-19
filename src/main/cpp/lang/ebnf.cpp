@@ -175,6 +175,32 @@ public:
                 }
                 break;
             }
+            case u8'A':
+            case u8'B':
+            case u8'C':
+            case u8'D':
+            case u8'E':
+            case u8'F':
+            case u8'G':
+            case u8'H':
+            case u8'I':
+            case u8'J':
+            case u8'K':
+            case u8'L':
+            case u8'M':
+            case u8'N':
+            case u8'O':
+            case u8'P':
+            case u8'Q':
+            case u8'R':
+            case u8'S':
+            case u8'T':
+            case u8'U':
+            case u8'V':
+            case u8'W':
+            case u8'X':
+            case u8'Y':
+            case u8'Z':
             case u8'a':
             case u8'b':
             case u8'c':
