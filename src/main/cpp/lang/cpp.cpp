@@ -107,6 +107,17 @@ std::size_t match_non_whitespace(std::u8string_view str)
 namespace {
 
 [[nodiscard]]
+constexpr bool is_string_literal_prefix(std::u8string_view str)
+{
+    // https://eel.is/c++draft/lex.string#nt:string-literal
+    static constexpr std::u8string_view strings[] {
+        u8"L", u8"LR", u8"R", u8"U", u8"UR", u8"u", u8"u8", u8"u8R", u8"uR",
+    };
+    static_assert(std::ranges::is_sorted(strings));
+    return std::ranges::binary_search(strings, str);
+}
+
+[[nodiscard]]
 std::size_t match_newline_escape(std::u8string_view str)
 {
     // https://eel.is/c++draft/lex.phases#1.2
@@ -749,12 +760,9 @@ public:
         if (prefix_length != 0) {
             const auto prefix = remainder().substr(0, prefix_length);
             const auto prefix_highlight = //
-                prefix == u8"u8" || prefix == u8"u" || prefix == u8"U" || prefix == u8"L" || //
-                    prefix == u8"u8R" || prefix == u8"uR" || prefix == u8"UR" || prefix == u8"LR"
-                    || //
-                    prefix == u8"R"
-                ? Highlight_Type::string_decor
-                : Highlight_Type::error;
+                prefix == u8"operator"             ? Highlight_Type::keyword
+                : is_string_literal_prefix(prefix) ? Highlight_Type::string_decor
+                                                   : Highlight_Type::error;
             emit_and_advance(prefix_length, prefix_highlight);
             is_raw = prefix.ends_with(u8'R');
         }

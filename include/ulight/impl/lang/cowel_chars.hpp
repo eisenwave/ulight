@@ -135,6 +135,25 @@ constexpr bool is_cowel_allowed_after_backslash(char32_t c) noexcept
     return is_ascii(c) && is_cowel_allowed_after_backslash(char8_t(c));
 }
 
+inline constexpr Charset256 is_cowel_unquoted_string_set
+    = is_cowel_directive_name_set | detail::to_charset256(u8'-');
+
+/// @brief Returns `true` iff `c` can appear in an argument value
+/// without surrounding quotation marks.
+[[nodiscard]]
+constexpr bool is_cowel_unquoted_string(char8_t c) noexcept
+{
+    return is_cowel_unquoted_string_set.contains(c);
+}
+
+/// @brief Returns `true` iff `c` can appear in an argument value
+/// without surrounding quotation marks.
+[[nodiscard]]
+constexpr bool is_cowel_unquoted_string(char32_t c) noexcept
+{
+    return is_ascii(c) && is_cowel_unquoted_string(char8_t(c));
+}
+
 } // namespace ulight
 
 #endif
