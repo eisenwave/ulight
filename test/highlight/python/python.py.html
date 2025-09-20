@@ -1,0 +1,359 @@
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt>!/usr/bin/env python3</h->
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> -*- coding: utf-8 -*-</h->
+<h- data-h=str_dlim>"""</h-><h- data-h=str>Python syntax-highlighting stress test.
+This file intentionally contains a very wide variety of Python language features,
+idioms, punctuation, and corner cases so that syntax highlighters can be tested.
+Do not use this file as production code — it's deliberately noisy.
+</h-><h- data-h=str_dlim>"""</h->
+
+<h- data-h=kw>from</h-> <h- data-h=id>__future__</h-> <h- data-h=kw>import</h-> <h- data-h=id>annotations</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>generator_stop</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Standard library imports (multiple styles)</h->
+<h- data-h=kw>import</h-> <h- data-h=id>sys</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>os</h-> <h- data-h=kw>as</h-> <h- data-h=id>_os</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>math</h->
+<h- data-h=kw>from</h-> <h- data-h=id>collections</h-> <h- data-h=kw>import</h-> <h- data-h=id>defaultdict</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>namedtuple</h-> <h- data-h=kw>as</h-> <h- data-h=id>NT</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>deque</h->
+<h- data-h=kw>from</h-> <h- data-h=id>dataclasses</h-> <h- data-h=kw>import</h-> <h- data-h=id>dataclass</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>field</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>InitVar</h->
+<h- data-h=kw>from</h-> <h- data-h=id>typing</h-> <h- data-h=kw>import</h-> <h- data-h=sym_par>(</h->
+    <h- data-h=id>Any</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Callable</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Dict</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Iterable</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Iterator</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>List</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Optional</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Tuple</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Union</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>TypeVar</h-><h- data-h=sym_punc>,</h->
+    <h- data-h=id>Generic</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Protocol</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>runtime_checkable</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Final</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>NewType</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Literal</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Annotated</h->
+<h- data-h=sym_par>)</h->
+<h- data-h=kw>import</h-> <h- data-h=id>asyncio</h->
+<h- data-h=kw>import</h-> <h- data-h=id>re</h->
+<h- data-h=kw>import</h-> <h- data-h=id>logging</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Shebang, encoding comment, and weird unicode identifier</h->
+<h- data-h=id>λ</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>3</h-><h- data-h=num>.14</h->  <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> non-ascii variable name</h->
+<h- data-h=id>EMOJI_VAR_</h-><h- data-h=err>💡</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>emoji</h-><h- data-h=str_dlim>'</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Type constructs</h->
+<h- data-h=id>T</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>TypeVar</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>T</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h->
+<h- data-h=id>UserId</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>NewType</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>UserId</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>int</h-><h- data-h=sym_par>)</h->
+<h- data-h=id>MAX</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>Final</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>float</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=num>.0</h-><h- data-h=sym_par>)</h->
+
+<h- data-h=id>LiteralChoice</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>Literal</h-><h- data-h=sym_sqr>[</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>b</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>1</h-><h- data-h=sym_sqr>]</h->
+<h- data-h=id>AnnotatedInt</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>Annotated</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>int</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>must be positive</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_sqr>]</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Comments with keywords: TODO, FIXME</h->
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> TODO: this is a test</h->
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> FIXME: nothing to fix</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Module-level constant with complex literal: underscores, imaginary</h->
+<h- data-h=id>COMPLEX_CONST</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-><h- data-h=num_dlim>_</h-><h- data-h=num>000</h-><h- data-h=num_dlim>_</h-><h- data-h=num>000</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>3</h-><h- data-h=num>.5</h-><h- data-h=num_deco>j</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Multi-line and single-line docstrings</h->
+<h- data-h=kw>class</h-> <h- data-h=id>_Hidden</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=str_dlim>"""</h-><h- data-h=str>A hidden helper with a triple-quoted docstring and
+    indentation that spans multiple lines.
+    </h-><h- data-h=str_dlim>"""</h->
+    <h- data-h=kw_ctrl>pass</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> DataClass with defaults, InitVar, slots, kw-only args, repr customization</h->
+<h- data-h=sym_op>@</h-><h- data-h=id>dataclass</h-><h- data-h=sym_par>(</h-><h- data-h=id>slots</h-><h- data-h=sym_punc>=</h-><h- data-h=bool>True</h-><h- data-h=sym_par>)</h->
+<h- data-h=kw>class</h-> <h- data-h=id>Person</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=id>id</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>UserId</h->
+    <h- data-h=id>name</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>str</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>Anonymous</h-><h- data-h=str_dlim>'</h->
+    <h- data-h=id>tags</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>List</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>str</h-><h- data-h=sym_sqr>]</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>field</h-><h- data-h=sym_par>(</h-><h- data-h=id>default_factory</h-><h- data-h=sym_punc>=</h-><h- data-h=id>list</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>_secret</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>InitVar</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>Optional</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>str</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_sqr>]</h-> <h- data-h=sym_punc>=</h-> <h- data-h=null>None</h->
+
+    <h- data-h=kw>def</h-> <h- data-h=id>__post_init__</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>_secret</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Optional</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>str</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>if</h-> <h- data-h=id>_secret</h-><h- data-h=sym_punc>:</h->
+            <h- data-h=id>self</h-><h- data-h=sym_punc>.</h-><h- data-h=id>tags</h-><h- data-h=sym_punc>.</h-><h- data-h=id>append</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>f</h-><h- data-h=str_dlim>"</h-><h- data-h=str>secret:{_secret}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+
+    <h- data-h=kw>def</h-> <h- data-h=id>__repr__</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=id>str</h-><h- data-h=sym_punc>:</h->  <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> override repr</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=str_deco>f</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Person(id={self.id!r}, name={self.name!r})</h-><h- data-h=str_dlim>"</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Enum-like class and usage of bitwise ops, shifts</h->
+<h- data-h=kw>class</h-> <h- data-h=id>Flags</h-><h- data-h=sym_par>(</h-><h- data-h=id>int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=id>READ</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0b</h-><h- data-h=num>0001</h->
+    <h- data-h=id>WRITE</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0b</h-><h- data-h=num>0010</h->
+    <h- data-h=id>EXEC</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0b</h-><h- data-h=num>0100</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Descriptor example</h->
+<h- data-h=kw>class</h-> <h- data-h=id>ReprDescriptor</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw>def</h-> <h- data-h=id>__get__</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>obj</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>objtype</h-><h- data-h=sym_punc>=</h-><h- data-h=null>None</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=str_deco>f</h-><h- data-h=str_dlim>"</h-><h- data-h=str>&lt;repr of {obj!r}&gt;</h-><h- data-h=str_dlim>"</h->
+
+
+<h- data-h=kw>class</h-> <h- data-h=id>Container</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=id>descr</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>ReprDescriptor</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h->
+
+    <h- data-h=kw>def</h-> <h- data-h=id>__init__</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>*</h-><h- data-h=id>args</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>**</h-><h- data-h=id>kwargs</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=id>self</h-><h- data-h=sym_punc>.</h-><h- data-h=id>_data</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>list</h-><h- data-h=sym_par>(</h-><h- data-h=id>args</h-><h- data-h=sym_par>)</h->
+
+    <h- data-h=kw>def</h-> <h- data-h=id>__len__</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=id>len</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_punc>.</h-><h- data-h=id>_data</h-><h- data-h=sym_par>)</h->
+
+    <h- data-h=kw>def</h-> <h- data-h=id>__iter__</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=id>iter</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_punc>.</h-><h- data-h=id>_data</h-><h- data-h=sym_par>)</h->
+
+    <h- data-h=kw>def</h-> <h- data-h=id>__contains__</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>item</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=id>item</h-> <h- data-h=kw>in</h-> <h- data-h=id>self</h-><h- data-h=sym_punc>.</h-><h- data-h=id>_data</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Metaclass, __new__, __init_subclass__</h->
+<h- data-h=kw>class</h-> <h- data-h=id>VerboseMeta</h-><h- data-h=sym_par>(</h-><h- data-h=id>type</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw>def</h-> <h- data-h=id>__new__</h-><h- data-h=sym_par>(</h-><h- data-h=id>mcls</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>name</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>bases</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>ns</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=id>ns</h-><h- data-h=sym_punc>.</h-><h- data-h=id>setdefault</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>__created_with_meta__</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=bool>True</h-><h- data-h=sym_par>)</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=id>super</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>.</h-><h- data-h=id>__new__</h-><h- data-h=sym_par>(</h-><h- data-h=id>mcls</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>name</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>bases</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>ns</h-><h- data-h=sym_par>)</h->
+
+
+<h- data-h=kw>class</h-> <h- data-h=id>Base</h-><h- data-h=sym_par>(</h-><h- data-h=id>metaclass</h-><h- data-h=sym_punc>=</h-><h- data-h=id>VerboseMeta</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw>def</h-> <h- data-h=id>__init_subclass__</h-><h- data-h=sym_par>(</h-><h- data-h=id>cls</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>/</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>**</h-><h- data-h=id>kwargs</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=id>super</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>.</h-><h- data-h=id>__init_subclass__</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>**</h-><h- data-h=id>kwargs</h-><h- data-h=sym_par>)</h->
+        <h- data-h=id>cls</h-><h- data-h=sym_punc>.</h-><h- data-h=id>_subclass_marker</h-> <h- data-h=sym_punc>=</h-> <h- data-h=bool>True</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Generator, generator delegation, send(), throw(), close()</h->
+<h- data-h=kw>def</h-> <h- data-h=id>gen_example</h-><h- data-h=sym_par>(</h-><h- data-h=id>n</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>int</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=id>Iterator</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>int</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>yield</h-> <h- data-h=kw>from</h-> <h- data-h=sym_par>(</h-><h- data-h=id>i</h-> <h- data-h=kw_ctrl>for</h-> <h- data-h=id>i</h-> <h- data-h=kw>in</h-> <h- data-h=id>range</h-><h- data-h=sym_par>(</h-><h- data-h=id>n</h-><h- data-h=sym_par>)</h-> <h- data-h=kw_ctrl>if</h-> <h- data-h=id>i</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Async features</h->
+<h- data-h=kw>async</h-> <h- data-h=kw>def</h-> <h- data-h=id>coro_sleep_and_return</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>int</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=id>int</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>await</h-> <h- data-h=id>asyncio</h-><h- data-h=sym_punc>.</h-><h- data-h=id>sleep</h-><h- data-h=sym_par>(</h-><h- data-h=num>0</h-><h- data-h=sym_par>)</h->  <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> yield control</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>*</h-> <h- data-h=num>2</h->
+
+
+<h- data-h=kw>async</h-> <h- data-h=kw>def</h-> <h- data-h=id>async_iter_example</h-><h- data-h=sym_par>(</h-><h- data-h=id>n</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>for</h-> <h- data-h=id>i</h-> <h- data-h=kw>in</h-> <h- data-h=id>range</h-><h- data-h=sym_par>(</h-><h- data-h=id>n</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>yield</h-> <h- data-h=id>i</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Context managers (sync + async)</h->
+<h- data-h=kw>from</h-> <h- data-h=id>contextlib</h-> <h- data-h=kw>import</h-> <h- data-h=id>contextmanager</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>asynccontextmanager</h->
+
+<h- data-h=sym_op>@</h-><h- data-h=id>contextmanager</h->
+<h- data-h=kw>def</h-> <h- data-h=id>demo_ctx</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>try</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>yield</h-> <h- data-h=str_deco>f</h-><h- data-h=str_dlim>"</h-><h- data-h=str>enter:{x}</h-><h- data-h=str_dlim>"</h->
+    <h- data-h=kw_ctrl>finally</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>pass</h->
+
+<h- data-h=sym_op>@</h-><h- data-h=id>asynccontextmanager</h->
+<h- data-h=kw>async</h-> <h- data-h=kw>def</h-> <h- data-h=id>demo_async_ctx</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>try</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>yield</h-> <h- data-h=str_deco>f</h-><h- data-h=str_dlim>"</h-><h- data-h=str>aenter:{x}</h-><h- data-h=str_dlim>"</h->
+    <h- data-h=kw_ctrl>finally</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>pass</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Regular expressions: raw strings, verbose, backrefs</h->
+<h- data-h=id>RE_NUM</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>re</h-><h- data-h=sym_punc>.</h-><h- data-h=id>compile</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>r</h-><h- data-h=str_dlim>"</h-><h- data-h=str>(?P&lt;int&gt;</h-><h- data-h=esc>\d</h-><h- data-h=str>+)(?:</h-><h- data-h=esc>\.</h-><h- data-h=str>(?P&lt;frac&gt;</h-><h- data-h=esc>\d</h-><h- data-h=str>+))?</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+<h- data-h=id>RE_VERBOSE</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>re</h-><h- data-h=sym_punc>.</h-><h- data-h=id>compile</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>r</h-><h- data-h=str_dlim>"</h-><h- data-h=str>(?x)  # verbose regex</h-><h- data-h=esc>\n</h-><h- data-h=str>    (</h-><h- data-h=esc>\d</h-><h- data-h=str>{1,3})  # 1-3 digits</h-><h- data-h=esc>\n</h-><h- data-h=str>    (?:,</h-><h- data-h=esc>\s</h-><h- data-h=str>*</h-><h- data-h=esc>\d</h-><h- data-h=str>{3})*  # optional comma groups</h-><h- data-h=esc>\"</h-><h- data-h=str>)</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Complex f-strings, raw f-strings (Python f-strings don't accept r before f in older Pythons,</h->
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> but many highlighters should still accept f r combinations as tokens in either order)</h->
+<h- data-h=id>name</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>Alice</h-><h- data-h=str_dlim>'</h->
+<h- data-h=id>msg</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_deco>f</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Hello, {name!s} — value is {COMPLEX_CONST:.2f}</h-><h- data-h=str_dlim>"</h->
+<h- data-h=id>raw_bytes</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_deco>r</h-><h- data-h=str_dlim>"</h-><h- data-h=esc>\n</h-><h- data-h=esc>\t</h-><h- data-h=esc>\\</h-><h- data-h=str_dlim>"</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Bytes and bytearray</h->
+<h- data-h=id>b</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_deco>b</h-><h- data-h=str_dlim>"</h-><h- data-h=esc>\x0</h-><h- data-h=str>0</h-><h- data-h=esc>\xf</h-><h- data-h=str>f</h-><h- data-h=str_dlim>"</h->
+<h- data-h=id>br</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>bytearray</h-><h- data-h=sym_par>(</h-><h- data-h=id>b</h-><h- data-h=sym_par>)</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Lambdas, nested lambdas, default mutable argument (bad but intentionally present)</h->
+<h- data-h=kw>def</h-> <h- data-h=id>make_adder</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>/</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>*</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>scale</h-><h- data-h=sym_punc>=</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=kw>lambda</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>z</h-><h- data-h=sym_punc>=</h-><h- data-h=num>0</h-><h- data-h=sym_punc>:</h-> <h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>z</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>*</h-> <h- data-h=id>scale</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Function with positional-only, keyword-only, varargs, kwargs, annotations, default factories</h->
+<h- data-h=kw>def</h-> <h- data-h=id>fancy</h-><h- data-h=sym_par>(</h-><h- data-h=id>a</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>b</h-><h- data-h=sym_punc>=</h-><h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>/</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>c</h-><h- data-h=sym_punc>=</h-><h- data-h=num>3</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>*</h-><h- data-h=id>args</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>int</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>d</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>int</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>4</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>e</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>int</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>5</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>**</h-><h- data-h=id>kwargs</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=id>Tuple</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>int</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_punc>...</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=str_dlim>"""</h-><h- data-h=str>Fancy function demonstrating many parameter styles.</h-><h- data-h=str_dlim>"""</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=sym_par>(</h-><h- data-h=id>a</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>b</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>c</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>d</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>e</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>sum</h-><h- data-h=sym_par>(</h-><h- data-h=id>args</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>kwargs</h-><h- data-h=sym_punc>.</h-><h- data-h=id>get</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>extra</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Walrus operator and complex assignment</h->
+<h- data-h=kw>def</h-> <h- data-h=id>walrus_demo</h-><h- data-h=sym_par>(</h-><h- data-h=id>seq</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Iterable</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>int</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>if</h-> <h- data-h=sym_par>(</h-><h- data-h=id>n</h-> <h- data-h=sym_op>:=</h-> <h- data-h=id>sum</h-><h- data-h=sym_par>(</h-><h- data-h=id>seq</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_op>&gt;</h-> <h- data-h=num>10</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=id>n</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=num>0</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Pattern matching (structural) - Python 3.10+</h->
+<h- data-h=kw>def</h-> <h- data-h=id>pattern_demo</h-><h- data-h=sym_par>(</h-><h- data-h=id>value</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Any</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=id>str</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=id>match</h-> <h- data-h=id>value</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=id>case</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>:</h->
+            <h- data-h=kw_ctrl>return</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>zero</h-><h- data-h=str_dlim>'</h->
+        <h- data-h=id>case</h-> <h- data-h=sym_sqr>[</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>:</h->
+            <h- data-h=kw_ctrl>return</h-> <h- data-h=str_deco>f</h-><h- data-h=str_dlim>'</h-><h- data-h=str>pair:{x},{y}</h-><h- data-h=str_dlim>'</h->
+        <h- data-h=id>case</h-> <h- data-h=sym_brac>{</h-><h- data-h=str_dlim>'</h-><h- data-h=str>id</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>int</h-><h- data-h=sym_par>(</h-><h- data-h=id>id_val</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>:</h->
+            <h- data-h=kw_ctrl>return</h-> <h- data-h=str_deco>f</h-><h- data-h=str_dlim>"</h-><h- data-h=str>has-id:{id_val}</h-><h- data-h=str_dlim>"</h->
+        <h- data-h=id>case</h-> <h- data-h=id>_</h-><h- data-h=sym_punc>:</h->
+            <h- data-h=kw_ctrl>return</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>other</h-><h- data-h=str_dlim>'</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Typed dict and Protocols (typing)</h->
+<h- data-h=kw>class</h-> <h- data-h=id>SupportsClose</h-><h- data-h=sym_par>(</h-><h- data-h=id>Protocol</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw>def</h-> <h- data-h=id>close</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=null>None</h-><h- data-h=sym_punc>:</h-> <h- data-h=sym_punc>...</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Complex comprehensions, unpacking, generator expressions</h->
+<h- data-h=id>comp</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-><h- data-h=id>x</h-><h- data-h=sym_op>**</h-><h- data-h=num>2</h-> <h- data-h=kw_ctrl>for</h-> <h- data-h=id>x</h-> <h- data-h=kw>in</h-> <h- data-h=id>range</h-><h- data-h=sym_par>(</h-><h- data-h=num>10</h-><h- data-h=sym_par>)</h-> <h- data-h=kw_ctrl>if</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>%</h-> <h- data-h=num>2</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>0</h-><h- data-h=sym_sqr>]</h->
+<h- data-h=id>set_comp</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-><h- data-h=id>x</h-> <h- data-h=kw_ctrl>for</h-> <h- data-h=id>x</h-> <h- data-h=kw>in</h-> <h- data-h=id>range</h-><h- data-h=sym_par>(</h-><h- data-h=num>5</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>}</h->
+<h- data-h=id>map_comp</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-><h- data-h=sym_op>**</h-><h- data-h=sym_brac>{</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>:</h-> <h- data-h=num>1</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>**</h-><h- data-h=sym_brac>{</h-><h- data-h=str_dlim>'</h-><h- data-h=str>b</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>:</h-> <h- data-h=num>2</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h->
+
+<h- data-h=id>nested_comp</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-><h- data-h=sym_par>(</h-><h- data-h=id>i</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>j</h-><h- data-h=sym_par>)</h-> <h- data-h=kw_ctrl>for</h-> <h- data-h=id>i</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>row</h-> <h- data-h=kw>in</h-> <h- data-h=id>enumerate</h-><h- data-h=sym_par>(</h-><h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>[</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_sqr>[</h-><h- data-h=num>3</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>4</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>)</h-> <h- data-h=kw_ctrl>for</h-> <h- data-h=id>j</h-> <h- data-h=kw>in</h-> <h- data-h=id>row</h-><h- data-h=sym_sqr>]</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Extended slices</h->
+<h- data-h=id>s</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>list</h-><h- data-h=sym_par>(</h-><h- data-h=id>range</h-><h- data-h=sym_par>(</h-><h- data-h=num>10</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_sqr>[</h-><h- data-h=num>1</h-><h- data-h=sym_punc>:</h-><h- data-h=num>8</h-><h- data-h=sym_punc>:</h-><h- data-h=num>2</h-><h- data-h=sym_sqr>]</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Ellipsis and None used as literal tokens</h->
+<h- data-h=id>ellipsis_example</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_par>(</h-><h- data-h=sym_punc>...</h-><h- data-h=sym_punc>,</h-> <h- data-h=null>None</h-><h- data-h=sym_par>)</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Multiple statements on one line, semicolons</h->
+<h- data-h=id>x</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-><h- data-h=sym_punc>;</h-> <h- data-h=id>y</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>;</h-> <h- data-h=id>z</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>y</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Chained comparisons and ternary</h->
+<h- data-h=id>is_between</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>5</h->
+<h- data-h=id>tern</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>yes</h-><h- data-h=str_dlim>'</h-> <h- data-h=kw_ctrl>if</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>&gt;</h-> <h- data-h=num>0</h-> <h- data-h=kw_ctrl>else</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>no</h-><h- data-h=str_dlim>'</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Numeric literals: binary, octal, hex, floats, complex</h->
+<h- data-h=id>n_bin</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0b</h-><h- data-h=num>1010</h->
+<h- data-h=id>n_oct</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0o</h-><h- data-h=num>755</h->
+<h- data-h=id>n_hex</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0x</h-><h- data-h=num>DEAD</h-><h- data-h=num_dlim>_</h-><h- data-h=num>BEEF</h->
+<h- data-h=id>n_float</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-><h- data-h=num>.23</h-><h- data-h=id>e</h-><h- data-h=sym_op>-</h-><h- data-h=num>4</h->
+<h- data-h=id>n_complex</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>3</h-><h- data-h=sym_op>+</h-><h- data-h=num>4</h-><h- data-h=num_deco>j</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Complex slicing with negative step</h->
+<h- data-h=id>slice_example</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>tuple</h-><h- data-h=sym_par>(</h-><h- data-h=id>range</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>-</h-><h- data-h=num>5</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>5</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_sqr>[</h-><h- data-h=sym_punc>:</h-><h- data-h=sym_punc>:</h-><h- data-h=sym_op>-</h-><h- data-h=num>1</h-><h- data-h=sym_sqr>]</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Exception handling variations</h->
+<h- data-h=kw_ctrl>try</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=num>1</h-> <h- data-h=sym_op>/</h-> <h- data-h=num>0</h->
+<h- data-h=kw_ctrl>except</h-> <h- data-h=id>ZeroDivisionError</h-> <h- data-h=kw>as</h-> <h- data-h=id>e</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=id>logging</h-><h- data-h=sym_punc>.</h-><h- data-h=id>exception</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>division failed: %s</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>e</h-><h- data-h=sym_par>)</h->
+<h- data-h=kw_ctrl>except</h-> <h- data-h=id>Exception</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>raise</h->
+<h- data-h=kw_ctrl>finally</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>pass</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Raising with from</h->
+<h- data-h=kw>class</h-> <h- data-h=id>MyError</h-><h- data-h=sym_par>(</h-><h- data-h=id>Exception</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>pass</h->
+
+<h- data-h=kw_ctrl>try</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>raise</h-> <h- data-h=id>MyError</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>top</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h->
+<h- data-h=kw_ctrl>except</h-> <h- data-h=id>MyError</h-> <h- data-h=kw>as</h-> <h- data-h=id>e</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>raise</h-> <h- data-h=id>RuntimeError</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>wrapped</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>from</h-> <h- data-h=id>e</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Use of assert and inspect</h->
+<h- data-h=kw>assert</h-> <h- data-h=id>isinstance</h-><h- data-h=sym_par>(</h-><h- data-h=id>name</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>str</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>name must be str</h-><h- data-h=str_dlim>'</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Dynamic code: eval/exec (strings included), compile</h->
+<h- data-h=id>_dynamic_code</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"""</h-><h- data-h=str>
+def dyn(x):
+    return x * x
+</h-><h- data-h=str_dlim>"""</h->
+<h- data-h=id>exec</h-><h- data-h=sym_par>(</h-><h- data-h=id>_dynamic_code</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>globals</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Use of subprocess-like pattern (but not executing external code here)</h->
+<h- data-h=id>CMD</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-><h- data-h=str_dlim>'</h-><h- data-h=str>echo</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>hello</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_sqr>]</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> File handling with encoding and weird newline</h->
+<h- data-h=kw>with</h-> <h- data-h=id>open</h-><h- data-h=sym_par>(</h-><h- data-h=id>__file__</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>r</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>encoding</h-><h- data-h=sym_punc>=</h-><h- data-h=str_dlim>'</h-><h- data-h=str>utf-8</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>newline</h-><h- data-h=sym_punc>=</h-><h- data-h=str_dlim>'</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>as</h-> <h- data-h=id>_f</h-><h- data-h=sym_punc>:</h->  <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> type: ignore</h->
+    <h- data-h=id>_first_line</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>_f</h-><h- data-h=sym_punc>.</h-><h- data-h=id>readline</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Complex data structures: nested dicts, tuples, frozenset</h->
+<h- data-h=id>big</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=str_dlim>'</h-><h- data-h=str>numbers</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>:</h-> <h- data-h=sym_sqr>[</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>,</h->
+    <h- data-h=str_dlim>'</h-><h- data-h=str>mapping</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>:</h-> <h- data-h=sym_brac>{</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>:</h-> <h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>b</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>:</h-> <h- data-h=sym_brac>{</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>,</h->
+    <h- data-h=str_dlim>'</h-><h- data-h=str>frozen</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>frozenset</h-><h- data-h=sym_par>(</h-><h- data-h=sym_brac>{</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Unicode escapes inside strings and raw f-strings</h->
+<h- data-h=id>unicode_str</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Unicode: </h-><h- data-h=esc>\u260</h-><h- data-h=str>3</h-><h- data-h=str_dlim>"</h->
+<h- data-h=id>raw_f</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_deco>fr</h-><h- data-h=str_dlim>"</h-><h- data-h=str>path:</h-><h- data-h=esc>\\</h-><h- data-h=str>home</h-><h- data-h=esc>\\</h-><h- data-h=str>{name}</h-><h- data-h=str_dlim>"</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Decorators: stacking, classmethod, staticmethod, property</h->
+<h- data-h=kw>def</h-> <h- data-h=id>deco</h-><h- data-h=sym_par>(</h-><h- data-h=id>fn</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Callable</h-><h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>T</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=id>Callable</h-><h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>T</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>T</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw>def</h-> <h- data-h=id>wrapper</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>*</h-><h- data-h=id>a</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>**</h-><h- data-h=id>k</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=id>fn</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>*</h-><h- data-h=id>a</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>**</h-><h- data-h=id>k</h-><h- data-h=sym_par>)</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>wrapper</h->
+
+<h- data-h=sym_op>@</h-><h- data-h=id>deco</h->
+<h- data-h=sym_op>@</h-><h- data-h=id>deco</h->
+<h- data-h=kw>def</h-> <h- data-h=id>decorated</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>int</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=id>int</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>1</h->
+
+<h- data-h=kw>class</h-> <h- data-h=id>WithProps</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=sym_op>@</h-><h- data-h=id>property</h->
+    <h- data-h=kw>def</h-> <h- data-h=id>read_only</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=id>str</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>ro</h-><h- data-h=str_dlim>'</h->
+
+    <h- data-h=sym_op>@</h-><h- data-h=id>staticmethod</h->
+    <h- data-h=kw>def</h-> <h- data-h=id>static_meth</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>*</h-> <h- data-h=num>2</h->
+
+    <h- data-h=sym_op>@</h-><h- data-h=id>classmethod</h->
+    <h- data-h=kw>def</h-> <h- data-h=id>cls_meth</h-><h- data-h=sym_par>(</h-><h- data-h=id>cls</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=id>cls</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Operator overloading and rich comparisons</h->
+<h- data-h=kw>class</h-> <h- data-h=id>Vector</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw>def</h-> <h- data-h=id>__init__</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_op>*</h-><h- data-h=id>coords</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>float</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=id>self</h-><h- data-h=sym_punc>.</h-><h- data-h=id>coords</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>coords</h->
+
+    <h- data-h=kw>def</h-> <h- data-h=id>__add__</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>other</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=id>Vector</h-><h- data-h=sym_par>(</h-><h- data-h=sym_op>*</h-><h- data-h=sym_par>(</h-><h- data-h=id>a</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>b</h-> <h- data-h=kw_ctrl>for</h-> <h- data-h=id>a</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>b</h-> <h- data-h=kw>in</h-> <h- data-h=id>zip</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_punc>.</h-><h- data-h=id>coords</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>other</h-><h- data-h=sym_punc>.</h-><h- data-h=id>coords</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+
+    <h- data-h=kw>def</h-> <h- data-h=id>__repr__</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=str_deco>f</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Vector{self.coords}</h-><h- data-h=str_dlim>"</h->
+
+    <h- data-h=kw>def</h-> <h- data-h=id>__len__</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=id>len</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_punc>.</h-><h- data-h=id>coords</h-><h- data-h=sym_par>)</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Coroutine protocol: __await__</h->
+<h- data-h=kw>class</h-> <h- data-h=id>AwaitableThing</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw>def</h-> <h- data-h=id>__await__</h-><h- data-h=sym_par>(</h-><h- data-h=id>self</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>if</h-> <h- data-h=bool>False</h-><h- data-h=sym_punc>:</h->
+            <h- data-h=kw_ctrl>yield</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=num>42</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Async for/with and a complex async function with annotations</h->
+<h- data-h=kw>async</h-> <h- data-h=kw>def</h-> <h- data-h=id>complex_async</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw>async</h-> <h- data-h=kw>with</h-> <h- data-h=id>demo_async_ctx</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>x</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>as</h-> <h- data-h=id>ctx</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw>async</h-> <h- data-h=kw_ctrl>for</h-> <h- data-h=id>i</h-> <h- data-h=kw>in</h-> <h- data-h=id>async_iter_example</h-><h- data-h=sym_par>(</h-><h- data-h=num>3</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h->
+            <h- data-h=kw_ctrl>await</h-> <h- data-h=id>asyncio</h-><h- data-h=sym_punc>.</h-><h- data-h=id>sleep</h-><h- data-h=sym_par>(</h-><h- data-h=num>0</h-><h- data-h=sym_par>)</h->
+
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Main runner: argparse, logging, conditional imports</h->
+<h- data-h=kw>def</h-> <h- data-h=id>main</h-><h- data-h=sym_par>(</h-><h- data-h=id>argv</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Optional</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>List</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>str</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_sqr>]</h-> <h- data-h=sym_punc>=</h-> <h- data-h=null>None</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=id>int</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw>import</h-> <h- data-h=id>argparse</h->
+    <h- data-h=id>parser</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>argparse</h-><h- data-h=sym_punc>.</h-><h- data-h=id>ArgumentParser</h-><h- data-h=sym_par>(</h-><h- data-h=id>description</h-><h- data-h=sym_punc>=</h-><h- data-h=str_dlim>'</h-><h- data-h=str>Syntax highlight stress test</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>parser</h-><h- data-h=sym_punc>.</h-><h- data-h=id>add_argument</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>--count</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>-c</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>type</h-><h- data-h=sym_punc>=</h-><h- data-h=id>int</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>default</h-><h- data-h=sym_punc>=</h-><h- data-h=num>3</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>parser</h-><h- data-h=sym_punc>.</h-><h- data-h=id>add_argument</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>--quiet</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>action</h-><h- data-h=sym_punc>=</h-><h- data-h=str_dlim>'</h-><h- data-h=str>store_true</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>ns</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>parser</h-><h- data-h=sym_punc>.</h-><h- data-h=id>parse_args</h-><h- data-h=sym_par>(</h-><h- data-h=id>argv</h-><h- data-h=sym_par>)</h->
+
+    <h- data-h=kw_ctrl>if</h-> <h- data-h=kw>not</h-> <h- data-h=id>ns</h-><h- data-h=sym_punc>.</h-><h- data-h=id>quiet</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=id>logging</h-><h- data-h=sym_punc>.</h-><h- data-h=id>basicConfig</h-><h- data-h=sym_par>(</h-><h- data-h=id>level</h-><h- data-h=sym_punc>=</h-><h- data-h=id>logging</h-><h- data-h=sym_punc>.</h-><h- data-h=id>DEBUG</h-><h- data-h=sym_par>)</h->
+        <h- data-h=id>logging</h-><h- data-h=sym_punc>.</h-><h- data-h=id>info</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>Running stress test</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h->
+
+    <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> exercises</h->
+    <h- data-h=id>p</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>Person</h-><h- data-h=sym_par>(</h-><h- data-h=id>UserId</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>Bob</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>_secret</h-><h- data-h=sym_punc>=</h-><h- data-h=str_dlim>'</h-><h- data-h=str>s</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>c</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>Container</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>v</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>Vector</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>_</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>decorated</h-><h- data-h=sym_par>(</h-><h- data-h=num>10</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>_</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>make_adder</h-><h- data-h=sym_par>(</h-><h- data-h=num>5</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>(</h-><h- data-h=num>10</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>_</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>walrus_demo</h-><h- data-h=sym_par>(</h-><h- data-h=sym_sqr>[</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>4</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>5</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>)</h->
+    <h- data-h=kw_ctrl>try</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> pattern_demo tests</h->
+        <h- data-h=id>_</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>pattern_demo</h-><h- data-h=sym_par>(</h-><h- data-h=sym_brac>{</h-><h- data-h=str_dlim>'</h-><h- data-h=str>id</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>:</h-> <h- data-h=num>123</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_par>)</h->
+    <h- data-h=kw_ctrl>except</h-> <h- data-h=id>Exception</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>pass</h->
+
+    <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> demonstrate async run</h->
+    <h- data-h=kw_ctrl>try</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=id>asyncio</h-><h- data-h=sym_punc>.</h-><h- data-h=id>run</h-><h- data-h=sym_par>(</h-><h- data-h=id>coro_sleep_and_return</h-><h- data-h=sym_par>(</h-><h- data-h=num>2</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+    <h- data-h=kw_ctrl>except</h-> <h- data-h=id>RuntimeError</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> nested event loop in REPL possible</h->
+        <h- data-h=kw_ctrl>pass</h->
+
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=num>0</h->
+
+
+<h- data-h=kw_ctrl>if</h-> <h- data-h=id>__name__</h-> <h- data-h=sym_op>==</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>__main__</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>raise</h-> <h- data-h=id>SystemExit</h-><h- data-h=sym_par>(</h-><h- data-h=id>main</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->

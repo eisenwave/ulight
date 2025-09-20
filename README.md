@@ -124,6 +124,7 @@ and a stable numeric ID whose value can be found in `include/ulight.h`.
 | LaTeX | `latex` | `ULIGHT_LANG_LATEX` |
 | Lua | `lua` | `ULIGHT_LANG_LUA` |
 | NASM | `asm`, `assembler`, `assembly`, `nasm`, `x86asm` | `ULIGHT_LANG_NASM` |
+| Python | `gyp`, `py`, `python` | `ULIGHT_LANG_PYTHON` |
 | TeX | `tex` | `ULIGHT_LANG_TEX` |
 | Plaintext | `plaintext`, `text`, `txt` | `ULIGHT_LANG_TXT` |
 | XML | `atom`, `plist`, `rss`, `svg`, `xbj`, `xhtml`, `xml`, `xsd`, `xsl` | `ULIGHT_LANG_XML` |
