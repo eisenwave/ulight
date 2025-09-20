@@ -106,6 +106,7 @@ std::optional<String_Prefix> classify_string_prefix(std::u8string_view str)
         { u8"f", formatted },
         { u8"fR", raw_formatted },
         { u8"fr", raw_formatted },
+        { u8"r", raw },
         { u8"rB", raw_byte },
         { u8"rF", raw_formatted },
         { u8"rb", raw_byte },
@@ -264,9 +265,11 @@ struct Highlighter : Highlighter_Base {
                 break;
             }
 
+            // It is important that we match string literals first;
+            // string prefixes like in r"awoo" are parsed as separate identifier tokens.
             const bool success = expect_comment() //
-                || expect_identifier() //
                 || expect_string_literal() //
+                || expect_identifier() //
                 || expect_number() //
                 || expect_symbol();
 
