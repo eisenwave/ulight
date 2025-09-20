@@ -22,78 +22,30 @@ struct Highlight_Options {
     bool strict = false;
 };
 
-bool highlight_cowel(
+using Highlight_Fn = bool(
     Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
     std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
+    const Highlight_Options& options
 );
-bool highlight_cpp(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
-);
-bool highlight_lua(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
-);
-bool highlight_html(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
-);
-bool highlight_xml(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
-);
-bool highlight_css(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
-);
-bool highlight_c(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
-);
-bool highlight_javascript(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
-);
-bool highlight_bash(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
-);
-bool highlight_diff(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
-);
-bool highlight_json(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
-);
-bool highlight_jsonc(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
-);
+
+Highlight_Fn highlight_bash;
+Highlight_Fn highlight_c;
+Highlight_Fn highlight_cowel;
+Highlight_Fn highlight_cpp;
+Highlight_Fn highlight_css;
+Highlight_Fn highlight_diff;
+Highlight_Fn highlight_ebnf;
+Highlight_Fn highlight_html;
+Highlight_Fn highlight_javascript;
+Highlight_Fn highlight_json;
+Highlight_Fn highlight_jsonc;
+Highlight_Fn highlight_lua;
+Highlight_Fn highlight_nasm;
+Highlight_Fn highlight_python;
+Highlight_Fn highlight_tex;
+Highlight_Fn highlight_xml;
+
 inline bool highlight_txt(
     Non_Owning_Buffer<Token>&,
     std::u8string_view,
@@ -103,12 +55,6 @@ inline bool highlight_txt(
 {
     return true;
 }
-bool highlight_tex(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
-);
 inline bool highlight_latex(
     Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
@@ -118,18 +64,6 @@ inline bool highlight_latex(
 {
     return highlight_tex(out, source, memory, options);
 }
-bool highlight_nasm(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
-);
-bool highlight_ebnf(
-    Non_Owning_Buffer<Token>& out,
-    std::u8string_view source,
-    std::pmr::memory_resource* memory,
-    const Highlight_Options& options = {}
-);
 
 inline Status highlight(
     Non_Owning_Buffer<Token>& out,
@@ -181,6 +115,8 @@ inline Status highlight(
         return to_result(highlight_nasm(out, source, memory, options));
     case Lang::ebnf: //
         return to_result(highlight_ebnf(out, source, memory, options));
+    case Lang::python: //
+        return to_result(highlight_python(out, source, memory, options));
     default: //
         return Status::bad_lang;
     }

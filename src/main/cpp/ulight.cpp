@@ -97,6 +97,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("cxx", ULIGHT_LANG_CPP),
     make_lang_entry("diff", ULIGHT_LANG_DIFF),
     make_lang_entry("ebnf", ULIGHT_LANG_EBNF),
+    make_lang_entry("gyp", ULIGHT_LANG_PYTHON),
     make_lang_entry("h", ULIGHT_LANG_C),
     make_lang_entry("h++", ULIGHT_LANG_CPP),
     make_lang_entry("hpp", ULIGHT_LANG_CPP),
@@ -114,6 +115,8 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("patch", ULIGHT_LANG_DIFF),
     make_lang_entry("plaintext", ULIGHT_LANG_TXT),
     make_lang_entry("plist", ULIGHT_LANG_XML),
+    make_lang_entry("py", ULIGHT_LANG_PYTHON),
+    make_lang_entry("python", ULIGHT_LANG_PYTHON),
     make_lang_entry("rss", ULIGHT_LANG_XML),
     make_lang_entry("sh", ULIGHT_LANG_BASH),
     make_lang_entry("svg", ULIGHT_LANG_XML),
@@ -152,6 +155,7 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("LaTeX"),
     make_sv("NASM"),
     make_sv("EBNF"),
+    make_sv("Python"),
 };
 // clang-format on
 

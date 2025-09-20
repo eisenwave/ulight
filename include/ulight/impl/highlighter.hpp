@@ -7,6 +7,7 @@
 #include "ulight/impl/assert.hpp"
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
+#include "ulight/impl/numbers.hpp"
 
 namespace ulight {
 
@@ -157,6 +158,62 @@ protected:
             self.out.append_range(std::span<const Token> { tokens, amount });
         };
         return { data.data(), data.size(), this, flush };
+    }
+
+    void highlight_number(const Common_Number_Result& result, char8_t digit_separator)
+    {
+        if (result.erroneous) {
+            emit_and_advance(result.length, Highlight_Type::error);
+            return;
+        }
+
+        if (result.prefix) {
+            emit_and_advance(result.prefix, Highlight_Type::number_decor);
+        }
+        if (result.integer) {
+            highlight_digits(remainder.substr(0, result.integer), digit_separator);
+        }
+        if (result.radix_point) {
+            emit_and_advance(result.radix_point, Highlight_Type::number_delim);
+        }
+        if (result.fractional) {
+            highlight_digits(remainder.substr(0, result.fractional), digit_separator);
+        }
+        if (result.exponent_sep) {
+            emit_and_advance(result.exponent_sep, Highlight_Type::number_delim);
+        }
+        if (result.exponent_digits) {
+            highlight_digits(remainder.substr(0, result.exponent_digits), digit_separator);
+        }
+        if (result.suffix) {
+            emit_and_advance(result.suffix, Highlight_Type::number_decor);
+        }
+    }
+
+    void highlight_digits(std::u8string_view digits, char8_t separator)
+    {
+        ULIGHT_ASSERT(digits.length() <= remainder.length());
+
+        std::size_t length = 0;
+        const auto flush = [&] {
+            if (length != 0) {
+                emit_and_advance(length, Highlight_Type::number);
+                digits.remove_prefix(length);
+                length = 0;
+            }
+        };
+
+        while (length < digits.length()) {
+            if (digits[length] == separator) {
+                flush();
+                digits.remove_prefix(1);
+                emit_and_advance(1, Highlight_Type::number_delim);
+            }
+            else {
+                ++length;
+            }
+        }
+        flush();
     }
 };
 

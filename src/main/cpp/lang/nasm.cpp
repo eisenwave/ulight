@@ -337,6 +337,8 @@ bool is_label_instruction(std::u8string_view name) noexcept
 
 namespace {
 
+constexpr char8_t digit_separator = u8'_';
+
 struct Highlighter : Highlighter_Base {
 private:
     /// @brief A fallback highlight for identifiers when we cannot otherwise tell
@@ -543,12 +545,12 @@ private:
         static constexpr Common_Number_Options options //
             { .prefixes = prefixes,
               .exponent_separators = exponent_separators,
-              .digit_separator = u8'_' };
+              .digit_separator = digit_separator };
         const Common_Number_Result result = match_common_number(remainder, options);
         if (!result) {
             return false;
         }
-        highlight_number(result);
+        highlight_number(result, digit_separator);
         return true;
     }
 
@@ -556,7 +558,7 @@ private:
     {
         // https://www.nasm.us/xdoc/2.16.03/html/nasmdoc3.html#section-3.4.1
         const Suffix_Number_Result suffixed
-            = match_suffix_number(remainder, Constant<&determine_suffix> {}, u8'_');
+            = match_suffix_number(remainder, Constant<&determine_suffix> {}, digit_separator);
         if (!suffixed) {
             return false;
         }
@@ -580,65 +582,9 @@ private:
             emit_and_advance(suffixed.digits + suffixed.suffix, Highlight_Type::error);
             return true;
         }
-        highlight_digits(remainder.substr(0, suffixed.digits));
+        highlight_digits(remainder.substr(0, suffixed.digits), digit_separator);
         emit_and_advance(suffixed.suffix, Highlight_Type::number_decor);
         return true;
-    }
-
-    void highlight_number(const Common_Number_Result& result)
-    {
-        if (result.erroneous) {
-            emit_and_advance(result.length, Highlight_Type::error);
-            return;
-        }
-
-        if (result.prefix) {
-            emit_and_advance(result.prefix, Highlight_Type::number_decor);
-        }
-        if (result.integer) {
-            highlight_digits(remainder.substr(0, result.integer));
-        }
-        if (result.radix_point) {
-            emit_and_advance(result.radix_point, Highlight_Type::number_delim);
-        }
-        if (result.fractional) {
-            highlight_digits(remainder.substr(0, result.fractional));
-        }
-        if (result.exponent_sep) {
-            emit_and_advance(result.exponent_sep, Highlight_Type::number_delim);
-        }
-        if (result.exponent_digits) {
-            highlight_digits(remainder.substr(0, result.exponent_digits));
-        }
-        if (result.suffix) {
-            emit_and_advance(result.suffix, Highlight_Type::number_decor);
-        }
-    }
-
-    void highlight_digits(std::u8string_view digits)
-    {
-        ULIGHT_ASSERT(digits.length() <= remainder.length());
-
-        std::size_t length = 0;
-        const auto flush = [&] {
-            if (length != 0) {
-                emit_and_advance(length, Highlight_Type::number);
-                digits.remove_prefix(length);
-                length = 0;
-            }
-        };
-
-        while (length < digits.length()) {
-            if (digits[length] == u8'_') {
-                flush();
-                digits.remove_prefix(1);
-                emit_and_advance(1, Highlight_Type::number_delim);
-            }
-            else {
-                ++length;
-            }
-        }
-        flush();
     }
 
     void consume_string(char8_t quote_char)

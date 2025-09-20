@@ -62,6 +62,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/lang/json.cpp
     src/main/cpp/lang/lua.cpp
     src/main/cpp/lang/nasm.cpp
+    src/main/cpp/lang/python.cpp
     src/main/cpp/lang/tex.cpp
     src/main/cpp/lang/xml.cpp
 

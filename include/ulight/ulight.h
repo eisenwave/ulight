@@ -54,7 +54,7 @@ typedef struct ulight_u8string_view {
 enum {
     /// @brief The amount of unique languages supported,
     /// including `ULIGHT_LANG_NONE`.
-    ULIGHT_LANG_COUNT = 18
+    ULIGHT_LANG_COUNT = 19
 };
 
 /// @brief A language supported by ulight for syntax highlighting.
@@ -87,6 +87,8 @@ typedef enum ulight_lang {
     ULIGHT_LANG_LUA = 3,
     /// @brief Netwide Assembler.
     ULIGHT_LANG_NASM = 16,
+    /// @brief Python.
+    ULIGHT_LANG_PYTHON = 18,
     /// @brief TeX.
     ULIGHT_LANG_TEX = 14,
     /// @brief Plaintext.

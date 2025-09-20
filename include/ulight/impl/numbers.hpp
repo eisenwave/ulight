@@ -61,7 +61,7 @@ struct Common_Number_Options {
     /// @brief An optional digit separator which is accepted as part of digit sequences
     /// in addition to the set of digits determined by the base.
     char8_t digit_separator = 0;
-    /// @brief If `true`, the integer part shall not be empty, even if there is a fraction,,
+    /// @brief If `true`, the integer part shall not be empty, even if there is a fraction,
     /// like `.5f`.
     bool nonempty_integer = false;
     /// @brief If `true`, the fraction shall not be empty, like `1.` or `1.f`.
