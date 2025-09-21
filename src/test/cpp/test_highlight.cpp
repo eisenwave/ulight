@@ -22,6 +22,10 @@ namespace {
 namespace fs = std::filesystem;
 using ulight::as_string_view;
 
+/// @brief Debugging-only option for running only tests related to a specific language.
+/// This should always be commited as an empty `std::optional`.
+constexpr std::optional<Lang> filter_language;
+
 [[nodiscard]]
 std::u8string_view as_string_view(std::span<const char8_t> span)
 {
@@ -98,6 +102,9 @@ TEST_F(Highlight_Test, file_tests)
                       << ansi::h_black << " (" << as_string_view(lang_name) << ")\n";
             continue;
         }
+        if (filter_language && lang != *filter_language) {
+            continue;
+        }
 
         clear();
 
@@ -161,6 +168,9 @@ TEST_F(Highlight_Test, exhaustive_one_char)
         bool lang_success = true;
         const auto lang = ulight_lang(i);
         const std::string_view source_view { reinterpret_cast<const char*>(&source), 1 };
+        if (filter_language && lang != ulight_lang(*filter_language)) {
+            continue;
+        }
 
         State state;
         state.set_source(source_view);
@@ -212,6 +222,9 @@ TEST_F(Highlight_Test, exhaustive_three_chars)
         const auto lang = ulight_lang(i);
         const std::string_view source_view { reinterpret_cast<const char*>(&source),
                                              std::size(source) };
+        if (filter_language && lang != ulight_lang(*filter_language)) {
+            continue;
+        }
 
         State state;
         state.set_source(source_view);
