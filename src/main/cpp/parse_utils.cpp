@@ -193,8 +193,7 @@ match_common_number(std::u8string_view str, const Common_Number_Options& options
     }
 
     if (str.substr(length).starts_with(u8'.')) {
-        result.erroneous |= result.prefix != 0;
-        result.fractional = 1;
+        result.radix_point = 1;
 
         const auto [fractional_digits, fractional_error]
             = match_separated_digits(str.substr(length + 1), base, options.digit_separator);
@@ -202,11 +201,15 @@ match_common_number(std::u8string_view str, const Common_Number_Options& options
         result.erroneous |= options.nonempty_fraction && fractional_digits == 0;
         result.erroneous |= fractional_error;
 
+        // Handle degenerate case of standalone '.' with no prefix, no integer part,
+        // and no fraction.
+        // There should be no language that considers a single dot to be a number,
+        // so we should reject this.
         if (result.prefix == 0 && result.integer == 0
             && (length + 1 >= str.length() || !is_ascii_digit(str[length + 1]))) {
             return {};
         }
-        length += result.fractional;
+        length += result.radix_point + result.fractional;
     }
 
     if (length == 0) {
@@ -241,8 +244,8 @@ match_common_number(std::u8string_view str, const Common_Number_Options& options
 
     result.length = length;
     ULIGHT_DEBUG_ASSERT(
-        (result.prefix + result.integer + result.fractional + result.exponent_sep
-         + result.exponent_digits + result.suffix)
+        (result.prefix + result.integer + result.radix_point + result.fractional
+         + result.exponent_sep + result.exponent_digits + result.suffix)
         == result.length
     );
     return result;

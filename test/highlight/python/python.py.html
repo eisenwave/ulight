@@ -21,13 +21,13 @@ Do not use this file as production code — it's deliberately noisy.
 <h- data-h=kw>import</h-> <h- data-h=id>logging</h->
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Shebang, encoding comment, and weird unicode identifier</h->
-<h- data-h=id>λ</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>3</h-><h- data-h=num>.14</h->  <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> non-ascii variable name</h->
+<h- data-h=id>λ</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>3</h-><h- data-h=num_dlim>.</h-><h- data-h=num>14</h->  <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> non-ascii variable name</h->
 <h- data-h=id>EMOJI_VAR_</h-><h- data-h=err>💡</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>emoji</h-><h- data-h=str_dlim>'</h->
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Type constructs</h->
 <h- data-h=id>T</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>TypeVar</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>T</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_par>)</h->
 <h- data-h=id>UserId</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>NewType</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>'</h-><h- data-h=str>UserId</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>int</h-><h- data-h=sym_par>)</h->
-<h- data-h=id>MAX</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>Final</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>float</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=num>.0</h-><h- data-h=sym_par>)</h->
+<h- data-h=id>MAX</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>Final</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>float</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=num_dlim>.</h-><h- data-h=num>0</h-><h- data-h=sym_par>)</h->
 
 <h- data-h=id>LiteralChoice</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>Literal</h-><h- data-h=sym_sqr>[</h-><h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>b</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>1</h-><h- data-h=sym_sqr>]</h->
 <h- data-h=id>AnnotatedInt</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>Annotated</h-><h- data-h=sym_sqr>[</h-><h- data-h=id>int</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>must be positive</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_sqr>]</h->
@@ -37,7 +37,7 @@ Do not use this file as production code — it's deliberately noisy.
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> FIXME: nothing to fix</h->
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Module-level constant with complex literal: underscores, imaginary</h->
-<h- data-h=id>COMPLEX_CONST</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-><h- data-h=num_dlim>_</h-><h- data-h=num>000</h-><h- data-h=num_dlim>_</h-><h- data-h=num>000</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>3</h-><h- data-h=num>.5</h-><h- data-h=num_deco>j</h->
+<h- data-h=id>COMPLEX_CONST</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-><h- data-h=num_dlim>_</h-><h- data-h=num>000</h-><h- data-h=num_dlim>_</h-><h- data-h=num>000</h-> <h- data-h=sym_op>+</h-> <h- data-h=num>3</h-><h- data-h=num_dlim>.</h-><h- data-h=num>5</h-><h- data-h=num_deco>j</h->
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Multi-line and single-line docstrings</h->
 <h- data-h=kw>class</h-> <h- data-h=id>_Hidden</h-><h- data-h=sym_punc>:</h->
@@ -213,7 +213,7 @@ Do not use this file as production code — it's deliberately noisy.
 <h- data-h=id>n_bin</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0b</h-><h- data-h=num>1010</h->
 <h- data-h=id>n_oct</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0o</h-><h- data-h=num>755</h->
 <h- data-h=id>n_hex</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0x</h-><h- data-h=num>DEAD</h-><h- data-h=num_dlim>_</h-><h- data-h=num>BEEF</h->
-<h- data-h=id>n_float</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-><h- data-h=num>.23</h-><h- data-h=id>e</h-><h- data-h=sym_op>-</h-><h- data-h=num>4</h->
+<h- data-h=id>n_float</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-><h- data-h=num_dlim>.</h-><h- data-h=num>23</h-><h- data-h=id>e</h-><h- data-h=sym_op>-</h-><h- data-h=num>4</h->
 <h- data-h=id>n_complex</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>3</h-><h- data-h=sym_op>+</h-><h- data-h=num>4</h-><h- data-h=num_deco>j</h->
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Complex slicing with negative step</h->
