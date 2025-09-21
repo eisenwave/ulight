@@ -28,6 +28,7 @@ enum struct Lang : Underlying {
     javascript = ULIGHT_LANG_JS,
     json = ULIGHT_LANG_JSON,
     jsonc = ULIGHT_LANG_JSONC,
+    kotlin = ULIGHT_LANG_KOTLIN,
     latex = ULIGHT_LANG_LATEX,
     lua = ULIGHT_LANG_LUA,
     nasm = ULIGHT_LANG_NASM,

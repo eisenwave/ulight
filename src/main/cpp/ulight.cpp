@@ -109,6 +109,9 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("json", ULIGHT_LANG_JSON),
     make_lang_entry("jsonc", ULIGHT_LANG_JSONC),
     make_lang_entry("jsx", ULIGHT_LANG_JS),
+    make_lang_entry("kotlin", ULIGHT_LANG_KOTLIN),
+    make_lang_entry("kt", ULIGHT_LANG_KOTLIN),
+    make_lang_entry("kts", ULIGHT_LANG_KOTLIN),
     make_lang_entry("latex", ULIGHT_LANG_LATEX),
     make_lang_entry("lua", ULIGHT_LANG_LUA),
     make_lang_entry("nasm", ULIGHT_LANG_NASM),
@@ -156,6 +159,7 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("NASM"),
     make_sv("EBNF"),
     make_sv("Python"),
+    make_sv("Kotlin"),
 };
 // clang-format on
 

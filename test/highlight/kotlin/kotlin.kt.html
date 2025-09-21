@@ -1,0 +1,161 @@
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Kotlin Syntax Highlighting Stress Test</h->
+
+<h- data-h=kw>package</h-> <h- data-h=id>highlight</h-><h- data-h=sym_punc>.</h-><h- data-h=id>test</h->
+
+<h- data-h=kw>import</h-> <h- data-h=id>kotlin</h-><h- data-h=sym_punc>.</h-><h- data-h=id>math</h-><h- data-h=sym_punc>.</h-><h- data-h=sym_op>*</h->
+<h- data-h=kw>import</h-> <h- data-h=id>kotlinx</h-><h- data-h=sym_punc>.</h-><h- data-h=id>coroutines</h-><h- data-h=sym_punc>.</h-><h- data-h=sym_op>*</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Top-level properties and constants</h->
+<h- data-h=kw>const</h-> <h- data-h=kw>val</h-> <h- data-h=id>CONST_VAL</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>42</h->
+<h- data-h=kw>val</h-> <h- data-h=id>lazyVal</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>String</h-> <h- data-h=kw>by</h-> <h- data-h=id>lazy</h-> <h- data-h=sym_brac>{</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>lazy</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_brac>}</h->
+<h- data-h=kw>var</h-> <h- data-h=id>mutableVar</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Int</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>10</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Classes, objects, interfaces</h->
+<h- data-h=kw>data</h-> <h- data-h=kw>class</h-> <h- data-h=id>Person</h-><h- data-h=sym_par>(</h-><h- data-h=kw>val</h-> <h- data-h=id>id</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Int</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>var</h-> <h- data-h=id>name</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>String</h-><h- data-h=sym_par>)</h->
+
+<h- data-h=kw>class</h-> <h- data-h=id>Box</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>val</h-> <h- data-h=kw>value</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>T</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw>fun</h-> <h- data-h=kw>get</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>T</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw>value</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=kw>interface</h-> <h- data-h=id>Clickable</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw>fun</h-> <h- data-h=id>click</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=kw>open</h-> <h- data-h=kw>class</h-> <h- data-h=id>Base</h-><h- data-h=sym_par>(</h-><h- data-h=kw>open</h-> <h- data-h=kw>val</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Int</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw>open</h-> <h- data-h=kw>fun</h-> <h- data-h=id>foo</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>String</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Base: </h-><h- data-h=esc>$x</h-><h- data-h=str_dlim>"</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=kw>class</h-> <h- data-h=id>Derived</h-><h- data-h=sym_par>(</h-><h- data-h=id>override</h-> <h- data-h=kw>val</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Int</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>:</h-> <h- data-h=id>Base</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Clickable</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=id>override</h-> <h- data-h=kw>fun</h-> <h- data-h=id>foo</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>String</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Derived: </h-><h- data-h=esc>$x</h-><h- data-h=str_dlim>"</h->
+    <h- data-h=id>override</h-> <h- data-h=kw>fun</h-> <h- data-h=id>click</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Clicked!</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>}</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=kw>object</h-> <h- data-h=id>Singleton</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw>val</h-> <h- data-h=kw>data</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>listOf</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Enum and sealed classes</h->
+<h- data-h=kw>enum</h-> <h- data-h=kw>class</h-> <h- data-h=id>Direction</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id>NORTH</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>SOUTH</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>EAST</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>WEST</h-> <h- data-h=sym_brac>}</h->
+
+<h- data-h=kw>sealed</h-> <h- data-h=kw>class</h-> <h- data-h=id>Expr</h->
+<h- data-h=kw>class</h-> <h- data-h=id>Const</h-><h- data-h=sym_par>(</h-><h- data-h=kw>val</h-> <h- data-h=id>number</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Double</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>:</h-> <h- data-h=id>Expr</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h->
+<h- data-h=kw>class</h-> <h- data-h=id>Sum</h-><h- data-h=sym_par>(</h-><h- data-h=kw>val</h-> <h- data-h=id>left</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Expr</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>val</h-> <h- data-h=id>right</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Expr</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>:</h-> <h- data-h=id>Expr</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h->
+<h- data-h=kw>object</h-> <h- data-h=id>NotANumber</h-> <h- data-h=sym_punc>:</h-> <h- data-h=id>Expr</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Functions with many parameter styles</h->
+<h- data-h=kw>fun</h-> <h- data-h=id>fancy</h-><h- data-h=sym_par>(</h->
+    <h- data-h=id>a</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Int</h-><h- data-h=sym_punc>,</h->
+    <h- data-h=id>b</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>String</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>default</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h->
+    <h- data-h=kw>vararg</h-> <h- data-h=id>numbers</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Int</h-><h- data-h=sym_punc>,</h->
+    <h- data-h=id>c</h-><h- data-h=sym_punc>:</h-> <h- data-h=sym_par>(</h-><h- data-h=id>Int</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=id>Unit</h->
+<h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>String</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=id>numbers</h-><h- data-h=sym_punc>.</h-><h- data-h=id>forEach</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id>c</h-><h- data-h=sym_par>(</h-><h- data-h=id>it</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>}</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=str_dlim>"</h-><h- data-h=esc>$a</h-><h- data-h=str>:</h-><h- data-h=esc>$b</h-><h- data-h=str_dlim>"</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=kw>inline</h-> <h- data-h=kw>fun</h-> <h- data-h=sym_op>&lt;</h-><h- data-h=kw>reified</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=id>genericFun</h-><h- data-h=sym_par>(</h-><h- data-h=kw>value</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>T</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>String</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>T</h-><h- data-h=sym_punc>::</h-><h- data-h=kw>class</h-><h- data-h=sym_punc>.</h-><h- data-h=id>simpleName</h-> <h- data-h=sym_op>?:</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Unknown</h-><h- data-h=str_dlim>"</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Extensions</h->
+<h- data-h=kw>fun</h-> <h- data-h=id>String</h-><h- data-h=sym_punc>.</h-><h- data-h=id>shout</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>String</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>uppercase</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Lambdas and higher-order functions</h->
+<h- data-h=kw>val</h-> <h- data-h=id>add</h-><h- data-h=sym_punc>:</h-> <h- data-h=sym_par>(</h-><h- data-h=id>Int</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>Int</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=id>Int</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=id>x</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>y</h-> <h- data-h=sym_brac>}</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Control flow</h->
+<h- data-h=kw>fun</h-> <h- data-h=id>controlDemo</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>String</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw_ctrl>when</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=id>x</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>negative</h-><h- data-h=str_dlim>"</h->
+    <h- data-h=id>x</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>0</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>zero</h-><h- data-h=str_dlim>"</h->
+    <h- data-h=id>x</h-> <h- data-h=kw>in</h-> <h- data-h=num>1</h-><h- data-h=num>.</h-><h- data-h=num>.10</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>small</h-><h- data-h=str_dlim>"</h->
+    <h- data-h=kw_ctrl>else</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>big</h-><h- data-h=str_dlim>"</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Loops</h->
+<h- data-h=kw>fun</h-> <h- data-h=id>loops</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw_ctrl>for</h-> <h- data-h=sym_par>(</h-><h- data-h=id>i</h-> <h- data-h=kw>in</h-> <h- data-h=num>0</h-> <h- data-h=id>until</h-> <h- data-h=num>10</h-> <h- data-h=id>step</h-> <h- data-h=num>2</h-><h- data-h=sym_par>)</h-> <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=id>i</h-><h- data-h=sym_par>)</h->
+    <h- data-h=kw>var</h-> <h- data-h=id>j</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h->
+    <h- data-h=kw_ctrl>while</h-> <h- data-h=sym_par>(</h-><h- data-h=id>j</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>3</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+        <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=id>j</h-><h- data-h=sym_par>)</h->
+        <h- data-h=id>j</h-><h- data-h=sym_op>++</h->
+    <h- data-h=sym_brac>}</h->
+    <h- data-h=kw_ctrl>do</h-> <h- data-h=sym_brac>{</h->
+        <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>once</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+    <h- data-h=sym_brac>}</h-> <h- data-h=kw_ctrl>while</h-> <h- data-h=sym_par>(</h-><h- data-h=bool>false</h-><h- data-h=sym_par>)</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Null safety and Elvis operator</h->
+<h- data-h=kw>fun</h-> <h- data-h=id>safeLen</h-><h- data-h=sym_par>(</h-><h- data-h=id>s</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>String</h-><h- data-h=sym_op>?</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Int</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>s</h-><h- data-h=sym_op>?.</h-><h- data-h=id>length</h-> <h- data-h=sym_op>?:</h-> <h- data-h=sym_op>-</h-><h- data-h=num>1</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Smart casts</h->
+<h- data-h=kw>fun</h-> <h- data-h=id>describe</h-><h- data-h=sym_par>(</h-><h- data-h=id>obj</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Any</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>String</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw_ctrl>when</h-> <h- data-h=sym_par>(</h-><h- data-h=id>obj</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw>is</h-> <h- data-h=id>Int</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Int: </h-><h- data-h=esc>$obj</h-><h- data-h=str_dlim>"</h->
+    <h- data-h=kw>is</h-> <h- data-h=id>String</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>String of length </h-><h- data-h=esc>${</h-><h- data-h=id>obj</h-><h- data-h=sym_punc>.</h-><h- data-h=id>length</h-><h- data-h=esc>}</h-><h- data-h=str_dlim>"</h->
+    <h- data-h=kw_ctrl>else</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Unknown</h-><h- data-h=str_dlim>"</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Coroutines</h->
+<h- data-h=this>suspend</h-> <h- data-h=kw>fun</h-> <h- data-h=id>suspendFun</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Int</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=id>delay</h-><h- data-h=sym_par>(</h-><h- data-h=num>10</h-><h- data-h=sym_par>)</h->
+    <h- data-h=kw_ctrl>return</h-> <h- data-h=num>123</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=kw>fun</h-> <h- data-h=id>coroutineDemo</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>runBlocking</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw>val</h-> <h- data-h=id>d</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw>async</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id>suspendFun</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>}</h->
+    <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Result: </h-><h- data-h=esc>${</h-><h- data-h=id>d</h-><h- data-h=sym_punc>.</h-><h- data-h=kw_ctrl>await</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=esc>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Generics, variance, typealiases</h->
+<h- data-h=kw>typealias</h-> <h- data-h=id>StringMap</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>Map</h-><h- data-h=sym_op>&lt;</h-><h- data-h=id>String</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>String</h-><h- data-h=sym_op>&gt;</h->
+
+<h- data-h=kw>class</h-> <h- data-h=id>Source</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>out</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>(</h-><h- data-h=kw>private</h-> <h- data-h=kw>val</h-> <h- data-h=id>t</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>T</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw>fun</h-> <h- data-h=id>produce</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>T</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>t</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=kw>class</h-> <h- data-h=id>Sink</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw>in</h-> <h- data-h=id>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw>fun</h-> <h- data-h=id>consume</h-><h- data-h=sym_par>(</h-><h- data-h=id>t</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>T</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=id>t</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>}</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Operator overloading</h->
+<h- data-h=kw>data</h-> <h- data-h=kw>class</h-> <h- data-h=id>Vector</h-><h- data-h=sym_par>(</h-><h- data-h=kw>val</h-> <h- data-h=id>x</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Int</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>val</h-> <h- data-h=id>y</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Int</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw>operator</h-> <h- data-h=kw>fun</h-> <h- data-h=id>plus</h-><h- data-h=sym_par>(</h-><h- data-h=id>other</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Vector</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>Vector</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>other</h-><h- data-h=sym_punc>.</h-><h- data-h=id>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>y</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>other</h-><h- data-h=sym_punc>.</h-><h- data-h=id>y</h-><h- data-h=sym_par>)</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Companion objects and annotations</h->
+<h- data-h=kw>class</h-> <h- data-h=id>WithCompanion</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw>companion</h-> <h- data-h=kw>object</h-> <h- data-h=sym_brac>{</h->
+        <h- data-h=kw>const</h-> <h- data-h=kw>val</h-> <h- data-h=id>MAGIC</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>7</h->
+    <h- data-h=sym_brac>}</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=sym_op>@</h-><h- data-h=id>Target</h-><h- data-h=sym_par>(</h-><h- data-h=id>AnnotationTarget</h-><h- data-h=sym_punc>.</h-><h- data-h=id>CLASS</h-><h- data-h=sym_punc>,</h-> <h- data-h=id>AnnotationTarget</h-><h- data-h=sym_punc>.</h-><h- data-h=id>FUNCTION</h-><h- data-h=sym_par>)</h->
+<h- data-h=kw>annotation</h-> <h- data-h=kw>class</h-> <h- data-h=id>Fancy</h-><h- data-h=sym_par>(</h-><h- data-h=kw>val</h-> <h- data-h=id>why</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>String</h-><h- data-h=sym_par>)</h->
+
+<h- data-h=sym_op>@</h-><h- data-h=id>Fancy</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>demo</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+<h- data-h=kw>class</h-> <h- data-h=id>Annotated</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Exception handling</h->
+<h- data-h=kw>fun</h-> <h- data-h=id>mayFail</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>Int</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=kw_ctrl>try</h-> <h- data-h=sym_brac>{</h->
+        <h- data-h=id>require</h-><h- data-h=sym_par>(</h-><h- data-h=id>x</h-> <h- data-h=sym_op>&gt;=</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>x must be non-negative</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_brac>}</h->
+    <h- data-h=sym_brac>}</h-> <h- data-h=kw_ctrl>catch</h-> <h- data-h=sym_par>(</h-><h- data-h=id>e</h-><h- data-h=sym_punc>:</h-> <h- data-h=id>IllegalArgumentException</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+        <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Oops: </h-><h- data-h=esc>${</h-><h- data-h=id>e</h-><h- data-h=sym_punc>.</h-><h- data-h=id>message</h-><h- data-h=esc>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+    <h- data-h=sym_brac>}</h-> <h- data-h=kw_ctrl>finally</h-> <h- data-h=sym_brac>{</h->
+        <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Finally block</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+    <h- data-h=sym_brac>}</h->
+<h- data-h=sym_brac>}</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Main entry point</h->
+<h- data-h=kw>fun</h-> <h- data-h=id>main</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=id>CONST_VAL</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=id>Person</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Alice</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=id>Derived</h-><h- data-h=sym_par>(</h-><h- data-h=num>10</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>.</h-><h- data-h=id>foo</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=id>Singleton</h-><h- data-h=sym_punc>.</h-><h- data-h=kw>data</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=id>Direction</h-><h- data-h=sym_punc>.</h-><h- data-h=id>NORTH</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=id>controlDemo</h-><h- data-h=sym_par>(</h-><h- data-h=num>5</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>loops</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=id>safeLen</h-><h- data-h=sym_par>(</h-><h- data-h=null>null</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=id>describe</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>hi</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>coroutineDemo</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h->
+    <h- data-h=kw>val</h-> <h- data-h=id>v1</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>Vector</h-><h- data-h=sym_par>(</h-><h- data-h=num>1</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>2</h-><h- data-h=sym_par>)</h->
+    <h- data-h=kw>val</h-> <h- data-h=id>v2</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>Vector</h-><h- data-h=sym_par>(</h-><h- data-h=num>3</h-><h- data-h=sym_punc>,</h-> <h- data-h=num>4</h-><h- data-h=sym_par>)</h->
+    <h- data-h=id>println</h-><h- data-h=sym_par>(</h-><h- data-h=id>v1</h-> <h- data-h=sym_op>+</h-> <h- data-h=id>v2</h-><h- data-h=sym_par>)</h->
+<h- data-h=sym_brac>}</h->

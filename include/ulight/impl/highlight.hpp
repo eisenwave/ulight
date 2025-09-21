@@ -40,6 +40,7 @@ Highlight_Fn highlight_html;
 Highlight_Fn highlight_javascript;
 Highlight_Fn highlight_json;
 Highlight_Fn highlight_jsonc;
+Highlight_Fn highlight_kotlin;
 Highlight_Fn highlight_lua;
 Highlight_Fn highlight_nasm;
 Highlight_Fn highlight_python;
@@ -117,6 +118,8 @@ inline Status highlight(
         return to_result(highlight_ebnf(out, source, memory, options));
     case Lang::python: //
         return to_result(highlight_python(out, source, memory, options));
+    case Lang::kotlin: //
+        return to_result(highlight_kotlin(out, source, memory, options));
     default: //
         return Status::bad_lang;
     }

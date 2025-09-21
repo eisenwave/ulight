@@ -54,7 +54,7 @@ typedef struct ulight_u8string_view {
 enum {
     /// @brief The amount of unique languages supported,
     /// including `ULIGHT_LANG_NONE`.
-    ULIGHT_LANG_COUNT = 19
+    ULIGHT_LANG_COUNT = 20
 };
 
 /// @brief A language supported by ulight for syntax highlighting.
@@ -81,6 +81,8 @@ typedef enum ulight_lang {
     ULIGHT_LANG_JSON = 10,
     /// @brief JSON with comments.
     ULIGHT_LANG_JSONC = 11,
+    /// @brief Kotlin.
+    ULIGHT_LANG_KOTLIN = 19,
     /// @brief LaTeX.
     ULIGHT_LANG_LATEX = 15,
     /// @brief Lua.
