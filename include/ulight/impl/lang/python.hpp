@@ -1,5 +1,5 @@
-#ifndef COWEL_PYTHON_HPP
-#define COWEL_PYTHON_HPP
+#ifndef ULIGHT_PYTHON_HPP
+#define ULIGHT_PYTHON_HPP
 
 #include <optional>
 #include <string_view>
@@ -33,6 +33,7 @@ namespace ulight::python {
     F(ellipsis, "...", sym_punc)                                                                   \
     F(slash, "/", sym_op)                                                                          \
     F(slash_slash, "//", sym_op)                                                                   \
+    F(slash_slash_eq, "//=", sym_op)                                                               \
     F(slash_eq, "/=", sym_op)                                                                      \
     F(colon, ":", sym_punc)                                                                        \
     F(colon_eq, ":=", sym_op)                                                                      \

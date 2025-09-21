@@ -192,12 +192,11 @@ std::optional<Token_Type> match_symbol(std::u8string_view str) noexcept
     case u8'&': return str.starts_with(u8"&=") ? amp_eq : amp;
     case u8'(': return left_parens;
     case u8')': return right_parens;
-    case u8'*': {
+    case u8'*':
         return str.starts_with(u8"**=") ? asterisk_asterisk_eq
             : str.starts_with(u8"**")   ? asterisk_asterisk
             : str.starts_with(u8"*=")   ? asterisk_eq
                                         : asterisk;
-    }
     case u8'+': return str.starts_with(u8"+=") ? plus_eq : plus;
     case u8',': return comma;
     case u8'-':
@@ -205,27 +204,25 @@ std::optional<Token_Type> match_symbol(std::u8string_view str) noexcept
             : str.starts_with(u8"->")  ? arrow
                                        : minus;
     case u8'.': return str.starts_with(u8"...") ? ellipsis : dot;
-    case u8'/': {
-        return str.starts_with(u8"//") ? slash_slash //
-            : str.starts_with(u8"/=")  ? slash_eq
-                                       : slash;
-    }
+    case u8'/':
+        return str.starts_with(u8"//=") ? slash_slash_eq
+            : str.starts_with(u8"//")   ? slash_slash
+            : str.starts_with(u8"/=")   ? slash_eq
+                                        : slash;
     case u8':': return str.starts_with(u8":=") ? colon_eq : colon;
     case u8';': return semicolon;
-    case u8'<': {
+    case u8'<':
         return str.starts_with(u8"<<=") ? less_less_eq
             : str.starts_with(u8"<<")   ? less_less
             : str.starts_with(u8"<=")   ? less_eq
                                         : less;
-    }
     case u8'=': return str.starts_with(u8"==") ? eq_eq : eq;
-    case u8'>': {
+    case u8'>':
         return str.starts_with(u8">>=") ? greater_greater_eq
             : str.starts_with(u8">>>")  ? greater_greater_greater
             : str.starts_with(u8">=")   ? greater_eq
             : str.starts_with(u8">>")   ? greater_greater
                                         : greater;
-    }
     case u8'@': return str.starts_with(u8"@=") ? at_eq : at;
     case u8'[': return left_square;
     case u8'\\': return backslash;
