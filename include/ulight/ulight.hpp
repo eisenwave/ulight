@@ -25,7 +25,7 @@ enum struct Lang : Underlying {
     diff = ULIGHT_LANG_DIFF,
     ebnf = ULIGHT_LANG_EBNF,
     html = ULIGHT_LANG_HTML,
-    javascript = ULIGHT_LANG_JS,
+    js = ULIGHT_LANG_JS,
     json = ULIGHT_LANG_JSON,
     jsonc = ULIGHT_LANG_JSONC,
     kotlin = ULIGHT_LANG_KOTLIN,

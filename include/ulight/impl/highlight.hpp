@@ -96,7 +96,7 @@ inline Status highlight(
         return to_result(highlight_css(out, source, memory, options));
     case Lang::c: //
         return to_result(highlight_c(out, source, memory, options));
-    case Lang::javascript: //
+    case Lang::js: //
         return to_result(highlight_javascript(out, source, memory, options));
     case Lang::bash: //
         return to_result(highlight_bash(out, source, memory, options));
