@@ -1,7 +1,6 @@
 #ifndef COWEL_PYTHON_HPP
 #define COWEL_PYTHON_HPP
 
-#include <cstddef>
 #include <optional>
 #include <string_view>
 
@@ -102,9 +101,6 @@ namespace ulight::python {
 enum struct Token_Type : Underlying { //
     ULIGHT_PYTHON_TOKEN_ENUM_DATA(ULIGHT_PYTHON_TOKEN_ENUM_ENUMERATOR)
 };
-
-[[nodiscard]]
-std::size_t match_identifier(std::u8string_view str);
 
 enum struct String_Prefix : Underlying {
     unicode,

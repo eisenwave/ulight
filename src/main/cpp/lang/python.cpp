@@ -72,13 +72,10 @@ std::size_t match_string_prefix_identifier(std::u8string_view str)
 
 } // namespace
 
-std::size_t match_identifier(std::u8string_view str)
-{
-    // https://docs.python.org/3/reference/lexical_analysis.html#identifiers
-    // I don't think this is 100% correct and the same as C++.
-    // However, it should be close enough.
-    return cpp::match_identifier(str);
-}
+// https://docs.python.org/3/reference/lexical_analysis.html#identifiers
+// I don't think this is 100% correct and the same as C++.
+// However, it should be close enough.
+using cpp::match_identifier;
 
 [[nodiscard]]
 std::optional<String_Prefix> classify_string_prefix(std::u8string_view str)
