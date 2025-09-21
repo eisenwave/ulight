@@ -521,6 +521,9 @@ private:
     [[nodiscard]]
     bool consume_value()
     {
+        if (remainder.empty()) {
+            return false;
+        }
         switch (remainder[0]) {
         case u8'"': {
             return consume_string(String_Type::value);

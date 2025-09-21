@@ -287,6 +287,12 @@ std::optional<Value> parse_file(std::string_view file)
     return parse(source_string);
 }
 
+TEST(JSON, parse_empty)
+{
+    std::optional<Value> value = parse(u8"");
+    EXPECT_FALSE(value);
+}
+
 TEST(JSON, parse_empty_object)
 {
     std::optional<Value> value = parse(u8"{}");
