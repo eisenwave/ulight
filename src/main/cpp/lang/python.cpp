@@ -142,16 +142,15 @@ Common_Number_Result match_number(std::u8string_view str)
     return match_common_number(str, options);
 }
 
-Escape_Result match_escape_sequence(std::u8string_view str)
+Escape_Result match_escape_sequence(const std::u8string_view str)
 {
     // https://docs.python.org/3/reference/lexical_analysis.html#escape-sequences
     if (str.length() < 2 || str[0] != u8'\\') {
         return { .length = 0, .erroneous = true };
     }
-    str.remove_prefix(1);
-    switch (str[0]) {
+    switch (str[1]) {
     case u8'\r':
-    case u8'\n': return match_common_escape<Common_Escape::lf_cr_crlf>(str);
+    case u8'\n': return match_common_escape<Common_Escape::lf_cr_crlf>(str, 1);
 
     case u8'0':
     case u8'1':
@@ -160,11 +159,11 @@ Escape_Result match_escape_sequence(std::u8string_view str)
     case u8'4':
     case u8'5':
     case u8'6':
-    case u8'7': return match_common_escape<Common_Escape::octal_3>(str);
+    case u8'7': return match_common_escape<Common_Escape::octal_3>(str, 1);
 
-    case u8'x': return match_common_escape<Common_Escape::hex_2>(str, 1);
-    case u8'u': return match_common_escape<Common_Escape::hex_4>(str, 1);
-    case u8'U': return match_common_escape<Common_Escape::hex_8>(str, 1);
+    case u8'x': return match_common_escape<Common_Escape::hex_2>(str, 2);
+    case u8'u': return match_common_escape<Common_Escape::hex_4>(str, 2);
+    case u8'U': return match_common_escape<Common_Escape::hex_8>(str, 2);
 
     case u8'\\':
     case u8'\'':

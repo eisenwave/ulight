@@ -150,7 +150,7 @@ Do not use this file as production code — it's deliberately noisy.
 <h- data-h=id>raw_bytes</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_deco>r</h-><h- data-h=str_dlim>"</h-><h- data-h=esc>\n</h-><h- data-h=esc>\t</h-><h- data-h=esc>\\</h-><h- data-h=str_dlim>"</h->
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Bytes and bytearray</h->
-<h- data-h=id>b</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_deco>b</h-><h- data-h=str_dlim>"</h-><h- data-h=esc>\x0</h-><h- data-h=str>0</h-><h- data-h=esc>\xf</h-><h- data-h=str>f</h-><h- data-h=str_dlim>"</h->
+<h- data-h=id>b</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_deco>b</h-><h- data-h=str_dlim>"</h-><h- data-h=esc>\x00</h-><h- data-h=esc>\xff</h-><h- data-h=str_dlim>"</h->
 <h- data-h=id>br</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id>bytearray</h-><h- data-h=sym_par>(</h-><h- data-h=id>b</h-><h- data-h=sym_par>)</h->
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Lambdas, nested lambdas, default mutable argument (bad but intentionally present)</h->
@@ -263,7 +263,7 @@ def dyn(x):
 <h- data-h=sym_brac>}</h->
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Unicode escapes inside strings and raw f-strings</h->
-<h- data-h=id>unicode_str</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Unicode: </h-><h- data-h=esc>\u260</h-><h- data-h=str>3</h-><h- data-h=str_dlim>"</h->
+<h- data-h=id>unicode_str</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Unicode: </h-><h- data-h=esc>\u2603</h-><h- data-h=str_dlim>"</h->
 <h- data-h=id>raw_f</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_deco>fr</h-><h- data-h=str_dlim>"</h-><h- data-h=str>path:</h-><h- data-h=esc>\\</h-><h- data-h=str>home</h-><h- data-h=esc>\\</h-><h- data-h=str>{name}</h-><h- data-h=str_dlim>"</h->
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Decorators: stacking, classmethod, staticmethod, property</h->
