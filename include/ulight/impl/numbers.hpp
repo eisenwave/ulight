@@ -99,6 +99,15 @@ struct Common_Number_Result {
     [[nodiscard]]
     friend constexpr bool operator==(Common_Number_Result, Common_Number_Result)
         = default;
+
+    /// @brief Returns `true` if any of `radix_point`, `exponent_sep`, or `exponent_digits`
+    /// is nonzero.
+    /// This typically indicates non-integer numbers (rational, real, etc.).
+    [[nodiscard]]
+    constexpr bool is_non_integer() const
+    {
+        return radix_point || exponent_sep || exponent_digits;
+    }
 };
 
 [[nodiscard]]
