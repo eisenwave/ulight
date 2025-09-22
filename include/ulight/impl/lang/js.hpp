@@ -1,8 +1,6 @@
 #ifndef ULIGHT_JS_HPP
 #define ULIGHT_JS_HPP
 
-#pragma once
-
 #include <cstddef>
 #include <optional>
 #include <string_view>
@@ -10,6 +8,7 @@
 #include "ulight/ulight.hpp"
 
 #include "ulight/impl/escapes.hpp"
+#include "ulight/impl/numbers.hpp"
 
 namespace ulight::js {
 
@@ -263,39 +262,10 @@ struct Digits_Result {
 [[nodiscard]]
 Digits_Result match_digits(std::u8string_view str, int base = 10);
 
-struct Numeric_Result {
-    /// @brief The total length.
-    /// This is also the sum of all the other parts of the result.
-    std::size_t length = 0;
-    /// @brief The length of the prefix (e.g. `0x`) or zero if none present.
-    std::size_t prefix = 0;
-    /// @brief The length of the digits prior to the radix point or exponent part.
-    std::size_t integer = 0;
-    /// @brief The length of the fractional part, including the radix point.
-    std::size_t fractional = 0;
-    /// @brief The length of the exponent part, including the `E+`, `e-`, etc. or other prefix.
-    std::size_t exponent = 0;
-    /// @brief The length of the suffix (`n`) or zero if none present.
-    std::size_t suffix = 0;
-    /// @brief If `true`, was recognized as a number,
-    /// but does not satisfy some rule related to numeric literals.
-    bool erroneous = false;
-
-    [[nodiscard]]
-    constexpr explicit operator bool() const
-    {
-        return length != 0;
-    }
-
-    [[nodiscard]]
-    friend constexpr bool operator==(Numeric_Result, Numeric_Result)
-        = default;
-};
-
 /// @brief Matches a JavaScript numeric literal at the start of `str`.
 /// Handles integers, decimals, hex, binary, octal, BigInt, scientific notation, and separators
 [[nodiscard]]
-Numeric_Result match_numeric_literal(std::u8string_view str);
+Common_Number_Result match_numeric_literal(std::u8string_view str);
 
 /// @brief Matches a JavaScript identifier at the start of `str`
 /// and returns its length.

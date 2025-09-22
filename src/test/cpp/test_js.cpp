@@ -2,75 +2,86 @@
 
 #include "ulight/impl/lang/js.hpp"
 
-namespace ulight::js {
+namespace ulight {
 
 ULIGHT_SUPPRESS_MISSING_DECLARATIONS_WARNING()
 
-std::ostream& operator<<(std::ostream& out, const Escape_Result& r) // NOLINT
+std::ostream& operator<<(std::ostream& out, const ulight::Escape_Result& r) // NOLINT
 {
     return out << "{ .length = " << r.length
                << ", .erroneous = " << (r.erroneous ? "true" : "false") << " }";
 }
 
-std::ostream& operator<<(std::ostream& out, const Numeric_Result& r) // NOLINT
+std::ostream& operator<<(std::ostream& out, const ulight::Common_Number_Result& r) // NOLINT
 {
     return out //
         << "{ .length = " << r.length //
         << ", .prefix = " << r.prefix //
         << ", .integer = " << r.integer //
+        << ", .radix_point = " << r.radix_point //
         << ", .fractional = " << r.fractional //
-        << ", .exponent = " << r.exponent //
+        << ", .exponent_sep = " << r.exponent_sep //
+        << ", .exponent_digits = " << r.exponent_digits //
         << ", .suffix = " << r.suffix //
         << ", .erroneous = " << (r.erroneous ? "true" : "false") //
         << " }";
 }
 
-std::ostream& operator<<(std::ostream& out, const JSX_Tag_Result& r) // NOLINT
+std::ostream& operator<<(std::ostream& out, const ulight::js::JSX_Tag_Result& r) // NOLINT
 {
     return out << "{ .length = " << r.length << ", .type = " << int(r.type) << " }";
 }
 
+namespace js {
 namespace {
 
 TEST(JS, match_numeric_literal)
 {
-    EXPECT_EQ(match_numeric_literal(u8""), (Numeric_Result {}));
-    EXPECT_EQ(match_numeric_literal(u8"0"), (Numeric_Result { .length = 1, .integer = 1 }));
+    EXPECT_EQ(match_numeric_literal(u8""), (Common_Number_Result {}));
+    EXPECT_EQ(match_numeric_literal(u8"0"), (Common_Number_Result { .length = 1, .integer = 1 }));
 
-    EXPECT_EQ(match_numeric_literal(u8"100_000"), (Numeric_Result { .length = 7, .integer = 7 }));
+    EXPECT_EQ(
+        match_numeric_literal(u8"100_000"), (Common_Number_Result { .length = 7, .integer = 7 })
+    );
     EXPECT_EQ(
         match_numeric_literal(u8"0xff_ffn"),
-        (Numeric_Result { .length = 8, .prefix = 2, .integer = 5, .suffix = 1 })
+        (Common_Number_Result { .length = 8, .prefix = 2, .integer = 5, .suffix = 1 })
     );
 
-    EXPECT_EQ(match_numeric_literal(u8".5"), (Numeric_Result { .length = 2, .fractional = 2 }));
+    EXPECT_EQ(
+        match_numeric_literal(u8".5"),
+        (Common_Number_Result { .length = 2, .radix_point = 1, .fractional = 1 })
+    );
     EXPECT_EQ(
         match_numeric_literal(u8"0.5"),
-        (Numeric_Result { .length = 3, .integer = 1, .fractional = 2 })
+        (Common_Number_Result { .length = 3, .integer = 1, .radix_point = 1, .fractional = 1 })
     );
     EXPECT_EQ(
         match_numeric_literal(u8"9.99"),
-        (Numeric_Result { .length = 4, .integer = 1, .fractional = 3 })
+        (Common_Number_Result { .length = 4, .integer = 1, .radix_point = 1, .fractional = 2 })
     );
 
     EXPECT_EQ(
         match_numeric_literal(u8"0E"),
-        (Numeric_Result { .length = 2, .integer = 1, .exponent = 1, .erroneous = true })
+        (Common_Number_Result {
+            .length = 2, .integer = 1, .exponent_sep = 1, .exponent_digits = 0, .erroneous = true })
     );
 
-    constexpr Numeric_Result only_expr_sign {
-        .length = 3, .integer = 1, .exponent = 2, .erroneous = true
+    constexpr Common_Number_Result only_expr_sign {
+        .length = 3, .integer = 1, .exponent_sep = 2, .exponent_digits = 0, .erroneous = true
     };
     EXPECT_EQ(match_numeric_literal(u8"0E+"), only_expr_sign);
     EXPECT_EQ(match_numeric_literal(u8"0e+"), only_expr_sign);
 
     EXPECT_EQ(
         match_numeric_literal(u8"0e-3"),
-        (Numeric_Result { .length = 4, .integer = 1, .exponent = 3 })
+        (Common_Number_Result { .length = 4, .integer = 1, .exponent_sep = 2, .exponent_digits = 1 }
+        )
     );
     EXPECT_EQ(
         match_numeric_literal(u8"0E+3"),
-        (Numeric_Result { .length = 4, .integer = 1, .exponent = 3 })
+        (Common_Number_Result { .length = 4, .integer = 1, .exponent_sep = 2, .exponent_digits = 1 }
+        )
     );
 }
 
@@ -148,4 +159,5 @@ TEST(JS, match_escape_sequence)
 }
 
 } // namespace
-} // namespace ulight::js
+} // namespace js
+} // namespace ulight

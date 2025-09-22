@@ -20,15 +20,15 @@
 #include "ulight/impl/lang/js_chars.hpp"
 
 namespace ulight {
-
 namespace js {
+namespace {
 
 #define ULIGHT_JS_TOKEN_TYPE_U8_CODE(id, code, highlight, source) u8##code,
 #define ULIGHT_JS_TOKEN_TYPE_LENGTH(id, code, highlight, source) (sizeof(u8##code) - 1),
 #define ULIGHT_JS_TOKEN_HIGHLIGHT_TYPE(id, code, highlight, source) (Highlight_Type::highlight),
 #define ULIGHT_JS_TOKEN_TYPE_FEATURE_SOURCE(id, code, highlight, source) (Feature_Source::source),
 
-namespace {
+constexpr char8_t digit_separator = u8'_';
 
 inline constexpr std::u8string_view token_type_codes[] {
     ULIGHT_JS_TOKEN_ENUM_DATA(ULIGHT_JS_TOKEN_TYPE_U8_CODE)
@@ -407,80 +407,29 @@ Digits_Result match_digits(std::u8string_view str, int base)
     return { .length = length, .erroneous = erroneous };
 }
 
-Numeric_Result match_numeric_literal(std::u8string_view str)
+Common_Number_Result match_numeric_literal(std::u8string_view str)
 {
-    if (str.empty()) {
-        return {};
-    }
+    // https://262.ecma-international.org/15.0/index.html#sec-literals-numeric-literals
+    static constexpr String_And_Base prefixes[] {
+        { u8"0b", 2 },  { u8"0B", 2 }, //
+        { u8"0o", 8 },  { u8"0O", 8 }, //
+        { u8"0x", 16 }, { u8"0X", 16 },
+    };
+    static constexpr String_And_Base exponent_separators[] {
+        { u8"E+", 10 }, { u8"E-", 10 }, { u8"E", 10 }, //
+        { u8"e+", 10 }, { u8"e-", 10 }, { u8"e", 10 }, //
+    };
+    static constexpr std::u8string_view suffixes[] { u8"n" };
+    static constexpr Common_Number_Options options {
+        .prefixes = prefixes,
+        .exponent_separators = exponent_separators,
+        .suffixes = suffixes,
+        .default_leading_zero_base = 8,
+        .digit_separator = digit_separator,
+    };
+    Common_Number_Result result = match_common_number(str, options);
+    result.erroneous |= result.suffix && result.is_non_integer();
 
-    Numeric_Result result {};
-    std::size_t length = 0;
-
-    {
-        const auto base = //
-            str.starts_with(u8"0b") || str.starts_with(u8"0B")   ? 2
-            : str.starts_with(u8"0o") || str.starts_with(u8"0O") ? 8
-            : str.starts_with(u8"0x") || str.starts_with(u8"0X") ? 16
-                                                                 : 10;
-        if (base != 10) {
-            result.prefix = 2;
-            length += result.prefix;
-        }
-        const auto integer_digits = match_digits(str.substr(result.prefix), base);
-        result.integer = integer_digits.length;
-        result.erroneous |= integer_digits.erroneous;
-        length += result.integer;
-    }
-
-    if (str.substr(length).starts_with(u8'.')) {
-        result.erroneous |= result.prefix != 0;
-        result.fractional = 1;
-
-        const auto [fractional_digits, fractional_error] = match_digits(str.substr(length + 1));
-        result.fractional += fractional_digits;
-        result.erroneous |= fractional_digits == 0;
-        result.erroneous |= fractional_error;
-
-        if (result.prefix == 0 && result.integer == 0
-            && (length + 1 >= str.length() || !is_ascii_digit(str[length + 1]))) {
-            return {};
-        }
-        length += result.fractional;
-    }
-
-    if (length == 0) {
-        return {};
-    }
-
-    if (length < str.length() && (str[length] == u8'e' || str[length] == u8'E')) {
-        result.exponent = 1;
-        result.erroneous |= result.prefix != 0;
-
-        if (length + result.exponent < str.length()
-            && (str[length + result.exponent] == u8'+' || str[length + result.exponent] == u8'-')) {
-            ++result.exponent;
-        }
-
-        const auto [exp_digits, exp_error] = match_digits(str.substr(length + result.exponent));
-        result.exponent += exp_digits;
-        result.erroneous |= exp_digits == 0;
-        result.erroneous |= exp_error;
-        length += result.exponent;
-    }
-
-    // https://262.ecma-international.org/15.0/index.html#prod-BigIntLiteralSuffix
-    if (length < str.length() && str[length] == u8'n') {
-        result.suffix = 1;
-        result.erroneous |= result.fractional != 0;
-        result.erroneous |= result.exponent != 0;
-        length += result.suffix;
-    }
-
-    result.length = length;
-    ULIGHT_DEBUG_ASSERT(
-        (result.prefix + result.integer + result.fractional + result.exponent + result.suffix)
-        == result.length
-    );
     return result;
 }
 
@@ -1589,103 +1538,11 @@ private:
 
     bool expect_numeric_literal()
     {
-        const Numeric_Result number = match_numeric_literal(remainder);
+        const Common_Number_Result number = match_numeric_literal(remainder);
         if (!number) {
             return false;
         }
-        if (number.erroneous) {
-            emit_and_advance(number.length, Highlight_Type::error);
-            input_element = Input_Element::div;
-            return true;
-        }
-        const std::size_t start = index;
-        if (number.prefix > 0) {
-            emit_and_advance(number.prefix, Highlight_Type::number_decor);
-        }
-        if (number.integer > 0) {
-            std::size_t chars = 0;
-            auto flush_digits = [&] {
-                if (chars > 0) {
-                    emit(index - chars, chars, Highlight_Type::number);
-                    chars = 0;
-                }
-            };
-
-            for (std::size_t remaining = number.integer; remaining > 0; --remaining) {
-                if (remainder.starts_with(u8'_')) {
-                    flush_digits();
-                    emit_and_advance(1, Highlight_Type::number_delim);
-                }
-                else {
-                    ++chars;
-                    advance(1);
-                }
-            }
-            flush_digits();
-        }
-
-        if (number.fractional > 0) {
-            emit_and_advance(1, Highlight_Type::number_delim);
-            std::size_t chars = 0;
-            auto flush_digits = [&] {
-                if (chars > 0) {
-                    emit(index - chars, chars, Highlight_Type::number);
-                    chars = 0;
-                }
-            };
-
-            for (std::size_t remaining = number.fractional - 1; remaining > 0; --remaining) {
-                if (remainder.starts_with(u8'_')) {
-                    flush_digits();
-                    emit_and_advance(1, Highlight_Type::number_delim);
-                }
-                else {
-                    ++chars;
-                    advance(1);
-                }
-            }
-            flush_digits();
-        }
-
-        if (number.exponent > 0) {
-            emit_and_advance(1, Highlight_Type::number_decor);
-
-            // Highlight the exponent sign if it is present.
-            if (!remainder.empty() && (remainder[0] == u8'+' || remainder[0] == u8'-')) {
-                emit_and_advance(1, Highlight_Type::number_decor);
-            }
-
-            std::size_t chars = 0;
-            auto flush_digits = [&] {
-                if (chars > 0) {
-                    emit(index - chars, chars, Highlight_Type::number);
-                    chars = 0;
-                }
-            };
-
-            std::size_t exp_start_consumed = 1; // 'E' or 'e'
-            if (start + number.prefix + number.integer + number.fractional < index - 1) {
-                exp_start_consumed = 2; // 'E' or 'e' and the sign.
-            }
-
-            for (std::size_t remaining = number.exponent - exp_start_consumed; remaining > 0;
-                 --remaining) {
-                if (remainder.starts_with(u8'_')) {
-                    flush_digits();
-                    emit_and_advance(1, Highlight_Type::number_delim);
-                }
-                else {
-                    ++chars;
-                    advance(1);
-                }
-            }
-            flush_digits();
-        }
-
-        if (number.suffix > 0) {
-            emit_and_advance(number.suffix, Highlight_Type::number_decor);
-        }
-
+        highlight_number(number, digit_separator);
         input_element = Input_Element::div;
         return true;
     }
