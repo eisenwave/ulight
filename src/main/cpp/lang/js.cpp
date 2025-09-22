@@ -48,48 +48,73 @@ inline constexpr Feature_Source token_type_sources[] {
     ULIGHT_JS_TOKEN_ENUM_DATA(ULIGHT_JS_TOKEN_TYPE_FEATURE_SOURCE)
 };
 
-} // namespace
+enum struct Mode : bool {
+    javascript,
+    typescript,
+};
 
 /// @brief Returns the in-code representation of `type`.
-[[nodiscard]]
-std::u8string_view js_token_type_code(Token_Type type)
+/// For example, if `type` is `plus`, returns `"+"`.
+/// If `type` is invalid, returns an empty string.
+[[nodiscard]] [[maybe_unused]]
+constexpr std::u8string_view token_type_code(Token_Type type)
 {
     return token_type_codes[std::size_t(type)];
 }
 
 /// @brief Equivalent to `js_token_type_code(type).length()`.
 [[nodiscard]]
-std::size_t js_token_type_length(Token_Type type)
+constexpr std::size_t token_type_length(Token_Type type)
 {
     return token_type_lengths[std::size_t(type)];
 }
 
 [[nodiscard]]
-Highlight_Type js_token_type_highlight(Token_Type type)
+constexpr Highlight_Type token_type_highlight(Token_Type type)
 {
     return token_type_highlights[std::size_t(type)];
 }
 
 [[nodiscard]]
-Feature_Source js_token_type_source(Token_Type type)
+constexpr Feature_Source token_type_source(Token_Type type)
 {
     return token_type_sources[std::size_t(type)];
 }
 
 [[nodiscard]]
-std::optional<Token_Type> js_token_type_by_code(std::u8string_view code)
+constexpr bool token_type_is_available(Token_Type type, Mode mode)
 {
-    const std::u8string_view* const result = std::ranges::lower_bound(token_type_codes, code);
-    if (result == std::end(token_type_codes) || *result != code) {
-        return {};
+    const Feature_Source source = token_type_source(type);
+    switch (mode) {
+    case Mode::javascript: return Underlying(source) & Underlying(Feature_Source::js);
+    case Mode::typescript: return Underlying(source) & Underlying(Feature_Source::ts);
     }
-    return Token_Type(result - token_type_codes);
+    ULIGHT_ASSERT_UNREACHABLE(u8"Invalid mode.");
 }
 
-namespace {
+[[nodiscard]]
+constexpr std::optional<Token_Type> token_type_by_code(std::u8string_view code)
+{
+    const std::u8string_view* const p = std::ranges::lower_bound(token_type_codes, code);
+    if (p == std::end(token_type_codes) || *p != code) {
+        return {};
+    }
+    return Token_Type(p - token_type_codes);
+}
 
 [[nodiscard]]
-constexpr bool js_token_type_is_expr_keyword(Token_Type type)
+constexpr std::optional<Token_Type> token_type_by_code(std::u8string_view code, Mode mode)
+{
+    if (const auto result = token_type_by_code(code)) {
+        if (token_type_is_available(*result, mode)) {
+            return result;
+        }
+    }
+    return {};
+}
+
+[[nodiscard]]
+constexpr bool token_type_is_expr_keyword(Token_Type type)
 {
     switch (type) {
         using enum Token_Type;
@@ -103,13 +128,14 @@ constexpr bool js_token_type_is_expr_keyword(Token_Type type)
     case kw_await:
     case kw_instanceof:
     case kw_in:
+    case kw_is:
     case kw_new: return true;
     default: return false;
     }
 }
 
 [[nodiscard]]
-constexpr bool js_token_type_cannot_precede_regex(Token_Type type)
+constexpr bool token_type_cannot_precede_regex(Token_Type type)
 {
     // TODO: investigate what the proper set here is, or whether it even makes sense for us
     //       to attempt handling these rules properly.
@@ -302,90 +328,6 @@ String_Literal_Result match_string_literal(std::u8string_view str)
 
     return String_Literal_Result { .length = length, .terminated = false };
 }
-
-#if 0
-String_Literal_Result match_template(std::u8string_view str)
-{
-    // https://262.ecma-international.org/15.0/index.html#prod-Template
-    if (!str.starts_with(u8'`')) {
-        return {};
-    }
-
-    std::size_t length = 1;
-    bool escaped = false;
-
-    while (length < str.length()) {
-        const char8_t c = str[length];
-
-        if (escaped) {
-            escaped = false;
-        }
-        else if (c == u8'\\') {
-            escaped = true;
-        }
-        else if (c == u8'`') {
-            return String_Literal_Result { .length = length + 1, .terminated = true };
-        }
-        else if (c == u8'$' && length + 1 < str.length() && str[length + 1] == u8'{') {
-            const std::size_t subst_length = match_template_substitution(str.substr(length));
-            if (subst_length == 0) { // Unterminated.
-                return String_Literal_Result { .length = str.length(), .terminated = false };
-            }
-            length += subst_length;
-            continue;
-        }
-
-        ++length;
-    }
-
-    // Unterminated template literal.
-    return String_Literal_Result { .length = length, .terminated = false };
-}
-
-std::size_t match_template_substitution(std::u8string_view str)
-{
-    // // https://262.ecma-international.org/15.0/index.html#sec-template-literal-lexical-components
-    if (!str.starts_with(u8"${")) {
-        return 0;
-    }
-
-    std::size_t length = 2;
-    int brace_level = 1; // Start with one open brace
-
-    while (length < str.length() && brace_level > 0) {
-        const char8_t c = str[length];
-
-        if (c == u8'{') {
-            ++brace_level;
-        }
-        else if (c == u8'}') {
-            --brace_level;
-        }
-        else if (c == u8'"' || c == u8'\'' || c == u8'`') {
-            const String_Literal_Result string_result = match_string_literal(str.substr(length));
-            if (string_result) {
-                length += string_result.length - 1; // -1 because it will be incremented at the end.
-            }
-        }
-        else if (str.substr(length).starts_with(u8"//")) {
-            const std::size_t comment_length = match_line_comment(str.substr(length));
-            if (comment_length > 0) {
-                length += comment_length - 1; // -1 because it will be incremented at the end.
-            }
-        }
-        else if (str.substr(length).starts_with(u8"/*")) {
-            const Comment_Result comment_result = match_block_comment(str.substr(length));
-            if (comment_result) {
-                length
-                    += comment_result.length - 1; // -1 because it will be incremented at the end.
-            }
-        }
-
-        ++length;
-    }
-    return brace_level == 0 ? length : 0; // the closing brace is found if brace_level is 0.
-}
-#endif
 
 Digits_Result match_digits(std::u8string_view str, int base)
 {
@@ -861,6 +803,80 @@ bool match_jsx_tag_impl(
 }
 
 [[nodiscard]]
+std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str)
+{
+    using enum Token_Type;
+
+    if (str.empty()) {
+        return {};
+    }
+
+    switch (str[0]) {
+    case u8'!':
+        return str.starts_with(u8"!==") ? strict_not_equals
+            : str.starts_with(u8"!=")   ? not_equals
+                                        : logical_not;
+    case u8'%': return str.starts_with(u8"%=") ? modulo_equal : modulo;
+    case u8'&':
+        return str.starts_with(u8"&&=") ? logical_and_equal
+            : str.starts_with(u8"&&")   ? logical_and
+            : str.starts_with(u8"&=")   ? bitwise_and_equal
+                                        : bitwise_and;
+    case u8'(': return left_paren;
+    case u8')': return right_paren;
+    case u8'*':
+        return str.starts_with(u8"**=") ? exponentiation_equal
+            : str.starts_with(u8"**")   ? exponentiation
+            : str.starts_with(u8"*=")   ? multiply_equal
+                                        : multiply;
+    case u8'+':
+        return str.starts_with(u8"++") ? increment : str.starts_with(u8"+=") ? plus_equal : plus;
+    case u8',': return comma;
+    case u8'-':
+        return str.starts_with(u8"--") ? decrement : str.starts_with(u8"-=") ? minus_equal : minus;
+    case u8'.': return str.starts_with(u8"...") ? ellipsis : dot;
+    case u8'/': return str.starts_with(u8"/=") ? divide_equal : divide;
+    case u8':': return colon;
+    case u8';': return semicolon;
+    case u8'<':
+        return str.starts_with(u8"<<=") ? left_shift_equal
+            : str.starts_with(u8"<<")   ? left_shift
+            : str.starts_with(u8"<=")   ? less_equal
+                                        : less_than;
+    case u8'=':
+        return str.starts_with(u8"===") ? strict_equals
+            : str.starts_with(u8"==")   ? equals
+            : str.starts_with(u8"=>")   ? arrow
+                                        : assignment;
+    case u8'>':
+        return str.starts_with(u8">>>=") ? unsigned_right_shift_equal
+            : str.starts_with(u8">>>")   ? unsigned_right_shift
+            : str.starts_with(u8">>=")   ? right_shift_equal
+            : str.starts_with(u8">>")    ? right_shift
+            : str.starts_with(u8">=")    ? greater_equal
+                                         : greater_than;
+    case u8'@': return at;
+    case u8'?':
+        return str.starts_with(u8"??=") ? nullish_coalescing_equal
+            : str.starts_with(u8"??")   ? nullish_coalescing
+            : str.starts_with(u8"?.")   ? optional_chaining
+                                        : conditional;
+    case u8'[': return left_bracket;
+    case u8']': return right_bracket;
+    case u8'^': return str.starts_with(u8"^=") ? bitwise_xor_equal : bitwise_xor;
+    case u8'{': return left_brace;
+    case u8'|':
+        return str.starts_with(u8"||=") ? logical_or_equal
+            : str.starts_with(u8"||")   ? logical_or
+            : str.starts_with(u8"|=")   ? bitwise_or_equal
+                                        : bitwise_or;
+    case u8'}': return right_brace;
+    case u8'~': return bitwise_not;
+    default: return {};
+    }
+}
+
+[[nodiscard]]
 JSX_Tag_Result
 match_jsx_tag_impl(std::u8string_view str, JSX_Tag_Subset subset = JSX_Tag_Subset::all)
 {
@@ -877,106 +893,6 @@ JSX_Tag_Result match_jsx_tag(std::u8string_view str)
 {
     return match_jsx_tag_impl(str);
 }
-
-namespace {
-
-std::optional<Token_Type> match_operator_or_punctuation(std::u8string_view str)
-{
-    using enum Token_Type;
-
-    if (str.empty()) {
-        return {};
-    }
-
-    switch (str[0]) {
-    case u8'!':
-        return str.starts_with(u8"!==") ? strict_not_equals
-            : str.starts_with(u8"!=")   ? not_equals
-                                        : logical_not;
-
-    case u8'%': return str.starts_with(u8"%=") ? modulo_equal : modulo;
-
-    case u8'&':
-        return str.starts_with(u8"&&=") ? logical_and_equal
-            : str.starts_with(u8"&&")   ? logical_and
-            : str.starts_with(u8"&=")   ? bitwise_and_equal
-                                        : bitwise_and;
-
-    case u8'(': return left_paren;
-    case u8')': return right_paren;
-
-    case u8'*':
-        return str.starts_with(u8"**=") ? exponentiation_equal
-            : str.starts_with(u8"**")   ? exponentiation
-            : str.starts_with(u8"*=")   ? multiply_equal
-                                        : multiply;
-
-    case u8'+':
-        return str.starts_with(u8"++") ? increment : str.starts_with(u8"+=") ? plus_equal : plus;
-
-    case u8',': return comma;
-
-    case u8'-':
-        return str.starts_with(u8"--") ? decrement : str.starts_with(u8"-=") ? minus_equal : minus;
-
-    case u8'.': return str.starts_with(u8"...") ? ellipsis : dot;
-
-    case u8'/': return str.starts_with(u8"/=") ? divide_equal : divide;
-
-    case u8':': return colon;
-    case u8';': return semicolon;
-
-    case u8'<': {
-        return str.starts_with(u8"<<=") ? left_shift_equal
-            : str.starts_with(u8"<<")   ? left_shift
-            : str.starts_with(u8"<=")   ? less_equal
-                                        : less_than;
-    }
-
-    case u8'=': {
-        return str.starts_with(u8"===") ? strict_equals
-            : str.starts_with(u8"==")   ? equals
-            : str.starts_with(u8"=>")   ? arrow
-                                        : assignment;
-    }
-
-    case u8'>': {
-        return str.starts_with(u8">>>=") ? unsigned_right_shift_equal
-            : str.starts_with(u8">>>")   ? unsigned_right_shift
-            : str.starts_with(u8">>=")   ? right_shift_equal
-            : str.starts_with(u8">>")    ? right_shift
-            : str.starts_with(u8">=")    ? greater_equal
-                                         : greater_than;
-    }
-
-    case u8'?':
-        return str.starts_with(u8"??=") ? nullish_coalescing_equal
-            : str.starts_with(u8"??")   ? nullish_coalescing
-            : str.starts_with(u8"?.")   ? optional_chaining
-                                        : conditional;
-
-    case u8'[': return left_bracket;
-    case u8']': return right_bracket;
-
-    case u8'^': return str.starts_with(u8"^=") ? bitwise_xor_equal : bitwise_xor;
-
-    case u8'{': return left_brace;
-
-    case u8'|':
-        return str.starts_with(u8"||=") ? logical_or_equal
-            : str.starts_with(u8"||")   ? logical_or
-            : str.starts_with(u8"|=")   ? bitwise_or_equal
-                                        : bitwise_or;
-
-    case u8'}': return right_brace;
-
-    case u8'~': return bitwise_not;
-
-    default: return {};
-    }
-}
-
-} // namespace
 
 namespace {
 
@@ -1013,14 +929,17 @@ constexpr bool input_element_has_regex(Input_Element goal)
 struct [[nodiscard]] Highlighter : Highlighter_Base {
 private:
     Input_Element input_element = Input_Element::hashbang_or_regex;
+    const Mode mode;
 
 public:
     Highlighter(
         Non_Owning_Buffer<Token>& out,
         std::u8string_view source,
-        const Highlight_Options& options
+        const Highlight_Options& options,
+        Mode mode
     )
         : Highlighter_Base { out, source, options }
+        , mode { mode }
     {
     }
 
@@ -1074,7 +993,7 @@ private:
             expect_regex() || //
             expect_numeric_literal() || //
             expect_private_identifier() || //
-            expect_symbols() || //
+            expect_identifier() || //
             expect_operator_or_punctuation()) {
             return;
         }
@@ -1557,7 +1476,7 @@ private:
         return false;
     }
 
-    bool expect_symbols()
+    bool expect_identifier()
     {
         const std::size_t id_length = match_identifier(remainder);
         if (id_length == 0) {
@@ -1565,18 +1484,18 @@ private:
         }
 
         const std::optional<Token_Type> keyword
-            = js_token_type_by_code(remainder.substr(0, id_length));
+            = token_type_by_code(remainder.substr(0, id_length), mode);
         if (!keyword) {
             emit_and_advance(id_length, Highlight_Type::id);
             input_element = Input_Element::div;
             return true;
         }
 
-        const Highlight_Type highlight = js_token_type_highlight(*keyword);
+        const Highlight_Type highlight = token_type_highlight(*keyword);
         emit_and_advance(id_length, highlight);
 
         input_element
-            = js_token_type_is_expr_keyword(*keyword) ? Input_Element::regex : Input_Element::div;
+            = token_type_is_expr_keyword(*keyword) ? Input_Element::regex : Input_Element::div;
 
         return true;
     }
@@ -1584,15 +1503,15 @@ private:
     bool expect_operator_or_punctuation()
     {
         const std::optional<Token_Type> op = match_operator_or_punctuation(remainder);
-        if (!op) {
+        if (!op || !token_type_is_available(*op, mode)) {
             return false;
         }
-        const std::size_t op_length = js_token_type_length(*op);
-        const Highlight_Type op_highlight = js_token_type_highlight(*op);
+        const std::size_t op_length = token_type_length(*op);
+        const Highlight_Type op_highlight = token_type_highlight(*op);
 
         emit_and_advance(op_length, op_highlight);
         input_element
-            = js_token_type_cannot_precede_regex(*op) ? Input_Element::div : Input_Element::regex;
+            = token_type_cannot_precede_regex(*op) ? Input_Element::div : Input_Element::regex;
 
         return true;
     }
@@ -1609,7 +1528,17 @@ bool highlight_javascript(
     const Highlight_Options& options
 )
 {
-    return js::Highlighter { out, source, options }();
+    return js::Highlighter { out, source, options, js::Mode::javascript }();
+}
+
+bool highlight_typescript(
+    Non_Owning_Buffer<Token>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource*,
+    const Highlight_Options& options
+)
+{
+    return js::Highlighter { out, source, options, js::Mode::typescript }();
 }
 
 } // namespace ulight

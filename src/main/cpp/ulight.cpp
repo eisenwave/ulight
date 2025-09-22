@@ -104,11 +104,11 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("htm", ULIGHT_LANG_HTML),
     make_lang_entry("html", ULIGHT_LANG_HTML),
     make_lang_entry("hxx", ULIGHT_LANG_CPP),
-    make_lang_entry("javascript", ULIGHT_LANG_JS),
-    make_lang_entry("js", ULIGHT_LANG_JS),
+    make_lang_entry("javascript", ULIGHT_LANG_JAVASCRIPT),
+    make_lang_entry("js", ULIGHT_LANG_JAVASCRIPT),
     make_lang_entry("json", ULIGHT_LANG_JSON),
     make_lang_entry("jsonc", ULIGHT_LANG_JSONC),
-    make_lang_entry("jsx", ULIGHT_LANG_JS),
+    make_lang_entry("jsx", ULIGHT_LANG_JAVASCRIPT),
     make_lang_entry("kotlin", ULIGHT_LANG_KOTLIN),
     make_lang_entry("kt", ULIGHT_LANG_KOTLIN),
     make_lang_entry("kts", ULIGHT_LANG_KOTLIN),
@@ -125,7 +125,10 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("svg", ULIGHT_LANG_XML),
     make_lang_entry("tex", ULIGHT_LANG_TEX),
     make_lang_entry("text", ULIGHT_LANG_TXT),
+    make_lang_entry("ts", ULIGHT_LANG_TYPESCRIPT),
+    make_lang_entry("tsx", ULIGHT_LANG_TYPESCRIPT),
     make_lang_entry("txt", ULIGHT_LANG_TXT),
+    make_lang_entry("typescript", ULIGHT_LANG_TYPESCRIPT),
     make_lang_entry("x86asm", ULIGHT_LANG_NASM),
     make_lang_entry("xbj", ULIGHT_LANG_XML),
     make_lang_entry("xhtml", ULIGHT_LANG_XML),
@@ -160,6 +163,7 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("EBNF"),
     make_sv("Python"),
     make_sv("Kotlin"),
+    make_sv("TypeScript"),
 };
 // clang-format on
 

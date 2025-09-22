@@ -406,7 +406,7 @@ private:
         }
         if (equals_ascii_ignore_case(name, script_tag)) {
             const std::size_t js_length = match_raw_text(remainder, script_tag);
-            consume_nested_css_or_js(Lang::js, js_length);
+            consume_nested_css_or_js(Lang::javascript, js_length);
             return true;
         }
         if (equals_ascii_ignore_case(name, style_tag)) {
@@ -420,7 +420,7 @@ private:
 
     void consume_nested_css_or_js(Lang lang, std::size_t length)
     {
-        ULIGHT_ASSERT(lang == Lang::css || lang == Lang::js);
+        ULIGHT_ASSERT(lang == Lang::css || lang == Lang::javascript);
         if (length == 0) {
             return;
         }

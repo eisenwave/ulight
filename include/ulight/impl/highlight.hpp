@@ -45,6 +45,7 @@ Highlight_Fn highlight_lua;
 Highlight_Fn highlight_nasm;
 Highlight_Fn highlight_python;
 Highlight_Fn highlight_tex;
+Highlight_Fn highlight_typescript;
 Highlight_Fn highlight_xml;
 
 inline bool highlight_txt(
@@ -74,55 +75,40 @@ inline Status highlight(
     const Highlight_Options& options = {}
 )
 {
-    constexpr auto to_result = [](bool success) -> Status {
-        if (success) {
-            return Status::ok;
-        }
-        return Status::bad_code;
-    };
+    static constexpr auto highlight_functions = [] {
+        std::array<Highlight_Fn*, ULIGHT_LANG_COUNT> result;
+        result[ULIGHT_LANG_BASH] = highlight_bash;
+        result[ULIGHT_LANG_C] = highlight_c;
+        result[ULIGHT_LANG_COWEL] = highlight_cowel;
+        result[ULIGHT_LANG_CPP] = highlight_cpp;
+        result[ULIGHT_LANG_CSS] = highlight_css;
+        result[ULIGHT_LANG_DIFF] = highlight_diff;
+        result[ULIGHT_LANG_EBNF] = highlight_ebnf;
+        result[ULIGHT_LANG_HTML] = highlight_html;
+        result[ULIGHT_LANG_JAVASCRIPT] = highlight_javascript;
+        result[ULIGHT_LANG_JSON] = highlight_json;
+        result[ULIGHT_LANG_JSONC] = highlight_jsonc;
+        result[ULIGHT_LANG_KOTLIN] = highlight_kotlin;
+        result[ULIGHT_LANG_LATEX] = highlight_latex;
+        result[ULIGHT_LANG_LUA] = highlight_lua;
+        result[ULIGHT_LANG_NASM] = highlight_nasm;
+        result[ULIGHT_LANG_NONE] = nullptr;
+        result[ULIGHT_LANG_PYTHON] = highlight_python;
+        result[ULIGHT_LANG_TEX] = highlight_tex;
+        result[ULIGHT_LANG_TXT] = highlight_txt;
+        result[ULIGHT_LANG_TYPESCRIPT] = highlight_typescript;
+        result[ULIGHT_LANG_XML] = highlight_xml;
+        return result;
+    }();
 
-    switch (language) {
-    case Lang::cpp: //
-        return to_result(highlight_cpp(out, source, memory, options));
-    case Lang::cowel: //
-        return to_result(highlight_cowel(out, source, memory, options));
-    case Lang::lua: //
-        return to_result(highlight_lua(out, source, memory, options));
-    case Lang::html: //
-        return to_result(highlight_html(out, source, memory, options));
-    case Lang::xml: //
-        return to_result(highlight_xml(out, source, memory, options));
-    case Lang::css: //
-        return to_result(highlight_css(out, source, memory, options));
-    case Lang::c: //
-        return to_result(highlight_c(out, source, memory, options));
-    case Lang::js: //
-        return to_result(highlight_javascript(out, source, memory, options));
-    case Lang::bash: //
-        return to_result(highlight_bash(out, source, memory, options));
-    case Lang::diff: //
-        return to_result(highlight_diff(out, source, memory, options));
-    case Lang::json: //
-        return to_result(highlight_json(out, source, memory, options));
-    case Lang::jsonc: //
-        return to_result(highlight_jsonc(out, source, memory, options));
-    case Lang::txt: //
-        return to_result(highlight_txt(out, source, memory, options));
-    case Lang::tex: //
-        return to_result(highlight_tex(out, source, memory, options));
-    case Lang::latex: //
-        return to_result(highlight_latex(out, source, memory, options));
-    case Lang::nasm: //
-        return to_result(highlight_nasm(out, source, memory, options));
-    case Lang::ebnf: //
-        return to_result(highlight_ebnf(out, source, memory, options));
-    case Lang::python: //
-        return to_result(highlight_python(out, source, memory, options));
-    case Lang::kotlin: //
-        return to_result(highlight_kotlin(out, source, memory, options));
-    default: //
+    if (int(language) >= ULIGHT_LANG_COUNT) {
         return Status::bad_lang;
     }
+    Highlight_Fn* const highlighter = highlight_functions[std::size_t(language)];
+    if (!highlighter) {
+        return Status::bad_lang;
+    }
+    return highlighter(out, source, memory, options) ? Status::ok : Status::bad_code;
 }
 
 } // namespace ulight

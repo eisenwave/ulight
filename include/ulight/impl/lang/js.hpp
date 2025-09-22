@@ -13,118 +13,138 @@
 namespace ulight::js {
 
 enum struct Feature_Source : Underlying {
-    /// @brief Common JavaScript
-    js,
+    /// @brief JavaScript
+    js = 0b001,
+    /// @brief TypeScript
+    ts = 0b010,
     /// @brief JSX features
-    jsx,
+    jsx = 0b100,
+    /// @brief Common between JavaScript and TypeScript
+    js_ts = js | ts,
     /// @brief Common between JavaScript and JSX
-    js_jsx,
+    js_jsx = js | jsx,
+    /// @brief Common between TypeScript and JSX
+    ts_jsx = ts | jsx,
+    /// @brief Common between JavaScript, TypeScript, and JSX
+    all = js | ts | jsx,
 };
 
 #define ULIGHT_JS_TOKEN_ENUM_DATA(F)                                                               \
-    F(logical_not, "!", sym_op, js)                                                                \
-    F(not_equals, "!=", sym_op, js)                                                                \
-    F(strict_not_equals, "!==", sym_op, js)                                                        \
-    F(modulo, "%", sym_op, js)                                                                     \
-    F(modulo_equal, "%=", sym_op, js)                                                              \
-    F(bitwise_and, "&", sym_op, js)                                                                \
-    F(logical_and, "&&", sym_op, js)                                                               \
-    F(logical_and_equal, "&&=", sym_op, js)                                                        \
-    F(bitwise_and_equal, "&=", sym_op, js)                                                         \
-    F(left_paren, "(", sym_parens, js_jsx)                                                         \
-    F(right_paren, ")", sym_parens, js_jsx)                                                        \
-    F(multiply, "*", sym_op, js)                                                                   \
-    F(exponentiation, "**", sym_op, js)                                                            \
-    F(exponentiation_equal, "**=", sym_op, js)                                                     \
-    F(multiply_equal, "*=", sym_op, js)                                                            \
-    F(plus, "+", sym_op, js)                                                                       \
-    F(increment, "++", sym_op, js)                                                                 \
-    F(plus_equal, "+=", sym_op, js)                                                                \
-    F(comma, ",", sym_punc, js_jsx)                                                                \
-    F(minus, "-", sym_op, js)                                                                      \
-    F(decrement, "--", sym_op, js)                                                                 \
-    F(minus_equal, "-=", sym_op, js)                                                               \
-    F(dot, ".", sym_op, js_jsx)                                                                    \
-    F(ellipsis, "...", sym_op, js_jsx)                                                             \
-    F(divide, "/", sym_op, js)                                                                     \
-    F(divide_equal, "/=", sym_op, js)                                                              \
-    F(colon, ":", sym_op, js_jsx)                                                                  \
-    F(semicolon, ";", sym_punc, js_jsx)                                                            \
-    F(less_than, "<", sym_op, js_jsx)                                                              \
-    F(left_shift, "<<", sym_op, js)                                                                \
-    F(left_shift_equal, "<<=", sym_op, js)                                                         \
-    F(less_equal, "<=", sym_op, js)                                                                \
-    F(assignment, "=", sym_op, js)                                                                 \
-    F(equals, "==", sym_op, js)                                                                    \
-    F(strict_equals, "===", sym_op, js)                                                            \
-    F(arrow, "=>", sym_op, js)                                                                     \
-    F(greater_than, ">", sym_op, js)                                                               \
-    F(greater_equal, ">=", sym_op, js)                                                             \
-    F(right_shift, ">>", sym_op, js)                                                               \
-    F(right_shift_equal, ">>=", sym_op, js)                                                        \
-    F(unsigned_right_shift, ">>>", sym_op, js)                                                     \
-    F(unsigned_right_shift_equal, ">>>=", sym_op, js)                                              \
-    F(conditional, "?", sym_op, js)                                                                \
-    F(optional_chaining, "?.", sym_op, js)                                                         \
-    F(nullish_coalescing, "??", sym_op, js)                                                        \
-    F(nullish_coalescing_equal, "??=", sym_op, js)                                                 \
-    F(left_bracket, "[", sym_square, js_jsx)                                                       \
-    F(right_bracket, "]", sym_square, js_jsx)                                                      \
-    F(bitwise_xor, "^", sym_op, js)                                                                \
-    F(bitwise_xor_equal, "^=", sym_op, js)                                                         \
-    F(kw_as, "as", keyword, js)                                                                    \
-    F(kw_async, "async", keyword, js)                                                              \
-    F(kw_await, "await", keyword, js)                                                              \
-    F(kw_break, "break", keyword_control, js)                                                      \
-    F(kw_case, "case", keyword_control, js)                                                        \
-    F(kw_catch, "catch", keyword_control, js)                                                      \
-    F(kw_class, "class", keyword, js)                                                              \
-    F(kw_const, "const", keyword, js)                                                              \
-    F(kw_continue, "continue", keyword_control, js)                                                \
-    F(kw_debugger, "debugger", keyword, js)                                                        \
-    F(kw_default, "default", keyword_control, js)                                                  \
-    F(kw_delete, "delete", keyword, js)                                                            \
-    F(kw_do, "do", keyword_control, js)                                                            \
-    F(kw_else, "else", keyword_control, js)                                                        \
-    F(kw_enum, "enum", keyword, js)                                                                \
-    F(kw_export, "export", keyword, js)                                                            \
-    F(kw_extends, "extends", keyword, js)                                                          \
-    F(kw_false, "false", bool_, js)                                                                \
-    F(kw_finally, "finally", keyword_control, js)                                                  \
-    F(kw_for, "for", keyword_control, js)                                                          \
-    F(kw_from, "from", keyword, js)                                                                \
-    F(kw_function, "function", keyword, js)                                                        \
-    F(kw_get, "get", keyword, js)                                                                  \
-    F(kw_if, "if", keyword_control, js)                                                            \
-    F(kw_import, "import", keyword, js)                                                            \
-    F(kw_in, "in", keyword, js)                                                                    \
-    F(kw_instanceof, "instanceof", keyword, js)                                                    \
-    F(kw_let, "let", keyword, js)                                                                  \
-    F(kw_new, "new", keyword, js)                                                                  \
-    F(kw_null, "null", null, js)                                                                   \
-    F(kw_of, "of", keyword, js)                                                                    \
-    F(kw_return, "return", keyword_control, js)                                                    \
-    F(kw_set, "set", keyword, js)                                                                  \
-    F(kw_static, "static", keyword, js)                                                            \
-    F(kw_super, "super", keyword, js)                                                              \
-    F(kw_switch, "switch", keyword_control, js)                                                    \
-    F(kw_this, "this", this_, js)                                                                  \
-    F(kw_throw, "throw", keyword_control, js)                                                      \
-    F(kw_true, "true", bool_, js)                                                                  \
-    F(kw_try, "try", keyword_control, js)                                                          \
-    F(kw_typeof, "typeof", keyword, js)                                                            \
-    F(kw_var, "var", keyword, js)                                                                  \
-    F(kw_void, "void", keyword, js)                                                                \
-    F(kw_while, "while", keyword_control, js)                                                      \
-    F(kw_with, "with", keyword_control, js)                                                        \
-    F(kw_yield, "yield", keyword, js)                                                              \
-    F(left_brace, "{", sym_brace, js_jsx)                                                          \
-    F(bitwise_or, "|", sym_op, js)                                                                 \
-    F(bitwise_or_equal, "|=", sym_op, js)                                                          \
-    F(logical_or, "||", sym_op, js)                                                                \
-    F(logical_or_equal, "||=", sym_op, js)                                                         \
-    F(right_brace, "}", sym_brace, js_jsx)                                                         \
-    F(bitwise_not, "~", sym_op, js)
+    F(logical_not, "!", sym_op, js_ts)                                                             \
+    F(not_equals, "!=", sym_op, js_ts)                                                             \
+    F(strict_not_equals, "!==", sym_op, js_ts)                                                     \
+    F(modulo, "%", sym_op, js_ts)                                                                  \
+    F(modulo_equal, "%=", sym_op, js_ts)                                                           \
+    F(bitwise_and, "&", sym_op, js_ts)                                                             \
+    F(logical_and, "&&", sym_op, js_ts)                                                            \
+    F(logical_and_equal, "&&=", sym_op, js_ts)                                                     \
+    F(bitwise_and_equal, "&=", sym_op, js_ts)                                                      \
+    F(left_paren, "(", sym_parens, all)                                                            \
+    F(right_paren, ")", sym_parens, all)                                                           \
+    F(multiply, "*", sym_op, js_ts)                                                                \
+    F(exponentiation, "**", sym_op, js_ts)                                                         \
+    F(exponentiation_equal, "**=", sym_op, js_ts)                                                  \
+    F(multiply_equal, "*=", sym_op, js_ts)                                                         \
+    F(plus, "+", sym_op, js_ts)                                                                    \
+    F(increment, "++", sym_op, js_ts)                                                              \
+    F(plus_equal, "+=", sym_op, js_ts)                                                             \
+    F(comma, ",", sym_punc, all)                                                                   \
+    F(minus, "-", sym_op, js_ts)                                                                   \
+    F(decrement, "--", sym_op, js_ts)                                                              \
+    F(minus_equal, "-=", sym_op, js_ts)                                                            \
+    F(dot, ".", sym_op, all)                                                                       \
+    F(ellipsis, "...", sym_op, all)                                                                \
+    F(divide, "/", sym_op, js_ts)                                                                  \
+    F(divide_equal, "/=", sym_op, js_ts)                                                           \
+    F(colon, ":", sym_op, all)                                                                     \
+    F(semicolon, ";", sym_punc, all)                                                               \
+    F(less_than, "<", sym_op, all)                                                                 \
+    F(left_shift, "<<", sym_op, js_ts)                                                             \
+    F(left_shift_equal, "<<=", sym_op, js_ts)                                                      \
+    F(less_equal, "<=", sym_op, js_ts)                                                             \
+    F(assignment, "=", sym_op, js_ts)                                                              \
+    F(equals, "==", sym_op, js_ts)                                                                 \
+    F(strict_equals, "===", sym_op, js_ts)                                                         \
+    F(arrow, "=>", sym_op, js_ts)                                                                  \
+    F(greater_than, ">", sym_op, js_ts)                                                            \
+    F(greater_equal, ">=", sym_op, js_ts)                                                          \
+    F(right_shift, ">>", sym_op, js_ts)                                                            \
+    F(right_shift_equal, ">>=", sym_op, js_ts)                                                     \
+    F(unsigned_right_shift, ">>>", sym_op, js_ts)                                                  \
+    F(unsigned_right_shift_equal, ">>>=", sym_op, js_ts)                                           \
+    F(conditional, "?", sym_op, js_ts)                                                             \
+    F(optional_chaining, "?.", sym_op, js_ts)                                                      \
+    F(nullish_coalescing, "??", sym_op, js_ts)                                                     \
+    F(nullish_coalescing_equal, "??=", sym_op, js_ts)                                              \
+    F(at, "@", sym_punc, ts)                                                                       \
+    F(left_bracket, "[", sym_square, all)                                                          \
+    F(right_bracket, "]", sym_square, all)                                                         \
+    F(bitwise_xor, "^", sym_op, js_ts)                                                             \
+    F(bitwise_xor_equal, "^=", sym_op, js_ts)                                                      \
+    F(kw_any, "any", keyword_type, ts)                                                             \
+    F(kw_as, "as", keyword, js_ts)                                                                 \
+    F(kw_asserts, "asserts", keyword, ts)                                                          \
+    F(kw_async, "async", keyword, js_ts)                                                           \
+    F(kw_await, "await", keyword, js_ts)                                                           \
+    F(kw_boolean, "boolean", keyword_type, ts)                                                     \
+    F(kw_break, "break", keyword_control, js_ts)                                                   \
+    F(kw_case, "case", keyword_control, js_ts)                                                     \
+    F(kw_catch, "catch", keyword_control, js_ts)                                                   \
+    F(kw_class, "class", keyword, js_ts)                                                           \
+    F(kw_const, "const", keyword, js_ts)                                                           \
+    F(kw_constructor, "constructor", keyword, ts)                                                  \
+    F(kw_continue, "continue", keyword_control, js_ts)                                             \
+    F(kw_debugger, "debugger", keyword, js_ts)                                                     \
+    F(kw_default, "default", keyword_control, js_ts)                                               \
+    F(kw_delete, "delete", keyword, js_ts)                                                         \
+    F(kw_do, "do", keyword_control, js_ts)                                                         \
+    F(kw_else, "else", keyword_control, js_ts)                                                     \
+    F(kw_enum, "enum", keyword, js_ts)                                                             \
+    F(kw_export, "export", keyword, js_ts)                                                         \
+    F(kw_extends, "extends", keyword, js_ts)                                                       \
+    F(kw_false, "false", bool_, js_ts)                                                             \
+    F(kw_finally, "finally", keyword_control, js_ts)                                               \
+    F(kw_for, "for", keyword_control, js_ts)                                                       \
+    F(kw_from, "from", keyword, js_ts)                                                             \
+    F(kw_function, "function", keyword, js_ts)                                                     \
+    F(kw_get, "get", keyword, js_ts)                                                               \
+    F(kw_if, "if", keyword_control, js_ts)                                                         \
+    F(kw_implements, "implements", keyword, ts)                                                    \
+    F(kw_import, "import", keyword, js_ts)                                                         \
+    F(kw_in, "in", keyword, js_ts)                                                                 \
+    F(kw_instanceof, "instanceof", keyword, js_ts)                                                 \
+    F(kw_interface, "interface", keyword, ts)                                                      \
+    F(kw_is, "is", keyword, ts)                                                                    \
+    F(kw_let, "let", keyword, js_ts)                                                               \
+    F(kw_new, "new", keyword, js_ts)                                                               \
+    F(kw_null, "null", null, js_ts)                                                                \
+    F(kw_of, "of", keyword, js_ts)                                                                 \
+    F(kw_private, "private", keyword, ts)                                                          \
+    F(kw_protected, "protected", keyword, ts)                                                      \
+    F(kw_public, "public", keyword, ts)                                                            \
+    F(kw_return, "return", keyword_control, js_ts)                                                 \
+    F(kw_set, "set", keyword, js_ts)                                                               \
+    F(kw_static, "static", keyword, js_ts)                                                         \
+    F(kw_super, "super", this_, js_ts)                                                             \
+    F(kw_switch, "switch", keyword_control, js_ts)                                                 \
+    F(kw_this, "this", this_, js_ts)                                                               \
+    F(kw_throw, "throw", keyword_control, js_ts)                                                   \
+    F(kw_true, "true", bool_, js_ts)                                                               \
+    F(kw_try, "try", keyword_control, js_ts)                                                       \
+    F(kw_type, "type", keyword, ts)                                                                \
+    F(kw_typeof, "typeof", keyword, js_ts)                                                         \
+    F(kw_var, "var", keyword, js_ts)                                                               \
+    F(kw_void, "void", keyword, js_ts)                                                             \
+    F(kw_while, "while", keyword_control, js_ts)                                                   \
+    F(kw_with, "with", keyword_control, js_ts)                                                     \
+    F(kw_yield, "yield", keyword, js_ts)                                                           \
+    F(left_brace, "{", sym_brace, all)                                                             \
+    F(bitwise_or, "|", sym_op, js_ts)                                                              \
+    F(bitwise_or_equal, "|=", sym_op, js_ts)                                                       \
+    F(logical_or, "||", sym_op, js_ts)                                                             \
+    F(logical_or_equal, "||=", sym_op, js_ts)                                                      \
+    F(right_brace, "}", sym_brace, all)                                                            \
+    F(bitwise_not, "~", sym_op, js_ts)
 
 #define ULIGHT_JS_TOKEN_ENUM_ENUMERATOR(id, code, highlight, source) id,
 
@@ -133,25 +153,6 @@ enum struct Token_Type : Underlying { //
 };
 
 inline constexpr auto js_token_type_count = std::size_t(Token_Type::bitwise_not) + 1;
-
-/// @brief Returns the in-code representation of `type`.
-/// For example, if `type` is `plus`, returns `"+"`.
-/// If `type` is invalid, returns an empty string.
-[[nodiscard]]
-std::u8string_view js_token_type_code(Token_Type type);
-
-/// @brief Equivalent to `js_token_type_code(type).length()`.
-[[nodiscard]]
-std::size_t js_token_type_length(Token_Type type);
-
-[[nodiscard]]
-Highlight_Type js_token_type_highlight(Token_Type type);
-
-[[nodiscard]]
-Feature_Source js_token_type_source(Token_Type type);
-
-[[nodiscard]]
-std::optional<Token_Type> js_token_type_by_code(std::u8string_view code);
 
 [[nodiscard]]
 bool starts_with_line_terminator(std::u8string_view s);
@@ -226,12 +227,6 @@ struct String_Literal_Result {
 /// @brief Matches a JavaScript string literal at the start of `str`.
 [[nodiscard]]
 String_Literal_Result match_string_literal(std::u8string_view str);
-
-#if 0
-/// @brief Matches a JavaScript template literal at the start of `str`.
-[[nodiscard]]
-String_Literal_Result match_template(std::u8string_view str);
-#endif
 
 /// @brief Matches a JavaScript template literal substitution at the start of `str`.
 /// Returns the position after the closing } if found.

@@ -54,7 +54,7 @@ typedef struct ulight_u8string_view {
 enum {
     /// @brief The amount of unique languages supported,
     /// including `ULIGHT_LANG_NONE`.
-    ULIGHT_LANG_COUNT = 20
+    ULIGHT_LANG_COUNT = 21
 };
 
 /// @brief A language supported by ulight for syntax highlighting.
@@ -76,7 +76,7 @@ typedef enum ulight_lang {
     /// @brief HTML.
     ULIGHT_LANG_HTML = 4,
     /// @brief JavaScript.
-    ULIGHT_LANG_JS = 7,
+    ULIGHT_LANG_JAVASCRIPT = 7,
     /// @brief JSON (JavaScript Object Notation).
     ULIGHT_LANG_JSON = 10,
     /// @brief JSON with comments.
@@ -89,16 +89,18 @@ typedef enum ulight_lang {
     ULIGHT_LANG_LUA = 3,
     /// @brief Netwide Assembler.
     ULIGHT_LANG_NASM = 16,
+    /// @brief No langage (null result).
+    ULIGHT_LANG_NONE = 0,
     /// @brief Python.
     ULIGHT_LANG_PYTHON = 18,
     /// @brief TeX.
     ULIGHT_LANG_TEX = 14,
     /// @brief Plaintext.
     ULIGHT_LANG_TXT = 13,
+    /// @brief TeX.
+    ULIGHT_LANG_TYPESCRIPT = 20,
     /// @brief XML.
     ULIGHT_LANG_XML = 12,
-    /// @brief No langage (null result).
-    ULIGHT_LANG_NONE = 0,
 } ulight_lang;
 
 /// @brief Returns the `ulight_lang` whose name matches `name` exactly,
