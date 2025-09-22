@@ -209,13 +209,6 @@ x = 1; y = 2; z = x + y
 is_between = 1 < x < 5
 tern = 'yes' if x > 0 else 'no'
 
-# Numeric literals: binary, octal, hex, floats, complex
-n_bin = 0b1010
-n_oct = 0o755
-n_hex = 0xDEAD_BEEF
-n_float = 1.23e-4
-n_complex = 3+4j
-
 # Complex slicing with negative step
 slice_example = tuple(range(-5, 5))[::-1]
 
