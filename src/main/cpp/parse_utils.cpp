@@ -163,7 +163,7 @@ Digits_Result match_separated_digits(std::u8string_view str, int base, char8_t s
 }
 
 Common_Number_Result
-match_common_number(std::u8string_view str, const Common_Number_Options& options)
+match_common_number(const std::u8string_view str, const Common_Number_Options& options)
 {
     if (str.empty()) {
         return {};
@@ -218,7 +218,7 @@ match_common_number(std::u8string_view str, const Common_Number_Options& options
 
     if (length < str.length()) {
         for (const String_And_Base& s : options.exponent_separators) {
-            if (base != s.base || !str.starts_with(s.str)) {
+            if (!str.substr(length).starts_with(s.str)) {
                 continue;
             }
             result.exponent_sep = s.str.length();
