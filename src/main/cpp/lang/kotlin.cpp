@@ -67,8 +67,8 @@ Common_Number_Result match_number(std::u8string_view str)
         { u8"0X", 16 },
     };
     static constexpr String_And_Base exponent_separators[] {
-        { u8"e", 10 },
-        { u8"E", 10 },
+        { u8"E+", 10 }, { u8"E-", 10 }, { u8"E", 10 }, //
+        { u8"e+", 10 }, { u8"e-", 10 }, { u8"e", 10 }, //
     };
     static constexpr std::u8string_view suffixes[] {
         u8"F", u8"U", u8"UL", u8"f", u8"l", u8"u", u8"uL",

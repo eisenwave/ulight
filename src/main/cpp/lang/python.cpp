@@ -128,7 +128,8 @@ Common_Number_Result match_number(std::u8string_view str)
     };
     // https://docs.python.org/3/reference/lexical_analysis.html#floating-point-literals
     static constexpr String_And_Base exponent_separators[] {
-        { u8"e", 10 }, { u8"E", 10 } //
+        { u8"E+", 10 }, { u8"E-", 10 }, { u8"E", 10 }, //
+        { u8"e+", 10 }, { u8"e-", 10 }, { u8"e", 10 }, //
     };
     // https://docs.python.org/3/reference/lexical_analysis.html#imaginary-literals
     static constexpr std::u8string_view suffixes[] { u8"j", u8"J" };
