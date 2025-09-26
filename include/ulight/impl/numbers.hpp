@@ -39,19 +39,34 @@ inline Digits_Result match_digits_as_result(std::u8string_view str, int base = 1
 [[nodiscard]]
 Digits_Result match_separated_digits(std::u8string_view str, int base, char8_t separator = 0);
 
-struct String_And_Base {
+struct Number_Prefix {
+    /// @brief The string content of the prefix.
+    std::u8string_view str;
+    /// @brief The base associated with the prefix.
+    int base;
+    /// @brief If `true`,
+    /// the prefix can also be used with floating-point literals.
+    /// In most cases, this is `false` because base prefixes are limited to integers,
+    /// but sometimes hex floats are also supported, with a prefix option such as
+    /// `{ "0x", 16, true }`.
+    bool floating_point = false;
+};
+
+struct Exponent_Separator {
     std::u8string_view str;
     int base;
 };
 
 struct Common_Number_Options {
     /// @brief A list of prefixes.
-    std::span<const String_And_Base> prefixes;
+    std::span<const Number_Prefix> prefixes;
     /// @brief A list of possible exponent separators with the corresponding base.
-    std::span<const String_And_Base> exponent_separators;
+    std::span<const Exponent_Separator> exponent_separators;
     /// @brief A list of possible suffixes for the number.
     /// If the list is empty, suffixes are not matched.
     std::span<const std::u8string_view> suffixes = {};
+    /// @brief Can be provided instead of `suffixes` to allow parsing arbitrary suffixes.
+    Function_Ref<std::size_t(std::u8string_view)> match_suffix = {};
     /// @brief The default base which is assumed when none of the prefixes matches.
     int default_base = 10;
     /// @brief The default base which is assumed when none of the prefixes match,
@@ -99,6 +114,25 @@ struct Common_Number_Result {
     [[nodiscard]]
     friend constexpr bool operator==(Common_Number_Result, Common_Number_Result)
         = default;
+
+    [[nodiscard]]
+    constexpr std::u8string_view extract_prefix(std::u8string_view str) const
+    {
+        return str.substr(0, prefix);
+    }
+
+    [[nodiscard]]
+    constexpr std::u8string_view extract_suffix(std::u8string_view str) const
+    {
+        return str.substr(length - suffix, suffix);
+    }
+
+    /// @brief Equivalent to `!is_non_integer()`.
+    [[nodiscard]]
+    constexpr bool is_integer() const
+    {
+        return !is_non_integer();
+    }
 
     /// @brief Returns `true` if any of `radix_point`, `exponent_sep`, or `exponent_digits`
     /// is nonzero.

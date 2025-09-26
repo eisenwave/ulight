@@ -165,19 +165,23 @@ Digits_Result match_separated_digits(std::u8string_view str, int base, char8_t s
 Common_Number_Result
 match_common_number(const std::u8string_view str, const Common_Number_Options& options)
 {
+    ULIGHT_ASSERT(options.suffixes.empty() || !options.match_suffix);
+
     if (str.empty()) {
         return {};
     }
 
     Common_Number_Result result {};
     std::size_t length = 0;
+    bool allow_float = true;
 
     const auto base = [&] -> int {
-        for (const String_And_Base& prefix : options.prefixes) {
+        for (const Number_Prefix& prefix : options.prefixes) {
             ULIGHT_DEBUG_ASSERT(!prefix.str.empty());
             if (str.starts_with(prefix.str)) {
                 result.prefix = prefix.str.length();
                 length += result.prefix;
+                allow_float = !prefix.floating_point;
                 return prefix.base;
             }
         }
@@ -192,7 +196,7 @@ match_common_number(const std::u8string_view str, const Common_Number_Options& o
         length += result.integer;
     }
 
-    if (str.substr(length).starts_with(u8'.')) {
+    if (allow_float && str.substr(length).starts_with(u8'.')) {
         result.radix_point = 1;
 
         const auto [fractional_digits, fractional_error]
@@ -216,8 +220,8 @@ match_common_number(const std::u8string_view str, const Common_Number_Options& o
         return {};
     }
 
-    if (length < str.length()) {
-        for (const String_And_Base& s : options.exponent_separators) {
+    if (allow_float && length < str.length()) {
+        for (const Exponent_Separator& s : options.exponent_separators) {
             if (!str.substr(length).starts_with(s.str)) {
                 continue;
             }
@@ -233,12 +237,19 @@ match_common_number(const std::u8string_view str, const Common_Number_Options& o
     }
 
     if (length < str.length()) {
-        for (const std::u8string_view suffix : options.suffixes) {
-            if (str.substr(length).starts_with(suffix)) {
-                result.suffix = suffix.length();
-                length += result.suffix;
-                break;
+        if (!options.suffixes.empty()) {
+            for (const std::u8string_view suffix : options.suffixes) {
+                if (str.substr(length).starts_with(suffix)) {
+                    result.suffix = suffix.length();
+                    length += result.suffix;
+                    break;
+                }
             }
+        }
+        else if (options.match_suffix) {
+            const std::size_t suffix = options.match_suffix(str.substr(length));
+            result.suffix = suffix;
+            length += suffix;
         }
     }
 
