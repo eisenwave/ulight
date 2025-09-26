@@ -296,7 +296,7 @@ constexpr Flag operator|(Flag x, Flag y) noexcept
     F(symbol_punc, "symbol-punc", "sym_punc", ULIGHT_HL_SYMBOL_PUNC)                               \
     F(symbol_op, "symbol-op", "sym_op", ULIGHT_HL_SYMBOL_OP)                                       \
     F(symbol_formatting, "symbol-formatting", "sym_fmt", ULIGHT_HL_SYMBOL_FORMATTING)              \
-    F(symbol_bracket, "symbol-bracket", "sym_brac", ULIGHT_HL_SYMBOL_BRACKET)                      \
+    F(symbol_bracket, "symbol-bracket", "sym_bket", ULIGHT_HL_SYMBOL_BRACKET)                      \
     F(symbol_parens, "symbol-parens", "sym_par", ULIGHT_HL_SYMBOL_PARENS)                          \
     F(symbol_square, "symbol-square", "sym_sqr", ULIGHT_HL_SYMBOL_SQUARE)                          \
     F(symbol_brace, "symbol-brace", "sym_brac", ULIGHT_HL_SYMBOL_BRACE)
