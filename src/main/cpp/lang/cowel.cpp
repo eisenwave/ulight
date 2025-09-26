@@ -424,7 +424,7 @@ struct Highlighter::Normal_Consumer final : Consumer {
     }
     void escape(std::size_t e) final
     {
-        self.emit_and_advance(e, Highlight_Type::escape);
+        self.emit_and_advance(e, Highlight_Type::string_escape);
     }
     void comment(std::size_t c) final
     {
@@ -437,15 +437,15 @@ struct Highlighter::Normal_Consumer final : Consumer {
 
     void opening_parenthesis() final
     {
-        self.emit_and_advance(1, Highlight_Type::sym_parens);
+        self.emit_and_advance(1, Highlight_Type::symbol_parens);
     }
     void closing_parenthesis() final
     {
-        self.emit_and_advance(1, Highlight_Type::sym_parens);
+        self.emit_and_advance(1, Highlight_Type::symbol_parens);
     }
     void comma() final
     {
-        self.emit_and_advance(1, Highlight_Type::sym_punc);
+        self.emit_and_advance(1, Highlight_Type::symbol_punc);
     }
     void argument_name(std::size_t a) final
     {
@@ -453,11 +453,11 @@ struct Highlighter::Normal_Consumer final : Consumer {
     }
     void equals() final
     {
-        self.emit_and_advance(1, Highlight_Type::sym_punc);
+        self.emit_and_advance(1, Highlight_Type::symbol_punc);
     }
     void argument_ellipsis(std::size_t e) final
     {
-        self.emit_and_advance(e, Highlight_Type::attr);
+        self.emit_and_advance(e, Highlight_Type::name_attr);
     }
     void directive_name(std::size_t d) final
     {
@@ -465,11 +465,11 @@ struct Highlighter::Normal_Consumer final : Consumer {
     }
     void opening_brace() final
     {
-        self.emit_and_advance(1, Highlight_Type::sym_brace);
+        self.emit_and_advance(1, Highlight_Type::symbol_brace);
     }
     void closing_brace() final
     {
-        self.emit_and_advance(1, Highlight_Type::sym_brace);
+        self.emit_and_advance(1, Highlight_Type::symbol_brace);
     }
     void unexpected_eof() final { }
 };

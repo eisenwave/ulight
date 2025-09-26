@@ -12,34 +12,34 @@
 namespace ulight::lua {
 
 #define ULIGHT_LUA_TOKEN_ENUM_DATA(F)                                                              \
-    F(hash, "#", sym_op, 1)                                                                        \
-    F(percent, "%", sym_op, 1)                                                                     \
-    F(amp, "&", sym_op, 1)                                                                         \
-    F(left_parens, "(", sym_parens, 1)                                                             \
-    F(right_parens, ")", sym_parens, 1)                                                            \
-    F(asterisk, "*", sym_op, 1)                                                                    \
-    F(plus, "+", sym_op, 1)                                                                        \
-    F(comma, ",", sym_punc, 1)                                                                     \
-    F(minus, "-", sym_op, 1)                                                                       \
-    F(dot, ".", sym_op, 1)                                                                         \
-    F(dot_dot, "..", sym_op, 1)                                                                    \
-    F(dot_dot_dot, "...", sym_op, 1)                                                               \
-    F(slash, "/", sym_op, 1)                                                                       \
-    F(floor_div, "//", sym_op, 1)                                                                  \
-    F(colon, ":", sym_op, 1)                                                                       \
-    F(colon_colon, "::", sym_op, 1)                                                                \
-    F(semicolon, ";", sym_punc, 1)                                                                 \
-    F(less, "<", sym_op, 1)                                                                        \
-    F(left_shift, "<<", sym_op, 1)                                                                 \
-    F(less_eq, "<=", sym_op, 1)                                                                    \
-    F(eq, "=", sym_op, 1)                                                                          \
-    F(eq_eq, "==", sym_op, 1)                                                                      \
-    F(greater, ">", sym_op, 1)                                                                     \
-    F(greater_eq, ">=", sym_op, 1)                                                                 \
-    F(right_shift, ">>", sym_op, 1)                                                                \
-    F(left_square, "[", sym_square, 1)                                                             \
-    F(right_square, "]", sym_square, 1)                                                            \
-    F(caret, "^", sym_op, 1)                                                                       \
+    F(hash, "#", symbol_op, 1)                                                                     \
+    F(percent, "%", symbol_op, 1)                                                                  \
+    F(amp, "&", symbol_op, 1)                                                                      \
+    F(left_parens, "(", symbol_parens, 1)                                                          \
+    F(right_parens, ")", symbol_parens, 1)                                                         \
+    F(asterisk, "*", symbol_op, 1)                                                                 \
+    F(plus, "+", symbol_op, 1)                                                                     \
+    F(comma, ",", symbol_punc, 1)                                                                  \
+    F(minus, "-", symbol_op, 1)                                                                    \
+    F(dot, ".", symbol_op, 1)                                                                      \
+    F(dot_dot, "..", symbol_op, 1)                                                                 \
+    F(dot_dot_dot, "...", symbol_op, 1)                                                            \
+    F(slash, "/", symbol_op, 1)                                                                    \
+    F(floor_div, "//", symbol_op, 1)                                                               \
+    F(colon, ":", symbol_op, 1)                                                                    \
+    F(colon_colon, "::", symbol_op, 1)                                                             \
+    F(semicolon, ";", symbol_punc, 1)                                                              \
+    F(less, "<", symbol_op, 1)                                                                     \
+    F(left_shift, "<<", symbol_op, 1)                                                              \
+    F(less_eq, "<=", symbol_op, 1)                                                                 \
+    F(eq, "=", symbol_op, 1)                                                                       \
+    F(eq_eq, "==", symbol_op, 1)                                                                   \
+    F(greater, ">", symbol_op, 1)                                                                  \
+    F(greater_eq, ">=", symbol_op, 1)                                                              \
+    F(right_shift, ">>", symbol_op, 1)                                                             \
+    F(left_square, "[", symbol_square, 1)                                                          \
+    F(right_square, "]", symbol_square, 1)                                                         \
+    F(caret, "^", symbol_op, 1)                                                                    \
     F(kw_and, "and", keyword, 1)                                                                   \
     F(kw_break, "break", keyword_control, 1)                                                       \
     F(kw_do, "do", keyword_control, 1)                                                             \
@@ -62,11 +62,11 @@ namespace ulight::lua {
     F(kw_true, "true", bool_, 1)                                                                   \
     F(kw_until, "until", keyword_control, 1)                                                       \
     F(kw_while, "while", keyword_control, 1)                                                       \
-    F(left_brace, "{", sym_brace, 1)                                                               \
-    F(pipe, "|", sym_op, 1)                                                                        \
-    F(right_brace, "}", sym_brace, 1)                                                              \
-    F(tilde, "~", sym_op, 1)                                                                       \
-    F(tilde_eq, "~=", sym_op, 1)
+    F(left_brace, "{", symbol_brace, 1)                                                            \
+    F(pipe, "|", symbol_op, 1)                                                                     \
+    F(right_brace, "}", symbol_brace, 1)                                                           \
+    F(tilde, "~", symbol_op, 1)                                                                    \
+    F(tilde_eq, "~=", symbol_op, 1)
 
 #define ULIGHT_LUA_TOKEN_ENUM_ENUMERATOR(id, code, highlight, strict) id,
 

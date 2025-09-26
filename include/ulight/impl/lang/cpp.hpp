@@ -33,59 +33,59 @@ constexpr bool is_cpp_feature(Feature_Source source)
 }
 
 #define ULIGHT_CPP_TOKEN_ENUM_DATA(F)                                                              \
-    F(exclamation, "!", sym_op, c_cpp)                                                             \
-    F(exclamation_eq, "!=", sym_op, c_cpp)                                                         \
-    F(pound, "#", macro, c_cpp)                                                                    \
-    F(pound_pound, "##", macro, c_cpp)                                                             \
-    F(percent, "%", sym_op, c_cpp)                                                                 \
-    F(pound_alt, "%:", macro, c_cpp)                                                               \
-    F(pound_pound_alt, "%:%:", macro, c_cpp)                                                       \
-    F(percent_eq, "%=", sym_op, c_cpp)                                                             \
-    F(right_brace_alt, "%>", sym_brace, c_cpp)                                                     \
-    F(amp, "&", sym_op, c_cpp)                                                                     \
-    F(amp_amp, "&&", sym_op, c_cpp)                                                                \
-    F(amp_eq, "&=", sym_op, c_cpp)                                                                 \
-    F(left_parens, "(", sym_parens, c_cpp)                                                         \
-    F(right_parens, ")", sym_parens, c_cpp)                                                        \
-    F(asterisk, "*", sym_op, c_cpp)                                                                \
-    F(asterisk_eq, "*=", sym_op, c_cpp)                                                            \
-    F(plus, "+", sym_op, c_cpp)                                                                    \
-    F(plus_plus, "++", sym_op, c_cpp)                                                              \
-    F(plus_eq, "+=", sym_op, c_cpp)                                                                \
-    F(comma, ",", sym_punc, c_cpp)                                                                 \
-    F(minus, "-", sym_op, c_cpp)                                                                   \
-    F(minus_minus, "--", sym_op, c_cpp)                                                            \
-    F(minus_eq, "-=", sym_op, c_cpp)                                                               \
-    F(arrow, "->", sym_op, c_cpp)                                                                  \
-    F(member_arrow_access, "->*", sym_op, cpp)                                                     \
-    F(dot, ".", sym_op, c_cpp)                                                                     \
-    F(member_pointer_access, ".*", sym_op, cpp)                                                    \
-    F(ellipsis, "...", sym_op, c_cpp)                                                              \
-    F(slash, "/", sym_op, c_cpp)                                                                   \
-    F(slash_eq, "/=", sym_op, c_cpp)                                                               \
-    F(colon, ":", sym_punc, c_cpp)                                                                 \
-    F(scope, "::", sym_op, cpp)                                                                    \
-    F(right_square_alt, ":>", sym_square, c_cpp)                                                   \
-    F(semicolon, ";", sym_punc, c_cpp)                                                             \
-    F(less, "<", sym_op, c_cpp)                                                                    \
-    F(left_brace_alt, "<%", sym_brace, c_cpp)                                                      \
-    F(left_square_alt, "<:", sym_square, c_cpp)                                                    \
-    F(less_less, "<<", sym_op, c_cpp)                                                              \
-    F(less_less_eq, "<<=", sym_op, c_cpp)                                                          \
-    F(less_eq, "<=", sym_op, c_cpp)                                                                \
-    F(three_way, "<=>", sym_op, cpp)                                                               \
-    F(eq, "=", sym_op, c_cpp)                                                                      \
-    F(eq_eq, "==", sym_op, c_cpp)                                                                  \
-    F(greater, ">", sym_op, c_cpp)                                                                 \
-    F(greater_eq, ">=", sym_op, c_cpp)                                                             \
-    F(greater_greater, ">>", sym_op, c_cpp)                                                        \
-    F(greater_greater_eq, ">>=", sym_op, c_cpp)                                                    \
-    F(question, "?", sym_op, c_cpp)                                                                \
-    F(left_square, "[", sym_square, c_cpp)                                                         \
-    F(right_square, "]", sym_square, c_cpp)                                                        \
-    F(caret, "^", sym_op, c_cpp)                                                                   \
-    F(caret_eq, "^=", sym_op, c_cpp)                                                               \
-    F(caret_caret, "^^", sym_op, cpp)                                                              \
+    F(exclamation, "!", symbol_op, c_cpp)                                                          \
+    F(exclamation_eq, "!=", symbol_op, c_cpp)                                                      \
+    F(pound, "#", name_macro_delim, c_cpp)                                                         \
+    F(pound_pound, "##", name_macro_delim, c_cpp)                                                  \
+    F(percent, "%", symbol_op, c_cpp)                                                              \
+    F(pound_alt, "%:", name_macro_delim, c_cpp)                                                    \
+    F(pound_pound_alt, "%:%:", name_macro_delim, c_cpp)                                            \
+    F(percent_eq, "%=", symbol_op, c_cpp)                                                          \
+    F(right_brace_alt, "%>", symbol_brace, c_cpp)                                                  \
+    F(amp, "&", symbol_op, c_cpp)                                                                  \
+    F(amp_amp, "&&", symbol_op, c_cpp)                                                             \
+    F(amp_eq, "&=", symbol_op, c_cpp)                                                              \
+    F(left_parens, "(", symbol_parens, c_cpp)                                                      \
+    F(right_parens, ")", symbol_parens, c_cpp)                                                     \
+    F(asterisk, "*", symbol_op, c_cpp)                                                             \
+    F(asterisk_eq, "*=", symbol_op, c_cpp)                                                         \
+    F(plus, "+", symbol_op, c_cpp)                                                                 \
+    F(plus_plus, "++", symbol_op, c_cpp)                                                           \
+    F(plus_eq, "+=", symbol_op, c_cpp)                                                             \
+    F(comma, ",", symbol_punc, c_cpp)                                                              \
+    F(minus, "-", symbol_op, c_cpp)                                                                \
+    F(minus_minus, "--", symbol_op, c_cpp)                                                         \
+    F(minus_eq, "-=", symbol_op, c_cpp)                                                            \
+    F(arrow, "->", symbol_op, c_cpp)                                                               \
+    F(member_arrow_access, "->*", symbol_op, cpp)                                                  \
+    F(dot, ".", symbol_op, c_cpp)                                                                  \
+    F(member_pointer_access, ".*", symbol_op, cpp)                                                 \
+    F(ellipsis, "...", symbol_op, c_cpp)                                                           \
+    F(slash, "/", symbol_op, c_cpp)                                                                \
+    F(slash_eq, "/=", symbol_op, c_cpp)                                                            \
+    F(colon, ":", symbol_punc, c_cpp)                                                              \
+    F(scope, "::", symbol_op, cpp)                                                                 \
+    F(right_square_alt, ":>", symbol_square, c_cpp)                                                \
+    F(semicolon, ";", symbol_punc, c_cpp)                                                          \
+    F(less, "<", symbol_op, c_cpp)                                                                 \
+    F(left_brace_alt, "<%", symbol_brace, c_cpp)                                                   \
+    F(left_square_alt, "<:", symbol_square, c_cpp)                                                 \
+    F(less_less, "<<", symbol_op, c_cpp)                                                           \
+    F(less_less_eq, "<<=", symbol_op, c_cpp)                                                       \
+    F(less_eq, "<=", symbol_op, c_cpp)                                                             \
+    F(three_way, "<=>", symbol_op, cpp)                                                            \
+    F(eq, "=", symbol_op, c_cpp)                                                                   \
+    F(eq_eq, "==", symbol_op, c_cpp)                                                               \
+    F(greater, ">", symbol_op, c_cpp)                                                              \
+    F(greater_eq, ">=", symbol_op, c_cpp)                                                          \
+    F(greater_greater, ">>", symbol_op, c_cpp)                                                     \
+    F(greater_greater_eq, ">>=", symbol_op, c_cpp)                                                 \
+    F(question, "?", symbol_op, c_cpp)                                                             \
+    F(left_square, "[", symbol_square, c_cpp)                                                      \
+    F(right_square, "]", symbol_square, c_cpp)                                                     \
+    F(caret, "^", symbol_op, c_cpp)                                                                \
+    F(caret_eq, "^=", symbol_op, c_cpp)                                                            \
+    F(caret_caret, "^^", symbol_op, cpp)                                                           \
     F(c_alignas, "_Alignas", keyword, c)                                                           \
     F(c_alignof, "_Alignof", keyword, c)                                                           \
     F(c_atomic, "_Atomic", keyword, c_cpp)                                                         \
@@ -226,7 +226,7 @@ constexpr bool is_cpp_feature(Feature_Source source)
     F(kw_struct, "struct", keyword, c_cpp)                                                         \
     F(kw_switch, "switch", keyword_control, c_cpp)                                                 \
     F(kw_template, "template", keyword, cpp)                                                       \
-    F(kw_this, "this", this_, cpp)                                                                 \
+    F(kw_this, "this", keyword_this, cpp)                                                          \
     F(kw_thread_local, "thread_local", keyword, c_cpp)                                             \
     F(kw_throw, "throw", keyword, cpp)                                                             \
     F(kw_trivially_relocatable_if_eligible, "trivially_relocatable_if_eligible", keyword, cpp)     \
@@ -247,12 +247,12 @@ constexpr bool is_cpp_feature(Feature_Source source)
     F(kw_while, "while", keyword_control, c_cpp)                                                   \
     F(kw_xor, "xor", keyword, c_cpp)                                                               \
     F(kw_xor_eq, "xor_eq", keyword, c_cpp)                                                         \
-    F(left_brace, "{", sym_brace, c_cpp)                                                           \
-    F(pipe, "|", sym_op, c_cpp)                                                                    \
-    F(pipe_eq, "|=", sym_op, c_cpp)                                                                \
-    F(pipe_pipe, "||", sym_op, c_cpp)                                                              \
-    F(right_brace, "}", sym_brace, c_cpp)                                                          \
-    F(tilde, "~", sym_op, c_cpp)
+    F(left_brace, "{", symbol_brace, c_cpp)                                                        \
+    F(pipe, "|", symbol_op, c_cpp)                                                                 \
+    F(pipe_eq, "|=", symbol_op, c_cpp)                                                             \
+    F(pipe_pipe, "||", symbol_op, c_cpp)                                                           \
+    F(right_brace, "}", symbol_brace, c_cpp)                                                       \
+    F(tilde, "~", symbol_op, c_cpp)
 
 #define ULIGHT_CPP_TOKEN_ENUM_ENUMERATOR(id, code, highlight, strict) id,
 

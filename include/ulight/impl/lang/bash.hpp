@@ -1,7 +1,6 @@
 #ifndef ULIGHT_BASH_HPP
 #define ULIGHT_BASH_HPP
 
-#include <algorithm>
 #include <optional>
 #include <string_view>
 
@@ -12,37 +11,37 @@
 namespace ulight::bash {
 
 #define ULIGHT_BASH_TOKEN_ENUM_DATA(F)                                                             \
-    F(exclamation, "!", sym_op)                                                                    \
-    F(dollar, "$", sym)                                                                            \
-    F(dollar_quote, "$'", sym_parens)                                                              \
-    F(dollar_parens, "$(", sym_parens)                                                             \
-    F(dollar_brace, "${", sym_brace)                                                               \
-    F(amp, "&", sym_op)                                                                            \
-    F(amp_amp, "&&", sym_op)                                                                       \
-    F(amp_greater, "&>", sym_op)                                                                   \
-    F(amp_greater_greater, "&>>", sym_op)                                                          \
-    F(left_parens, "(", sym_parens)                                                                \
-    F(right_parens, ")", sym_parens)                                                               \
-    F(asterisk, "*", sym_op)                                                                       \
-    F(plus, "+", sym_op)                                                                           \
-    F(minus, "-", sym_op)                                                                          \
-    F(colon, ":", sym_punc)                                                                        \
-    F(semicolon, ";", sym_punc)                                                                    \
-    F(less, "<", sym_op)                                                                           \
-    F(less_amp, "<&", sym_op)                                                                      \
-    F(less_less, "<<", sym_op)                                                                     \
-    F(less_less_less, "<<<", sym_op)                                                               \
-    F(less_greater, "<>", sym_op)                                                                  \
-    F(equal, "=", sym_op)                                                                          \
-    F(greater, ">", sym_op)                                                                        \
-    F(greater_amp, ">&", sym_op)                                                                   \
-    F(greater_greater, ">>", sym_op)                                                               \
-    F(question, "?", sym_op)                                                                       \
-    F(at, "@", sym_op)                                                                             \
-    F(left_square, "[", sym_square)                                                                \
-    F(left_square_square, "[[", sym_square)                                                        \
-    F(right_square, "]", sym_square)                                                               \
-    F(right_square_square, "]]", sym_square)                                                       \
+    F(exclamation, "!", symbol_op)                                                                 \
+    F(dollar, "$", symbol)                                                                         \
+    F(dollar_quote, "$'", symbol_parens)                                                           \
+    F(dollar_parens, "$(", symbol_parens)                                                          \
+    F(dollar_brace, "${", symbol_brace)                                                            \
+    F(amp, "&", symbol_op)                                                                         \
+    F(amp_amp, "&&", symbol_op)                                                                    \
+    F(amp_greater, "&>", symbol_op)                                                                \
+    F(amp_greater_greater, "&>>", symbol_op)                                                       \
+    F(left_parens, "(", symbol_parens)                                                             \
+    F(right_parens, ")", symbol_parens)                                                            \
+    F(asterisk, "*", symbol_op)                                                                    \
+    F(plus, "+", symbol_op)                                                                        \
+    F(minus, "-", symbol_op)                                                                       \
+    F(colon, ":", symbol_punc)                                                                     \
+    F(semicolon, ";", symbol_punc)                                                                 \
+    F(less, "<", symbol_op)                                                                        \
+    F(less_amp, "<&", symbol_op)                                                                   \
+    F(less_less, "<<", symbol_op)                                                                  \
+    F(less_less_less, "<<<", symbol_op)                                                            \
+    F(less_greater, "<>", symbol_op)                                                               \
+    F(equal, "=", symbol_op)                                                                       \
+    F(greater, ">", symbol_op)                                                                     \
+    F(greater_amp, ">&", symbol_op)                                                                \
+    F(greater_greater, ">>", symbol_op)                                                            \
+    F(question, "?", symbol_op)                                                                    \
+    F(at, "@", symbol_op)                                                                          \
+    F(left_square, "[", symbol_square)                                                             \
+    F(left_square_square, "[[", symbol_square)                                                     \
+    F(right_square, "]", symbol_square)                                                            \
+    F(right_square_square, "]]", symbol_square)                                                    \
     F(kw_case, "case", keyword_control)                                                            \
     F(kw_coproc, "coproc", keyword_control)                                                        \
     F(kw_do, "do", keyword_control)                                                                \
@@ -60,11 +59,11 @@ namespace ulight::bash {
     F(kw_time, "time", keyword)                                                                    \
     F(kw_until, "until", keyword_control)                                                          \
     F(kw_while, "while", keyword_control)                                                          \
-    F(left_brace, "{", sym_brace)                                                                  \
-    F(pipe, "|", sym_op)                                                                           \
-    F(pipe_pipe, "||", sym_op)                                                                     \
-    F(right_brace, "}", sym_brace)                                                                 \
-    F(tilde, "~", sym_op)
+    F(left_brace, "{", symbol_brace)                                                               \
+    F(pipe, "|", symbol_op)                                                                        \
+    F(pipe_pipe, "||", symbol_op)                                                                  \
+    F(right_brace, "}", symbol_brace)                                                              \
+    F(tilde, "~", symbol_op)
 
 #define ULIGHT_BASH_TOKEN_ENUMERATOR(id, code, highlight) id,
 #define ULIGHT_BASH_TOKEN_CODE8(id, code, highlight) u8##code,

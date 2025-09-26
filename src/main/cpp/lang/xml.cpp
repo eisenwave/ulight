@@ -103,12 +103,13 @@ private:
         if (!remainder.starts_with(u8"<?")) {
             return false;
         }
-        emit_and_advance(2, Highlight_Type::sym_punc);
+        emit_and_advance(2, Highlight_Type::symbol_punc);
 
         constexpr auto is_processing_name_end = [](std::u8string_view str) {
             return match_whitespace(str) || str.starts_with(u8"?>");
         };
-        const std::size_t name_length = expect_name(Highlight_Type::macro, is_processing_name_end);
+        const std::size_t name_length
+            = expect_name(Highlight_Type::name_macro, is_processing_name_end);
         if (!name_length) {
             return true;
         }
@@ -130,7 +131,7 @@ private:
             return true;
         }
 
-        emit_and_advance(2, Highlight_Type::sym_punc);
+        emit_and_advance(2, Highlight_Type::symbol_punc);
 
         return true;
     }
@@ -144,12 +145,12 @@ private:
                 pure_cdata_len -= cdata_section_suffix.length();
             }
 
-            emit_and_advance(cdata_section_prefix.length(), Highlight_Type::macro);
+            emit_and_advance(cdata_section_prefix.length(), Highlight_Type::name_macro);
 
             advance(pure_cdata_len);
 
             if (cdata_section.terminated) {
-                emit_and_advance(cdata_section_suffix.length(), Highlight_Type::macro);
+                emit_and_advance(cdata_section_suffix.length(), Highlight_Type::name_macro);
             }
 
             return true;
@@ -161,7 +162,7 @@ private:
     bool expect_reference()
     {
         if (std::size_t ref_length = html::match_character_reference(remainder)) {
-            emit_and_advance(ref_length, Highlight_Type::escape);
+            emit_and_advance(ref_length, Highlight_Type::string_escape);
             return true;
         }
         return false;
@@ -173,7 +174,7 @@ private:
             return false;
         }
 
-        emit_and_advance(1, Highlight_Type::sym_punc);
+        emit_and_advance(1, Highlight_Type::symbol_punc);
 
         constexpr auto is_tag_name_end = [](std::u8string_view str) {
             return match_whitespace(str) || str.starts_with(u8"/>") || str.starts_with(u8'>');
@@ -198,10 +199,10 @@ private:
         }
 
         if (remainder.starts_with(u8'>')) {
-            emit_and_advance(1, Highlight_Type::sym_punc);
+            emit_and_advance(1, Highlight_Type::symbol_punc);
         }
         else if (remainder.starts_with(u8"/>")) {
-            emit_and_advance(2, Highlight_Type::sym_punc);
+            emit_and_advance(2, Highlight_Type::symbol_punc);
         }
 
         return true;
@@ -223,7 +224,7 @@ private:
             return true;
         }
 
-        emit_and_advance(1, Highlight_Type::sym_punc);
+        emit_and_advance(1, Highlight_Type::symbol_punc);
 
         advance(match_whitespace(remainder));
 
@@ -316,7 +317,7 @@ private:
             return false;
         }
 
-        emit_and_advance(2, Highlight_Type::sym_punc);
+        emit_and_advance(2, Highlight_Type::symbol_punc);
 
         constexpr auto is_tag_name_end = [](std::u8string_view str) {
             return match_whitespace(str) || str.starts_with(u8'>');
@@ -330,7 +331,7 @@ private:
         advance(match_whitespace(remainder));
 
         if (remainder.starts_with(u8'>')) {
-            emit_and_advance(1, Highlight_Type::sym_punc);
+            emit_and_advance(1, Highlight_Type::symbol_punc);
         }
 
         return true;

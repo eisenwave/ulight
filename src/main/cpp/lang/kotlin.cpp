@@ -60,13 +60,13 @@ Highlight_Type token_type_highlight(Token_Type type)
 Common_Number_Result match_number(std::u8string_view str)
 {
     // https://kotlinlang.org/spec/syntax-and-grammar.html#literals
-    static constexpr String_And_Base prefixes[] {
+    static constexpr Number_Prefix prefixes[] {
         { u8"0b", 2 },
         { u8"0B", 2 },
         { u8"0x", 16 },
         { u8"0X", 16 },
     };
-    static constexpr String_And_Base exponent_separators[] {
+    static constexpr Exponent_Separator exponent_separators[] {
         { u8"E+", 10 }, { u8"E-", 10 }, { u8"E", 10 }, //
         { u8"e+", 10 }, { u8"e-", 10 }, { u8"e", 10 }, //
     };
@@ -218,7 +218,7 @@ private:
 
             if (remainder[0] == u8'{') {
                 ++brace_level;
-                emit_and_advance(1, Highlight_Type::sym_brace);
+                emit_and_advance(1, Highlight_Type::symbol_brace);
                 continue;
             }
             if (remainder[0] == u8'}') {
@@ -230,7 +230,7 @@ private:
                 }
                 else {
                     --brace_level;
-                    emit_and_advance(1, Highlight_Type::sym_brace);
+                    emit_and_advance(1, Highlight_Type::symbol_brace);
                 }
                 continue;
             }
@@ -303,7 +303,7 @@ private:
         if (const std::size_t length = match_identifier(remainder)) {
             const std::u8string_view identifier = remainder.substr(0, length);
             const std::optional<Token_Type> type = token_type_by_code(identifier);
-            emit_and_advance(length, type ? token_type_highlight(*type) : Highlight_Type::id);
+            emit_and_advance(length, type ? token_type_highlight(*type) : Highlight_Type::name);
             return true;
         }
         return false;
@@ -375,17 +375,17 @@ private:
             if (remainder[length] == u8'$') {
                 flush();
                 if (remainder.starts_with(u8"${")) {
-                    emit_and_advance(2, Highlight_Type::escape);
+                    emit_and_advance(2, Highlight_Type::string_interpolation_delim);
                     consume_brace_balanced_tokens(Context::string);
                     if (eof()) {
                         return true;
                     }
                     ULIGHT_ASSERT(remainder.starts_with(u8'}'));
-                    emit_and_advance(1, Highlight_Type::escape);
+                    emit_and_advance(1, Highlight_Type::string_interpolation_delim);
                     continue;
                 }
                 if (const std::size_t id = match_identifier(remainder.substr(1))) {
-                    emit_and_advance(1 + id, Highlight_Type::escape);
+                    emit_and_advance(1 + id, Highlight_Type::string_interpolation);
                     continue;
                 }
                 // A '$' that cannot be matched as a LineStrExprStart or FieldIdentifier
@@ -401,7 +401,8 @@ private:
                 const Escape_Result esc = match_escape_sequence(remainder);
                 ULIGHT_ASSERT(esc.length != 0);
                 emit_and_advance(
-                    esc.length, esc.erroneous ? Highlight_Type::error : Highlight_Type::escape
+                    esc.length,
+                    esc.erroneous ? Highlight_Type::error : Highlight_Type::string_escape
                 );
                 continue;
             }

@@ -555,11 +555,11 @@ bool highlight_lua(
         // Special case (s).
         if (remainder.length() >= 7 && remainder.substr(0, 7) == u8"<const>") {
             // Emit '<' with attr_delim highlight.
-            emit(index, 1, Highlight_Type::attr_delim);
+            emit(index, 1, Highlight_Type::name_attr_delim);
             // Emit 'const' with attr highlight.
-            emit(index + 1, 5, Highlight_Type::attr);
+            emit(index + 1, 5, Highlight_Type::name_attr);
             // Emit '>' with attr_delim highlight.
-            emit(index + 6, 1, Highlight_Type::attr_delim);
+            emit(index + 6, 1, Highlight_Type::name_attr_delim);
 
             index += 7;
             continue;
@@ -668,7 +668,7 @@ bool highlight_lua(
                 = lua::lua_token_type_by_code(remainder.substr(0, id_length));
 
             const auto highlight
-                = keyword ? lua::lua_token_type_highlight(*keyword) : Highlight_Type::id;
+                = keyword ? lua::lua_token_type_highlight(*keyword) : Highlight_Type::name;
 
             emit(index, id_length, highlight);
             index += id_length;
@@ -687,7 +687,7 @@ bool highlight_lua(
             continue;
         }
 
-        emit(index, 1, Highlight_Type::sym);
+        emit(index, 1, Highlight_Type::symbol);
         index++;
     }
 

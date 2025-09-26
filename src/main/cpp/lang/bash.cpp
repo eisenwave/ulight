@@ -232,23 +232,23 @@ private:
             case u8'>': {
                 const std::optional<Token_Type> op = match_operator(remainder);
                 ULIGHT_ASSERT(op);
-                emit_and_advance(token_type_length(*op), Highlight_Type::sym_op);
+                emit_and_advance(token_type_length(*op), Highlight_Type::symbol_op);
                 continue;
             }
             case u8')': {
                 if (context == Context::command_sub) {
-                    emit_and_advance(1, Highlight_Type::escape);
+                    emit_and_advance(1, Highlight_Type::string_interpolation_delim);
                     return;
                 }
-                emit_and_advance(1, Highlight_Type::sym_parens);
+                emit_and_advance(1, Highlight_Type::symbol_parens);
                 continue;
             }
             case u8'}': {
                 if (context == Context::parameter_sub) {
-                    emit_and_advance(1, Highlight_Type::escape);
+                    emit_and_advance(1, Highlight_Type::string_interpolation_delim);
                     return;
                 }
-                emit_and_advance(1, Highlight_Type::sym_brace);
+                emit_and_advance(1, Highlight_Type::symbol_brace);
                 continue;
             }
             default: {
@@ -273,12 +273,12 @@ private:
         switch (state) {
         case State::before_command:
         case State::in_command: {
-            emit_and_advance(length, Highlight_Type::shell_command);
+            emit_and_advance(length, Highlight_Type::name_shell_command);
             state = State::in_command;
             break;
         }
         case State::before_argument: {
-            const auto highlight = remainder.starts_with(u8'-') ? Highlight_Type::shell_option
+            const auto highlight = remainder.starts_with(u8'-') ? Highlight_Type::name_shell_option
                                                                 : Highlight_Type::string;
             emit_and_advance(length, highlight);
             state = State::in_argument;
@@ -289,7 +289,7 @@ private:
             break;
         }
         case State::parameter_sub: {
-            emit_and_advance(length, Highlight_Type::id_var);
+            emit_and_advance(length, Highlight_Type::string_interpolation);
             break;
         }
         }
@@ -298,11 +298,11 @@ private:
     void consume_escape_character()
     {
         if (remainder.starts_with(u8"\\\n")) {
-            emit_and_advance(1, Highlight_Type::escape);
+            emit_and_advance(1, Highlight_Type::string_escape);
             advance(1);
         }
         else {
-            emit_and_advance(std::min(2uz, remainder.length()), Highlight_Type::escape);
+            emit_and_advance(std::min(2uz, remainder.length()), Highlight_Type::string_escape);
         }
     }
 
@@ -339,7 +339,7 @@ private:
                 && chars + 1 < remainder.length() //
                 && is_bash_escapable_in_double_quotes(remainder[chars + 1])) {
                 flush_chars();
-                emit_and_advance(2, Highlight_Type::escape);
+                emit_and_advance(2, Highlight_Type::string_escape);
                 continue;
             }
             if (starts_with_substitution(remainder.substr(chars))) {
@@ -357,13 +357,13 @@ private:
         ULIGHT_ASSERT(remainder.size() >= 2 && remainder.starts_with(u8'$'));
         const char8_t next = remainder[1];
         if (next == u8'{') {
-            emit_and_advance(2, Highlight_Type::escape);
+            emit_and_advance(2, Highlight_Type::string_interpolation_delim);
             state = State::parameter_sub;
             consume_commands(Context::parameter_sub);
             return;
         }
         if (next == u8'(') {
-            emit_and_advance(2, Highlight_Type::escape);
+            emit_and_advance(2, Highlight_Type::string_interpolation_delim);
             state = State::before_command;
             consume_commands(Context::command_sub);
             return;
@@ -379,12 +379,12 @@ private:
         };
 
         if (is_bash_special_parameter(next)) {
-            emit_and_advance(2, Highlight_Type::escape);
+            emit_and_advance(2, Highlight_Type::string_interpolation);
             update_state();
             return;
         }
         if (const std::size_t id = match_identifier(remainder.substr(1))) {
-            emit_and_advance(id + 1, Highlight_Type::escape);
+            emit_and_advance(id + 1, Highlight_Type::string_interpolation);
             update_state();
             return;
         }

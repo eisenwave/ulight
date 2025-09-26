@@ -190,9 +190,9 @@ public:
 
             const auto contextual_highlight_type = //
                 context == Context::top_level    ? selector_highlight_type
-                : context == Context::at_prelude ? Highlight_Type::macro
+                : context == Context::at_prelude ? Highlight_Type::name_macro
                 : context == Context::block      ? Highlight_Type::markup_attr
-                                                 : Highlight_Type::id;
+                                                 : Highlight_Type::name;
 
             switch (const char8_t c = remainder.front()) {
             case u8' ':
@@ -225,7 +225,7 @@ public:
             }
             case u8'(':
             case u8')': {
-                emit_and_advance(1, Highlight_Type::sym_parens);
+                emit_and_advance(1, Highlight_Type::symbol_parens);
                 break;
             }
             case u8'.': {
@@ -253,7 +253,7 @@ public:
                         break;
                     }
                     if (starts_with_ident_sequence(remainder.substr(1))) {
-                        consume_ident_like_token(Highlight_Type::id);
+                        consume_ident_like_token(Highlight_Type::name);
                         break;
                     }
                 }
@@ -261,7 +261,7 @@ public:
                 break;
             }
             case u8',': {
-                emit_and_advance(1, Highlight_Type::sym_punc);
+                emit_and_advance(1, Highlight_Type::symbol_punc);
                 break;
             }
             case u8':': {
@@ -274,12 +274,12 @@ public:
                 case Context::block: {
                     // Example: "color: red"
                     context = Context::value;
-                    emit_and_advance(1, Highlight_Type::sym_punc);
+                    emit_and_advance(1, Highlight_Type::symbol_punc);
                     break;
                 }
                 case Context::at_prelude:
                 case Context::value: {
-                    emit_and_advance(1, Highlight_Type::sym_punc);
+                    emit_and_advance(1, Highlight_Type::symbol_punc);
                     break;
                 }
                 }
@@ -292,7 +292,7 @@ public:
                 else if (context == Context::at_prelude) {
                     context = Context::top_level;
                 }
-                emit_and_advance(1, Highlight_Type::sym_punc);
+                emit_and_advance(1, Highlight_Type::symbol_punc);
                 break;
             }
             case u8'<': {
@@ -301,7 +301,7 @@ public:
                     emit_and_advance(cdo_token.length(), Highlight_Type::comment_delim);
                 }
                 else {
-                    emit_and_advance(1, Highlight_Type::sym_op);
+                    emit_and_advance(1, Highlight_Type::symbol_op);
                 }
                 break;
             }
@@ -313,15 +313,15 @@ public:
                     emit_and_advance(1, selector_highlight_type, Coalescing::forced);
                 }
                 else {
-                    emit_and_advance(1, Highlight_Type::sym_op);
+                    emit_and_advance(1, Highlight_Type::symbol_op);
                 }
                 break;
             }
             case u8'@': {
                 context = Context::at_prelude;
                 if (starts_with_ident_sequence(remainder.substr(1))) {
-                    emit_and_advance(1, Highlight_Type::macro);
-                    consume_ident_like_token(Highlight_Type::macro);
+                    emit_and_advance(1, Highlight_Type::name_macro_delim);
+                    consume_ident_like_token(Highlight_Type::name_macro);
                 }
                 else {
                     emit_and_advance(1, Highlight_Type::error);
@@ -348,7 +348,7 @@ public:
             }
             case u8'[':
             case u8']': {
-                emit_and_advance(1, Highlight_Type::sym_square);
+                emit_and_advance(1, Highlight_Type::symbol_square);
                 break;
             }
             case u8'\\': {
@@ -363,7 +363,7 @@ public:
             case u8'{': {
                 ++brace_level;
                 context = Context::block;
-                emit_and_advance(1, Highlight_Type::sym_brace);
+                emit_and_advance(1, Highlight_Type::symbol_brace);
                 break;
             }
             case u8'}': {
@@ -373,7 +373,7 @@ public:
                 if (brace_level == 0) {
                     context = Context::top_level;
                 }
-                emit_and_advance(1, Highlight_Type::sym_brace);
+                emit_and_advance(1, Highlight_Type::symbol_brace);
                 break;
             }
             case u8'0':
@@ -459,7 +459,7 @@ public:
             if (remainder[length] == u8'\\') {
                 flush();
                 const std::size_t escape_length = match_escaped_code_point(remainder.substr(1)) + 1;
-                emit_and_advance(escape_length, Highlight_Type::escape);
+                emit_and_advance(escape_length, Highlight_Type::string_escape);
                 continue;
             }
             ++length;
@@ -480,10 +480,10 @@ public:
         ULIGHT_ASSERT(result);
 
         const auto actual_type = //
-            default_type != Highlight_Type::id    ? default_type
-            : result.type == Ident_Type::function ? Highlight_Type::id_function
+            default_type != Highlight_Type::name  ? default_type
+            : result.type == Ident_Type::function ? Highlight_Type::name_function
             : result.type == Ident_Type::url      ? Highlight_Type::keyword
-                                                  : Highlight_Type::id;
+                                                  : Highlight_Type::name;
 
         std::size_t length = 0;
         const auto flush = [&] {
@@ -497,7 +497,7 @@ public:
             if (starts_with_valid_escape(remainder.substr(length))) {
                 flush();
                 const std::size_t escape_length = match_escaped_code_point(remainder.substr(1)) + 1;
-                emit_and_advance(escape_length, Highlight_Type::escape);
+                emit_and_advance(escape_length, Highlight_Type::string_escape);
             }
             else if (is_css_identifier(remainder[length])) {
                 ++length;

@@ -41,13 +41,13 @@ struct Highlighter : Highlighter_Base {
             case u8'[':
             case u8']': {
                 flush_text();
-                emit_and_advance(1, Highlight_Type::sym_square);
+                emit_and_advance(1, Highlight_Type::symbol_square);
                 break;
             }
             case u8'{':
             case u8'}': {
                 flush_text();
-                emit_and_advance(1, Highlight_Type::sym_brace);
+                emit_and_advance(1, Highlight_Type::symbol_brace);
                 break;
             }
             case u8'\\': {
@@ -66,7 +66,7 @@ struct Highlighter : Highlighter_Base {
                     // While TeX doesn't really distinguish between '\{' and '\abc'
                     // as being escape sequences or commands,
                     // it is helpful for highlighting if we do that.
-                    emit_and_advance(2, Highlight_Type::escape);
+                    emit_and_advance(2, Highlight_Type::string_escape);
                     break;
                 }
                 emit_and_advance(name_length, Highlight_Type::markup_tag);
@@ -75,7 +75,7 @@ struct Highlighter : Highlighter_Base {
             default: {
                 if (is_tex_special(c)) {
                     flush_text();
-                    emit_and_advance(1, Highlight_Type::sym_op);
+                    emit_and_advance(1, Highlight_Type::symbol_op);
                 }
                 else {
                     ++text_length;

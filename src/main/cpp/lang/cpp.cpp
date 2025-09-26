@@ -587,7 +587,7 @@ bool feature_in_mask(Token_Type type, std::uint_fast8_t mask)
 [[nodiscard]]
 Highlight_Type usual_fallback_highlight(std::u8string_view id)
 {
-    return id.ends_with(u8"_t") ? Highlight_Type::id_type : Highlight_Type::id;
+    return id.ends_with(u8"_t") ? Highlight_Type::name_type : Highlight_Type::name;
 }
 
 // Approximately implements highlighting based on C++ tokenization,
@@ -810,7 +810,7 @@ public:
                         flush_chars();
                         emit_and_advance(
                             escape.length,
-                            escape.erroneous ? Highlight_Type::error : Highlight_Type::escape
+                            escape.erroneous ? Highlight_Type::error : Highlight_Type::string_escape
                         );
                     }
                 }
@@ -1020,7 +1020,7 @@ public:
             if (fresh_line && possible_directive) {
                 if (const std::size_t directive_length
                     = match_preprocessing_directive(remainder(), c_or_cpp)) {
-                    emit_and_advance(directive_length, Highlight_Type::macro);
+                    emit_and_advance(directive_length, Highlight_Type::name_macro);
                     fresh_line = true;
                     return true;
                 }

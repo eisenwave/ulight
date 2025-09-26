@@ -12,51 +12,51 @@ namespace ulight::kotlin {
 
 // https://kotlinlang.org/spec/syntax-and-grammar.html#tokens
 #define ULIGHT_KOTLIN_TOKEN_ENUM_DATA(F)                                                           \
-    F(excl, "!", sym_op)                                                                           \
-    F(excl_eq, "!=", sym_op)                                                                       \
+    F(excl, "!", symbol_op)                                                                        \
+    F(excl_eq, "!=", symbol_op)                                                                    \
     F(not_in, "!in", keyword)                                                                      \
     F(not_is, "!is", keyword)                                                                      \
     F(quote_open, "\"", string_delim)                                                              \
     F(triple_quote_open, "\"\"\"", string_delim)                                                   \
-    F(hash, "#", sym_op)                                                                           \
-    F(mod, "%", sym_op)                                                                            \
-    F(mod_assignment, "%=", sym_op)                                                                \
-    F(conj, "&&", sym_op)                                                                          \
-    F(lparen, "(", sym_parens)                                                                     \
-    F(rparen, ")", sym_parens)                                                                     \
-    F(mult, "*", sym_op)                                                                           \
-    F(mult_assignment, "*=", sym_op)                                                               \
-    F(add, "+", sym_op)                                                                            \
-    F(incr, "++", sym_op)                                                                          \
-    F(add_assignment, "+=", sym_op)                                                                \
-    F(comma, ",", sym_punc)                                                                        \
-    F(sub, "-", sym_op)                                                                            \
-    F(decr, "--", sym_op)                                                                          \
-    F(sub_assignment, "-=", sym_op)                                                                \
-    F(arrow, "->", sym_punc)                                                                       \
-    F(dot, ".", sym_punc)                                                                          \
-    F(range, "..", sym_punc)                                                                       \
-    F(reserved, "...", sym_punc)                                                                   \
-    F(div, "/", sym_op)                                                                            \
-    F(div_assignment, "/=", sym_op)                                                                \
-    F(colon, ":", sym_punc)                                                                        \
-    F(coloncolon, "::", sym_punc)                                                                  \
-    F(semicolon, ";", sym_punc)                                                                    \
-    F(double_semicolon, ";;", sym_punc)                                                            \
-    F(langle, "<", sym_op)                                                                         \
-    F(le, "<=", sym_op)                                                                            \
-    F(assignment, "=", sym_punc)                                                                   \
-    F(eqeq, "==", sym_op)                                                                          \
-    F(eqeqeq, "===", sym_op)                                                                       \
-    F(double_arrow, "=>", sym_punc)                                                                \
-    F(rangle, ">", sym_op)                                                                         \
-    F(ge, ">=", sym_op)                                                                            \
-    F(quest, "?", sym_op)                                                                          \
-    F(safe_call, "?.", sym_op)                                                                     \
-    F(elvis, "?:", sym_op)                                                                         \
-    F(at, "@", sym_op)                                                                             \
-    F(lsquare, "[", sym_square)                                                                    \
-    F(rsquare, "]", sym_square)                                                                    \
+    F(hash, "#", symbol_op)                                                                        \
+    F(mod, "%", symbol_op)                                                                         \
+    F(mod_assignment, "%=", symbol_op)                                                             \
+    F(conj, "&&", symbol_op)                                                                       \
+    F(lparen, "(", symbol_parens)                                                                  \
+    F(rparen, ")", symbol_parens)                                                                  \
+    F(mult, "*", symbol_op)                                                                        \
+    F(mult_assignment, "*=", symbol_op)                                                            \
+    F(add, "+", symbol_op)                                                                         \
+    F(incr, "++", symbol_op)                                                                       \
+    F(add_assignment, "+=", symbol_op)                                                             \
+    F(comma, ",", symbol_punc)                                                                     \
+    F(sub, "-", symbol_op)                                                                         \
+    F(decr, "--", symbol_op)                                                                       \
+    F(sub_assignment, "-=", symbol_op)                                                             \
+    F(arrow, "->", symbol_punc)                                                                    \
+    F(dot, ".", symbol_punc)                                                                       \
+    F(range, "..", symbol_punc)                                                                    \
+    F(reserved, "...", symbol_punc)                                                                \
+    F(div, "/", symbol_op)                                                                         \
+    F(div_assignment, "/=", symbol_op)                                                             \
+    F(colon, ":", symbol_punc)                                                                     \
+    F(coloncolon, "::", symbol_punc)                                                               \
+    F(semicolon, ";", symbol_punc)                                                                 \
+    F(double_semicolon, ";;", symbol_punc)                                                         \
+    F(langle, "<", symbol_op)                                                                      \
+    F(le, "<=", symbol_op)                                                                         \
+    F(assignment, "=", symbol_punc)                                                                \
+    F(eqeq, "==", symbol_op)                                                                       \
+    F(eqeqeq, "===", symbol_op)                                                                    \
+    F(double_arrow, "=>", symbol_punc)                                                             \
+    F(rangle, ">", symbol_op)                                                                      \
+    F(ge, ">=", symbol_op)                                                                         \
+    F(quest, "?", symbol_op)                                                                       \
+    F(safe_call, "?.", symbol_op)                                                                  \
+    F(elvis, "?:", symbol_op)                                                                      \
+    F(at, "@", symbol_op)                                                                          \
+    F(lsquare, "[", symbol_square)                                                                 \
+    F(rsquare, "]", symbol_square)                                                                 \
     F(abstract, "abstract", keyword)                                                               \
     F(actual, "actual", keyword)                                                                   \
     F(annotation, "annotation", keyword)                                                           \
@@ -118,11 +118,11 @@ namespace ulight::kotlin {
     F(sealed, "sealed", keyword)                                                                   \
     F(set, "set", keyword)                                                                         \
     F(setparam, "setparam", keyword)                                                               \
-    F(super, "super@", this_)                                                                      \
-    F(super_at, "super@", this_)                                                                   \
-    F(suspend, "suspend", this_)                                                                   \
-    F(this_, "this", this_)                                                                        \
-    F(this_at, "this@", this_)                                                                     \
+    F(super, "super@", keyword_this)                                                               \
+    F(super_at, "super@", keyword_this)                                                            \
+    F(suspend, "suspend", keyword)                                                                 \
+    F(this_, "this", keyword_this)                                                                 \
+    F(this_at, "this@", keyword_this)                                                              \
     F(throw_, "throw", keyword_control)                                                            \
     F(true_, "true", bool_)                                                                        \
     F(try_, "try", keyword_control)                                                                \
@@ -134,9 +134,9 @@ namespace ulight::kotlin {
     F(vararg, "vararg", keyword)                                                                   \
     F(when, "when", keyword_control)                                                               \
     F(while_, "while", keyword_control)                                                            \
-    F(lcurl, "{", sym_brace)                                                                       \
-    F(disj, "||", sym_op)                                                                          \
-    F(rcurl, "}", sym_brace)
+    F(lcurl, "{", symbol_brace)                                                                    \
+    F(disj, "||", symbol_op)                                                                       \
+    F(rcurl, "}", symbol_brace)
 
 #define ULIGHT_KOTLIN_TOKEN_ENUM_ENUMERATOR(id, code, highlight) id,
 

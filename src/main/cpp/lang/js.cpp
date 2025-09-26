@@ -352,12 +352,12 @@ Digits_Result match_digits(std::u8string_view str, int base)
 Common_Number_Result match_numeric_literal(std::u8string_view str)
 {
     // https://262.ecma-international.org/15.0/index.html#sec-literals-numeric-literals
-    static constexpr String_And_Base prefixes[] {
+    static constexpr Number_Prefix prefixes[] {
         { u8"0b", 2 },  { u8"0B", 2 }, //
         { u8"0o", 8 },  { u8"0O", 8 }, //
         { u8"0x", 16 }, { u8"0X", 16 },
     };
-    static constexpr String_And_Base exponent_separators[] {
+    static constexpr Exponent_Separator exponent_separators[] {
         { u8"E+", 10 }, { u8"E-", 10 }, { u8"E", 10 }, //
         { u8"e+", 10 }, { u8"e-", 10 }, { u8"e", 10 }, //
     };
@@ -964,7 +964,7 @@ private:
         while (!remainder.empty()) {
             if (remainder[0] == u8'{') {
                 ++brace_level;
-                emit_and_advance(1, Highlight_Type::sym_brace);
+                emit_and_advance(1, Highlight_Type::symbol_brace);
                 input_element = Input_Element::regex;
                 continue;
             }
@@ -972,7 +972,7 @@ private:
                 if (--brace_level < 0) {
                     return;
                 }
-                emit_and_advance(1, Highlight_Type::sym_brace);
+                emit_and_advance(1, Highlight_Type::symbol_brace);
                 input_element = Input_Element::div;
                 continue;
             }
@@ -1060,11 +1060,11 @@ private:
             }
             void opening_symbol() final
             {
-                self.emit_and_advance(1, Highlight_Type::sym_punc);
+                self.emit_and_advance(1, Highlight_Type::symbol_punc);
             }
             void closing_symbol() final
             {
-                self.emit_and_advance(1, Highlight_Type::sym_punc);
+                self.emit_and_advance(1, Highlight_Type::symbol_punc);
             }
             void element_name(std::size_t name) final
             {
@@ -1076,7 +1076,7 @@ private:
             }
             void attribute_equals() final
             {
-                self.emit_and_advance(1, Highlight_Type::sym_punc);
+                self.emit_and_advance(1, Highlight_Type::symbol_punc);
             }
             void string_literal(String_Literal_Result r) final
             {
@@ -1112,7 +1112,7 @@ private:
             case u8'&': {
                 // https://facebook.github.io/jsx/#prod-HTMLCharacterReference
                 if (const std::size_t ref = html::match_character_reference(rem)) {
-                    emit_and_advance(ref, Highlight_Type::escape);
+                    emit_and_advance(ref, Highlight_Type::string_escape);
                     rem.remove_prefix(ref);
                 }
                 else {
@@ -1180,14 +1180,14 @@ private:
         ULIGHT_ASSERT(braced);
         ULIGHT_ASSERT(remainder.starts_with(u8'{'));
 
-        emit_and_advance(1, Highlight_Type::sym_brace);
+        emit_and_advance(1, Highlight_Type::symbol_brace);
         const std::size_t js_length = braced.length - (braced.is_terminated ? 2 : 1);
 
         if (js_length != 0) {
             consume_js_before_closing_brace();
         }
         if (braced.is_terminated) {
-            emit_and_advance(1, Highlight_Type::sym_brace);
+            emit_and_advance(1, Highlight_Type::symbol_brace);
         }
     }
 
@@ -1292,7 +1292,8 @@ private:
                 if (const Escape_Result esc = match_escape_sequence(remainder)) {
                     flush_chars();
                     emit_and_advance(
-                        esc.length, esc.erroneous ? Highlight_Type::error : Highlight_Type::escape
+                        esc.length,
+                        esc.erroneous ? Highlight_Type::error : Highlight_Type::string_escape
                     );
                     remaining -= esc.length;
                 }
@@ -1365,11 +1366,11 @@ private:
             case u8'$': {
                 if (rem.starts_with(u8"${")) {
                     flush_chars();
-                    emit_and_advance(2, Highlight_Type::escape);
+                    emit_and_advance(2, Highlight_Type::string_interpolation_delim);
                     consume_js_before_closing_brace();
                     if (!remainder.empty()) {
                         ULIGHT_ASSERT(remainder.starts_with(u8'}'));
-                        emit_and_advance(1, Highlight_Type::escape);
+                        emit_and_advance(1, Highlight_Type::string_interpolation_delim);
                     }
                     // Otherwise, we have an unterminated substitution.
                     continue;
@@ -1382,7 +1383,7 @@ private:
                 if (const std::size_t c = match_line_continuation(rem)) {
                     ULIGHT_ASSERT(c > 1);
                     flush_chars();
-                    emit_and_advance(1, Highlight_Type::escape);
+                    emit_and_advance(1, Highlight_Type::string_escape);
                     advance(c - 1);
                     chars += c - 1;
                     continue;
@@ -1390,7 +1391,8 @@ private:
                 if (const Escape_Result esc = match_escape_sequence(rem)) {
                     flush_chars();
                     emit_and_advance(
-                        esc.length, esc.erroneous ? Highlight_Type::error : Highlight_Type::escape
+                        esc.length,
+                        esc.erroneous ? Highlight_Type::error : Highlight_Type::string_escape
                     );
                     continue;
                 }
@@ -1469,7 +1471,7 @@ private:
     bool expect_private_identifier()
     {
         if (const std::size_t private_id_length = match_private_identifier(remainder)) {
-            emit_and_advance(private_id_length, Highlight_Type::id);
+            emit_and_advance(private_id_length, Highlight_Type::name);
             input_element = Input_Element::div;
             return true;
         }
@@ -1486,7 +1488,7 @@ private:
         const std::optional<Token_Type> keyword
             = token_type_by_code(remainder.substr(0, id_length), mode);
         if (!keyword) {
-            emit_and_advance(id_length, Highlight_Type::id);
+            emit_and_advance(id_length, Highlight_Type::name);
             input_element = Input_Element::div;
             return true;
         }

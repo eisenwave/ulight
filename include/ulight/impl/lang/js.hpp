@@ -30,63 +30,63 @@ enum struct Feature_Source : Underlying {
 };
 
 #define ULIGHT_JS_TOKEN_ENUM_DATA(F)                                                               \
-    F(logical_not, "!", sym_op, js_ts)                                                             \
-    F(not_equals, "!=", sym_op, js_ts)                                                             \
-    F(strict_not_equals, "!==", sym_op, js_ts)                                                     \
-    F(modulo, "%", sym_op, js_ts)                                                                  \
-    F(modulo_equal, "%=", sym_op, js_ts)                                                           \
-    F(bitwise_and, "&", sym_op, js_ts)                                                             \
-    F(logical_and, "&&", sym_op, js_ts)                                                            \
-    F(logical_and_equal, "&&=", sym_op, js_ts)                                                     \
-    F(bitwise_and_equal, "&=", sym_op, js_ts)                                                      \
-    F(left_paren, "(", sym_parens, all)                                                            \
-    F(right_paren, ")", sym_parens, all)                                                           \
-    F(multiply, "*", sym_op, js_ts)                                                                \
-    F(exponentiation, "**", sym_op, js_ts)                                                         \
-    F(exponentiation_equal, "**=", sym_op, js_ts)                                                  \
-    F(multiply_equal, "*=", sym_op, js_ts)                                                         \
-    F(plus, "+", sym_op, js_ts)                                                                    \
-    F(increment, "++", sym_op, js_ts)                                                              \
-    F(plus_equal, "+=", sym_op, js_ts)                                                             \
-    F(comma, ",", sym_punc, all)                                                                   \
-    F(minus, "-", sym_op, js_ts)                                                                   \
-    F(decrement, "--", sym_op, js_ts)                                                              \
-    F(minus_equal, "-=", sym_op, js_ts)                                                            \
-    F(dot, ".", sym_op, all)                                                                       \
-    F(ellipsis, "...", sym_op, all)                                                                \
-    F(divide, "/", sym_op, js_ts)                                                                  \
-    F(divide_equal, "/=", sym_op, js_ts)                                                           \
-    F(colon, ":", sym_op, all)                                                                     \
-    F(semicolon, ";", sym_punc, all)                                                               \
-    F(less_than, "<", sym_op, all)                                                                 \
-    F(left_shift, "<<", sym_op, js_ts)                                                             \
-    F(left_shift_equal, "<<=", sym_op, js_ts)                                                      \
-    F(less_equal, "<=", sym_op, js_ts)                                                             \
-    F(assignment, "=", sym_op, js_ts)                                                              \
-    F(equals, "==", sym_op, js_ts)                                                                 \
-    F(strict_equals, "===", sym_op, js_ts)                                                         \
-    F(arrow, "=>", sym_op, js_ts)                                                                  \
-    F(greater_than, ">", sym_op, js_ts)                                                            \
-    F(greater_equal, ">=", sym_op, js_ts)                                                          \
-    F(right_shift, ">>", sym_op, js_ts)                                                            \
-    F(right_shift_equal, ">>=", sym_op, js_ts)                                                     \
-    F(unsigned_right_shift, ">>>", sym_op, js_ts)                                                  \
-    F(unsigned_right_shift_equal, ">>>=", sym_op, js_ts)                                           \
-    F(conditional, "?", sym_op, js_ts)                                                             \
-    F(optional_chaining, "?.", sym_op, js_ts)                                                      \
-    F(nullish_coalescing, "??", sym_op, js_ts)                                                     \
-    F(nullish_coalescing_equal, "??=", sym_op, js_ts)                                              \
-    F(at, "@", sym_punc, ts)                                                                       \
-    F(left_bracket, "[", sym_square, all)                                                          \
-    F(right_bracket, "]", sym_square, all)                                                         \
-    F(bitwise_xor, "^", sym_op, js_ts)                                                             \
-    F(bitwise_xor_equal, "^=", sym_op, js_ts)                                                      \
+    F(logical_not, "!", symbol_op, js_ts)                                                          \
+    F(not_equals, "!=", symbol_op, js_ts)                                                          \
+    F(strict_not_equals, "!==", symbol_op, js_ts)                                                  \
+    F(modulo, "%", symbol_op, js_ts)                                                               \
+    F(modulo_equal, "%=", symbol_op, js_ts)                                                        \
+    F(bitwise_and, "&", symbol_op, js_ts)                                                          \
+    F(logical_and, "&&", symbol_op, js_ts)                                                         \
+    F(logical_and_equal, "&&=", symbol_op, js_ts)                                                  \
+    F(bitwise_and_equal, "&=", symbol_op, js_ts)                                                   \
+    F(left_paren, "(", symbol_parens, all)                                                         \
+    F(right_paren, ")", symbol_parens, all)                                                        \
+    F(multiply, "*", symbol_op, js_ts)                                                             \
+    F(exponentiation, "**", symbol_op, js_ts)                                                      \
+    F(exponentiation_equal, "**=", symbol_op, js_ts)                                               \
+    F(multiply_equal, "*=", symbol_op, js_ts)                                                      \
+    F(plus, "+", symbol_op, js_ts)                                                                 \
+    F(increment, "++", symbol_op, js_ts)                                                           \
+    F(plus_equal, "+=", symbol_op, js_ts)                                                          \
+    F(comma, ",", symbol_punc, all)                                                                \
+    F(minus, "-", symbol_op, js_ts)                                                                \
+    F(decrement, "--", symbol_op, js_ts)                                                           \
+    F(minus_equal, "-=", symbol_op, js_ts)                                                         \
+    F(dot, ".", symbol_op, all)                                                                    \
+    F(ellipsis, "...", symbol_op, all)                                                             \
+    F(divide, "/", symbol_op, js_ts)                                                               \
+    F(divide_equal, "/=", symbol_op, js_ts)                                                        \
+    F(colon, ":", symbol_op, all)                                                                  \
+    F(semicolon, ";", symbol_punc, all)                                                            \
+    F(less_than, "<", symbol_op, all)                                                              \
+    F(left_shift, "<<", symbol_op, js_ts)                                                          \
+    F(left_shift_equal, "<<=", symbol_op, js_ts)                                                   \
+    F(less_equal, "<=", symbol_op, js_ts)                                                          \
+    F(assignment, "=", symbol_op, js_ts)                                                           \
+    F(equals, "==", symbol_op, js_ts)                                                              \
+    F(strict_equals, "===", symbol_op, js_ts)                                                      \
+    F(arrow, "=>", symbol_op, js_ts)                                                               \
+    F(greater_than, ">", symbol_op, js_ts)                                                         \
+    F(greater_equal, ">=", symbol_op, js_ts)                                                       \
+    F(right_shift, ">>", symbol_op, js_ts)                                                         \
+    F(right_shift_equal, ">>=", symbol_op, js_ts)                                                  \
+    F(unsigned_right_shift, ">>>", symbol_op, js_ts)                                               \
+    F(unsigned_right_shift_equal, ">>>=", symbol_op, js_ts)                                        \
+    F(conditional, "?", symbol_op, js_ts)                                                          \
+    F(optional_chaining, "?.", symbol_op, js_ts)                                                   \
+    F(nullish_coalescing, "??", symbol_op, js_ts)                                                  \
+    F(nullish_coalescing_equal, "??=", symbol_op, js_ts)                                           \
+    F(at, "@", symbol_punc, ts)                                                                    \
+    F(left_bracket, "[", symbol_square, all)                                                       \
+    F(right_bracket, "]", symbol_square, all)                                                      \
+    F(bitwise_xor, "^", symbol_op, js_ts)                                                          \
+    F(bitwise_xor_equal, "^=", symbol_op, js_ts)                                                   \
     F(kw_any, "any", keyword_type, ts)                                                             \
     F(kw_as, "as", keyword, js_ts)                                                                 \
     F(kw_asserts, "asserts", keyword, ts)                                                          \
     F(kw_async, "async", keyword, js_ts)                                                           \
     F(kw_await, "await", keyword, js_ts)                                                           \
-    F(kw_boolean, "boolean", keyword_type, ts)                                                     \
+    F(type_boolean, "boolean", name_type_builtin, js_ts)                                           \
     F(kw_break, "break", keyword_control, js_ts)                                                   \
     F(kw_case, "case", keyword_control, js_ts)                                                     \
     F(kw_catch, "catch", keyword_control, js_ts)                                                   \
@@ -118,6 +118,7 @@ enum struct Feature_Source : Underlying {
     F(kw_let, "let", keyword, js_ts)                                                               \
     F(kw_new, "new", keyword, js_ts)                                                               \
     F(kw_null, "null", null, js_ts)                                                                \
+    F(type_number, "number", name_type_builtin, js_ts)                                             \
     F(kw_of, "of", keyword, js_ts)                                                                 \
     F(kw_private, "private", keyword, ts)                                                          \
     F(kw_protected, "protected", keyword, ts)                                                      \
@@ -125,26 +126,28 @@ enum struct Feature_Source : Underlying {
     F(kw_return, "return", keyword_control, js_ts)                                                 \
     F(kw_set, "set", keyword, js_ts)                                                               \
     F(kw_static, "static", keyword, js_ts)                                                         \
-    F(kw_super, "super", this_, js_ts)                                                             \
+    F(type_string, "string", name_type_builtin, js_ts)                                             \
+    F(kw_super, "super", keyword_this, js_ts)                                                      \
     F(kw_switch, "switch", keyword_control, js_ts)                                                 \
-    F(kw_this, "this", this_, js_ts)                                                               \
+    F(kw_this, "this", keyword_this, js_ts)                                                        \
     F(kw_throw, "throw", keyword_control, js_ts)                                                   \
     F(kw_true, "true", bool_, js_ts)                                                               \
     F(kw_try, "try", keyword_control, js_ts)                                                       \
     F(kw_type, "type", keyword, ts)                                                                \
     F(kw_typeof, "typeof", keyword, js_ts)                                                         \
+    F(type_undefined, "undefined", null, js_ts)                                                    \
     F(kw_var, "var", keyword, js_ts)                                                               \
     F(kw_void, "void", keyword, js_ts)                                                             \
     F(kw_while, "while", keyword_control, js_ts)                                                   \
     F(kw_with, "with", keyword_control, js_ts)                                                     \
     F(kw_yield, "yield", keyword, js_ts)                                                           \
-    F(left_brace, "{", sym_brace, all)                                                             \
-    F(bitwise_or, "|", sym_op, js_ts)                                                              \
-    F(bitwise_or_equal, "|=", sym_op, js_ts)                                                       \
-    F(logical_or, "||", sym_op, js_ts)                                                             \
-    F(logical_or_equal, "||=", sym_op, js_ts)                                                      \
-    F(right_brace, "}", sym_brace, all)                                                            \
-    F(bitwise_not, "~", sym_op, js_ts)
+    F(left_brace, "{", symbol_brace, all)                                                          \
+    F(bitwise_or, "|", symbol_op, js_ts)                                                           \
+    F(bitwise_or_equal, "|=", symbol_op, js_ts)                                                    \
+    F(logical_or, "||", symbol_op, js_ts)                                                          \
+    F(logical_or_equal, "||=", symbol_op, js_ts)                                                   \
+    F(right_brace, "}", symbol_brace, all)                                                         \
+    F(bitwise_not, "~", symbol_op, js_ts)
 
 #define ULIGHT_JS_TOKEN_ENUM_ENUMERATOR(id, code, highlight, source) id,
 

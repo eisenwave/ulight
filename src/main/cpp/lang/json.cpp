@@ -270,7 +270,7 @@ private:
                     = match_escape_sequence(remainder, Escape_Policy::match_only)) {
                     const auto escape_highlight = escape.value == Escape_Result::no_value
                         ? Highlight_Type::error
-                        : Highlight_Type::escape;
+                        : Highlight_Type::string_escape;
                     emit_and_advance(escape.length, escape_highlight);
                     continue;
                 }
@@ -311,16 +311,16 @@ private:
         if (!remainder.starts_with(u8'{')) {
             return false;
         }
-        emit_and_advance(1, Highlight_Type::sym_brace);
+        emit_and_advance(1, Highlight_Type::symbol_brace);
 
         while (!remainder.empty()) {
             consume_member();
             if (remainder.starts_with(u8'}')) {
-                emit_and_advance(1, Highlight_Type::sym_brace);
+                emit_and_advance(1, Highlight_Type::symbol_brace);
                 return true;
             }
             if (remainder.starts_with(u8',')) {
-                emit_and_advance(1, Highlight_Type::sym_punc);
+                emit_and_advance(1, Highlight_Type::symbol_punc);
                 continue;
             }
             if (!remainder.empty()) {
@@ -347,7 +347,7 @@ private:
             return;
         }
         if (remainder.starts_with(u8':')) {
-            emit_and_advance(1, Highlight_Type::sym_punc);
+            emit_and_advance(1, Highlight_Type::symbol_punc);
         }
         else {
             return;
@@ -364,16 +364,16 @@ private:
         if (!remainder.starts_with(u8'[')) {
             return false;
         }
-        emit_and_advance(1, Highlight_Type::sym_square);
+        emit_and_advance(1, Highlight_Type::symbol_square);
 
         while (!remainder.empty()) {
             consume_whitespace_comments();
             if (remainder.starts_with(u8']')) {
-                emit_and_advance(1, Highlight_Type::sym_square);
+                emit_and_advance(1, Highlight_Type::symbol_square);
                 return true;
             }
             if (remainder.starts_with(u8',')) {
-                emit_and_advance(1, Highlight_Type::sym_punc);
+                emit_and_advance(1, Highlight_Type::symbol_punc);
                 continue;
             }
             if (expect_value()) {

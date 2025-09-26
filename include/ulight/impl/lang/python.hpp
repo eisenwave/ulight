@@ -12,53 +12,53 @@ namespace ulight::python {
 
 // https://docs.python.org/3/reference/lexical_analysis.html
 #define ULIGHT_PYTHON_TOKEN_ENUM_DATA(F)                                                           \
-    F(exclamation_eq, "!=", sym_op)                                                                \
-    F(percent, "%", sym_op)                                                                        \
-    F(percent_eq, "%=", sym_op)                                                                    \
-    F(amp, "&", sym_op)                                                                            \
-    F(amp_eq, "&=", sym_op)                                                                        \
-    F(left_parens, "(", sym_parens)                                                                \
-    F(right_parens, ")", sym_parens)                                                               \
-    F(asterisk, "*", sym_op)                                                                       \
-    F(asterisk_asterisk, "**", sym_op)                                                             \
-    F(asterisk_asterisk_eq, "**=", sym_op)                                                         \
-    F(asterisk_eq, "*=", sym_op)                                                                   \
-    F(plus, "+", sym_op)                                                                           \
-    F(plus_eq, "+=", sym_op)                                                                       \
-    F(comma, ",", sym_punc)                                                                        \
-    F(minus, "-", sym_op)                                                                          \
-    F(minus_eq, "-=", sym_op)                                                                      \
-    F(arrow, "->", sym_punc)                                                                       \
-    F(dot, ".", sym_punc)                                                                          \
-    F(ellipsis, "...", sym_punc)                                                                   \
-    F(slash, "/", sym_op)                                                                          \
-    F(slash_slash, "//", sym_op)                                                                   \
-    F(slash_slash_eq, "//=", sym_op)                                                               \
-    F(slash_eq, "/=", sym_op)                                                                      \
-    F(colon, ":", sym_punc)                                                                        \
-    F(colon_eq, ":=", sym_op)                                                                      \
-    F(semicolon, ";", sym_punc)                                                                    \
-    F(less, "<", sym_op)                                                                           \
-    F(less_less, "<<", sym_op)                                                                     \
-    F(less_less_eq, "<<=", sym_op)                                                                 \
-    F(less_eq, "<=", sym_op)                                                                       \
-    F(eq, "=", sym_punc)                                                                           \
-    F(eq_eq, "==", sym_op)                                                                         \
-    F(greater, ">", sym_op)                                                                        \
-    F(greater_eq, ">=", sym_op)                                                                    \
-    F(greater_greater, ">>", sym_op)                                                               \
-    F(greater_greater_eq, ">>=", sym_op)                                                           \
-    F(greater_greater_greater, ">>>", sym_punc)                                                    \
-    F(at, "@", sym_op)                                                                             \
-    F(at_eq, "@=", sym_op)                                                                         \
+    F(exclamation_eq, "!=", symbol_op)                                                             \
+    F(percent, "%", symbol_op)                                                                     \
+    F(percent_eq, "%=", symbol_op)                                                                 \
+    F(amp, "&", symbol_op)                                                                         \
+    F(amp_eq, "&=", symbol_op)                                                                     \
+    F(left_parens, "(", symbol_parens)                                                             \
+    F(right_parens, ")", symbol_parens)                                                            \
+    F(asterisk, "*", symbol_op)                                                                    \
+    F(asterisk_asterisk, "**", symbol_op)                                                          \
+    F(asterisk_asterisk_eq, "**=", symbol_op)                                                      \
+    F(asterisk_eq, "*=", symbol_op)                                                                \
+    F(plus, "+", symbol_op)                                                                        \
+    F(plus_eq, "+=", symbol_op)                                                                    \
+    F(comma, ",", symbol_punc)                                                                     \
+    F(minus, "-", symbol_op)                                                                       \
+    F(minus_eq, "-=", symbol_op)                                                                   \
+    F(arrow, "->", symbol_punc)                                                                    \
+    F(dot, ".", symbol_punc)                                                                       \
+    F(ellipsis, "...", symbol_punc)                                                                \
+    F(slash, "/", symbol_op)                                                                       \
+    F(slash_slash, "//", symbol_op)                                                                \
+    F(slash_slash_eq, "//=", symbol_op)                                                            \
+    F(slash_eq, "/=", symbol_op)                                                                   \
+    F(colon, ":", symbol_punc)                                                                     \
+    F(colon_eq, ":=", symbol_op)                                                                   \
+    F(semicolon, ";", symbol_punc)                                                                 \
+    F(less, "<", symbol_op)                                                                        \
+    F(less_less, "<<", symbol_op)                                                                  \
+    F(less_less_eq, "<<=", symbol_op)                                                              \
+    F(less_eq, "<=", symbol_op)                                                                    \
+    F(eq, "=", symbol_punc)                                                                        \
+    F(eq_eq, "==", symbol_op)                                                                      \
+    F(greater, ">", symbol_op)                                                                     \
+    F(greater_eq, ">=", symbol_op)                                                                 \
+    F(greater_greater, ">>", symbol_op)                                                            \
+    F(greater_greater_eq, ">>=", symbol_op)                                                        \
+    F(greater_greater_greater, ">>>", symbol_punc)                                                 \
+    F(at, "@", symbol_op)                                                                          \
+    F(at_eq, "@=", symbol_op)                                                                      \
     F(kw_False, "False", bool_)                                                                    \
     F(kw_None, "None", null)                                                                       \
     F(kw_True, "True", bool_)                                                                      \
-    F(left_square, "[", sym_square)                                                                \
-    F(backslash, "\\", escape)                                                                     \
-    F(right_square, "]", sym_square)                                                               \
-    F(caret, "^", sym_op)                                                                          \
-    F(caret_eq, "^=", sym_op)                                                                      \
+    F(left_square, "[", symbol_square)                                                             \
+    F(backslash, "\\", string_escape)                                                              \
+    F(right_square, "]", symbol_square)                                                            \
+    F(caret, "^", symbol_op)                                                                       \
+    F(caret_eq, "^=", symbol_op)                                                                   \
     F(kw_and, "and", keyword)                                                                      \
     F(kw_as, "as", keyword)                                                                        \
     F(kw_assert, "assert", keyword)                                                                \
@@ -91,11 +91,11 @@ namespace ulight::python {
     F(kw_while, "while", keyword_control)                                                          \
     F(kw_with, "with", keyword)                                                                    \
     F(kw_yield, "yield", keyword_control)                                                          \
-    F(left_brace, "{", sym_brace)                                                                  \
-    F(pipe, "|", sym_op)                                                                           \
-    F(pipe_eq, "|=", sym_op)                                                                       \
-    F(right_brace, "}", sym_brace)                                                                 \
-    F(tilde, "~", sym_op)
+    F(left_brace, "{", symbol_brace)                                                               \
+    F(pipe, "|", symbol_op)                                                                        \
+    F(pipe_eq, "|=", symbol_op)                                                                    \
+    F(right_brace, "}", symbol_brace)                                                              \
+    F(tilde, "~", symbol_op)
 
 #define ULIGHT_PYTHON_TOKEN_ENUM_ENUMERATOR(id, code, highlight) id,
 

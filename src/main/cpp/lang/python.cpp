@@ -121,13 +121,13 @@ std::optional<String_Prefix> classify_string_prefix(std::u8string_view str)
 Common_Number_Result match_number(std::u8string_view str)
 {
     // https://docs.python.org/3/reference/lexical_analysis.html#integer-literals
-    static constexpr String_And_Base prefixes[] {
+    static constexpr Number_Prefix prefixes[] {
         { u8"0b", 2 },  { u8"0B", 2 }, //
         { u8"0o", 8 },  { u8"0O", 8 }, //
         { u8"0x", 16 }, { u8"0X", 16 },
     };
     // https://docs.python.org/3/reference/lexical_analysis.html#floating-point-literals
-    static constexpr String_And_Base exponent_separators[] {
+    static constexpr Exponent_Separator exponent_separators[] {
         { u8"E+", 10 }, { u8"E-", 10 }, { u8"E", 10 }, //
         { u8"e+", 10 }, { u8"e-", 10 }, { u8"e", 10 }, //
     };
@@ -304,7 +304,7 @@ private:
         if (const std::size_t length = match_identifier(remainder)) {
             const std::u8string_view identifier = remainder.substr(0, length);
             const std::optional<Token_Type> type = token_type_by_code(identifier);
-            emit_and_advance(length, type ? token_type_highlight(*type) : Highlight_Type::id);
+            emit_and_advance(length, type ? token_type_highlight(*type) : Highlight_Type::name);
             return true;
         }
         return false;
@@ -410,13 +410,13 @@ private:
                     // so we decode the entire code point and make it an error if it's non-ASCII.
                     const auto highlight = string_prefix_is_byte(prefix) && length != 1
                         ? Highlight_Type::error
-                        : Highlight_Type::escape;
+                        : Highlight_Type::string_escape;
                     emit_and_advance(1 + std::size_t(length), highlight);
                 }
                 else if (const Escape_Result escape = match_escape_sequence(remainder)) {
                     emit_and_advance(
                         escape.length,
-                        escape.erroneous ? Highlight_Type::error : Highlight_Type::escape
+                        escape.erroneous ? Highlight_Type::error : Highlight_Type::string_escape
                     );
                 }
                 else {

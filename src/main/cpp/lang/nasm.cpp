@@ -343,7 +343,7 @@ struct Highlighter : Highlighter_Base {
 private:
     /// @brief A fallback highlight for identifiers when we cannot otherwise tell
     /// how an identifier should be highlighted.
-    Highlight_Type id_highlight = Highlight_Type::asm_instruction;
+    Highlight_Type id_highlight = Highlight_Type::name_instruction;
 
 public:
     Highlighter(
@@ -376,7 +376,7 @@ private:
         }
         case u8'\r':
         case u8'\n': {
-            id_highlight = Highlight_Type::asm_instruction;
+            id_highlight = Highlight_Type::name_instruction;
             advance(1);
             break;
         }
@@ -403,21 +403,21 @@ private:
         }
         case u8'(':
         case u8')': {
-            emit_and_advance(1, Highlight_Type::sym_parens);
+            emit_and_advance(1, Highlight_Type::symbol_parens);
             break;
         }
         case u8'[':
         case u8']': {
-            emit_and_advance(1, Highlight_Type::sym_square);
+            emit_and_advance(1, Highlight_Type::symbol_square);
             break;
         }
         case u8'{':
         case u8'}': {
-            emit_and_advance(1, Highlight_Type::sym_brace);
+            emit_and_advance(1, Highlight_Type::symbol_brace);
             break;
         }
         case u8',': {
-            emit_and_advance(1, Highlight_Type::sym_punc);
+            emit_and_advance(1, Highlight_Type::symbol_punc);
             break;
         }
         case u8';': {
@@ -431,7 +431,7 @@ private:
 
         default: {
             if (const std::size_t op_length = match_operator(remainder)) {
-                emit_and_advance(op_length, Highlight_Type::sym_op);
+                emit_and_advance(op_length, Highlight_Type::symbol_op);
                 break;
             }
             if (expect_number()) {
@@ -457,7 +457,7 @@ private:
             emit_and_advance(line.content_length, Highlight_Type::comment);
         }
         advance(line.terminator_length);
-        id_highlight = Highlight_Type::asm_instruction;
+        id_highlight = Highlight_Type::name_instruction;
     }
 
     void consume_macro()
@@ -465,9 +465,9 @@ private:
         // https://www.nasm.us/xdoc/2.16.03/html/nasmdoc4.html
         ULIGHT_ASSERT(remainder.starts_with(u8'%'));
         const Line_Result line = match_crlf_line(remainder.substr(1));
-        emit_and_advance(line.content_length + 1, Highlight_Type::macro);
+        emit_and_advance(line.content_length + 1, Highlight_Type::name_macro);
         advance(line.terminator_length);
-        id_highlight = Highlight_Type::asm_instruction;
+        id_highlight = Highlight_Type::name_instruction;
     }
 
     void consume_identifier()
@@ -481,43 +481,43 @@ private:
             return;
         }
         if (length < remainder.length() && remainder[length] == u8':') {
-            emit_and_advance(length + 1, Highlight_Type::id_label_decl);
-            id_highlight = Highlight_Type::asm_instruction;
+            emit_and_advance(length + 1, Highlight_Type::name_label_decl);
+            id_highlight = Highlight_Type::name_instruction;
             return;
         }
         if (remainder.starts_with(u8'.')) {
-            emit_and_advance(length, Highlight_Type::id_label_decl);
-            id_highlight = Highlight_Type::asm_instruction;
+            emit_and_advance(length, Highlight_Type::name_label_decl);
+            id_highlight = Highlight_Type::name_instruction;
             return;
         }
         if (is_type(identifier)) {
             emit_and_advance(length, Highlight_Type::keyword_type);
-            id_highlight = Highlight_Type::id_var;
+            id_highlight = Highlight_Type::name_var;
             return;
         }
         if (is_operator_keyword(identifier)) {
             emit_and_advance(length, Highlight_Type::keyword_op);
-            id_highlight = Highlight_Type::id_var;
+            id_highlight = Highlight_Type::name_var;
             return;
         }
         if (is_register(identifier)) {
-            emit_and_advance(length, Highlight_Type::id_var);
-            id_highlight = Highlight_Type::id_var;
+            emit_and_advance(length, Highlight_Type::name_var);
+            id_highlight = Highlight_Type::name_var;
             return;
         }
         if (is_label_instruction(identifier)) {
-            emit_and_advance(length, Highlight_Type::asm_instruction);
-            id_highlight = Highlight_Type::id_label;
+            emit_and_advance(length, Highlight_Type::name_instruction);
+            id_highlight = Highlight_Type::name_label;
             return;
         }
         if (identifier.starts_with(u8'$')) {
-            emit_and_advance(length, Highlight_Type::id);
-            id_highlight = Highlight_Type::id_var;
+            emit_and_advance(length, Highlight_Type::name);
+            id_highlight = Highlight_Type::name_var;
             return;
         }
         emit_and_advance(length, id_highlight);
-        if (id_highlight == Highlight_Type::asm_instruction) {
-            id_highlight = Highlight_Type::id_var;
+        if (id_highlight == Highlight_Type::name_instruction) {
+            id_highlight = Highlight_Type::name_var;
         }
     }
 
@@ -530,13 +530,13 @@ private:
     bool expect_common_number()
     {
         // https://www.nasm.us/xdoc/2.16.03/html/nasmdoc3.html#section-3.4.1
-        static constexpr String_And_Base prefixes[] {
+        static constexpr Number_Prefix prefixes[] {
             { u8"0b", 2 },  { u8"0B", 2 },  { u8"0y", 2 },  { u8"0Y", 2 }, //
             { u8"0o", 8 },  { u8"0O", 8 },  { u8"0q", 8 },  { u8"0Q", 8 }, //
             { u8"0d", 10 }, { u8"0D", 10 }, { u8"0t", 10 }, { u8"0T", 10 }, //
             { u8"0x", 16 }, { u8"0X", 16 }, { u8"0h", 16 }, { u8"0H", 16 }, { u8"$", 16 }, //
         };
-        static constexpr String_And_Base exponent_separators[] {
+        static constexpr Exponent_Separator exponent_separators[] {
             { u8"e", 10 }, { u8"e+", 10 }, { u8"e-", 10 }, //
             { u8"E", 10 }, { u8"E+", 10 }, { u8"E-", 10 }, //
             { u8"p", 16 }, { u8"p+", 16 }, { u8"p-", 16 }, //
@@ -570,11 +570,11 @@ private:
             // be parsed as numbers.
             const std::u8string_view number = remainder.substr(0, suffixed.digits + 1);
             if (is_pseudo_instruction(number)) {
-                emit_and_advance(number.length(), Highlight_Type::asm_instruction_pseudo);
+                emit_and_advance(number.length(), Highlight_Type::name_instruction_pseudo);
                 return true;
             }
             if (is_register(number)) {
-                emit_and_advance(number.length(), Highlight_Type::id_var);
+                emit_and_advance(number.length(), Highlight_Type::name_var);
                 return true;
             }
         }
@@ -658,7 +658,7 @@ private:
     {
         if (const Escape_Result escape = match_escape_sequence(remainder)) {
             const auto highlight
-                = escape.erroneous ? Highlight_Type::error : Highlight_Type::escape;
+                = escape.erroneous ? Highlight_Type::error : Highlight_Type::string_escape;
             emit_and_advance(escape.length, highlight);
             return true;
         }

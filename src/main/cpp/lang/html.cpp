@@ -307,7 +307,7 @@ private:
     bool expect_doctype()
     {
         if (const Match_Result doctype = match_doctype_permissive(remainder)) {
-            emit_and_advance(doctype.length, Highlight_Type::macro);
+            emit_and_advance(doctype.length, Highlight_Type::name_macro);
             return true;
         }
         return false;
@@ -316,11 +316,11 @@ private:
     bool expect_cdata()
     {
         if (const Match_Result cdata = match_cdata(remainder)) {
-            emit(index, cdata_prefix.length(), Highlight_Type::macro);
+            emit(index, cdata_prefix.length(), Highlight_Type::name_macro);
             if (cdata.terminated) {
                 emit(
                     index + cdata.length - cdata_suffix.length(), cdata_suffix.length(),
-                    Highlight_Type::macro
+                    Highlight_Type::name_macro
                 );
             }
             advance(cdata.length);
@@ -364,7 +364,7 @@ private:
         if (!remainder.starts_with(u8'<')) {
             return false;
         }
-        emit_and_advance(1, Highlight_Type::sym_punc);
+        emit_and_advance(1, Highlight_Type::symbol_punc);
 
         const std::size_t name_length = match_tag_name(remainder);
         if (name_length == 0) {
@@ -377,11 +377,11 @@ private:
             expect_whitespace();
 
             if (remainder.starts_with(u8"/>")) {
-                emit_and_advance(2, Highlight_Type::sym_punc);
+                emit_and_advance(2, Highlight_Type::symbol_punc);
                 break;
             }
             if (remainder.starts_with(u8'>')) {
-                emit_and_advance(1, Highlight_Type::sym_punc);
+                emit_and_advance(1, Highlight_Type::symbol_punc);
                 break;
             }
             if (!expect_attribute()) {
@@ -399,7 +399,7 @@ private:
             while (const Raw_Text_Result result = match_escapable_raw_text_piece(remainder, name)) {
                 advance(result.raw_length);
                 if (result.ref_length != 0) {
-                    emit_and_advance(result.ref_length, Highlight_Type::escape);
+                    emit_and_advance(result.ref_length, Highlight_Type::string_escape);
                 }
             }
             return true;
@@ -443,7 +443,7 @@ private:
         if (!remainder.starts_with(u8'=')) {
             return true;
         }
-        emit_and_advance(1, Highlight_Type::sym_punc);
+        emit_and_advance(1, Highlight_Type::symbol_punc);
         expect_whitespace();
 
         // Always returns true because unquoted (possibly zero-length) is always matched.
@@ -471,7 +471,7 @@ private:
             if (const std::size_t ref_length
                 = match_character_reference(remainder.substr(piece_length))) {
                 flush();
-                emit_and_advance(ref_length, Highlight_Type::escape);
+                emit_and_advance(ref_length, Highlight_Type::string_escape);
             }
         }
         flush();
@@ -501,7 +501,7 @@ private:
             if (const std::size_t ref_length
                 = match_character_reference(remainder.substr(piece_length))) {
                 flush();
-                emit_and_advance(ref_length, Highlight_Type::escape);
+                emit_and_advance(ref_length, Highlight_Type::string_escape);
             }
         }
         flush();
@@ -515,9 +515,9 @@ private:
             return false;
         }
         ULIGHT_DEBUG_ASSERT(result.name_length != 0);
-        emit(index, 2, Highlight_Type::sym_punc); // "</"
+        emit(index, 2, Highlight_Type::symbol_punc); // "</"
         emit(index + 2, result.name_length, Highlight_Type::markup_tag);
-        emit(index + result.length - 1, 1, Highlight_Type::sym_punc); // ">"
+        emit(index + result.length - 1, 1, Highlight_Type::symbol_punc); // ">"
         advance(result.length);
         return true;
     }
@@ -544,7 +544,7 @@ private:
     bool expect_character_reference()
     {
         if (const std::size_t ref_length = match_character_reference(remainder)) {
-            emit(index, ref_length, Highlight_Type::escape);
+            emit(index, ref_length, Highlight_Type::string_escape);
             advance(ref_length);
             return true;
         }

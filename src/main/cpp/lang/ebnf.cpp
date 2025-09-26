@@ -47,7 +47,7 @@ public:
             case u8'!':
             case u8'|': {
                 state = State::right_before_name;
-                emit_and_advance(1, Highlight_Type::sym_op);
+                emit_and_advance(1, Highlight_Type::symbol_op);
                 break;
             }
             case u8'*': {
@@ -56,42 +56,42 @@ public:
                 }
                 else {
                     state = State::right_before_name;
-                    emit_and_advance(1, Highlight_Type::sym_op);
+                    emit_and_advance(1, Highlight_Type::symbol_op);
                 }
                 break;
             }
             case u8'/': {
                 if (remainder.starts_with(u8"/)")) {
                     state = State::right_before_name;
-                    emit_and_advance(2, Highlight_Type::sym_parens);
+                    emit_and_advance(2, Highlight_Type::symbol_parens);
                 }
                 else {
                     state = State::right_before_name;
-                    emit_and_advance(1, Highlight_Type::sym_op);
+                    emit_and_advance(1, Highlight_Type::symbol_op);
                 }
                 break;
             }
             case u8':': {
                 if (remainder.starts_with(u8":)")) {
                     state = State::right_before_name;
-                    emit_and_advance(2, Highlight_Type::sym_brace);
+                    emit_and_advance(2, Highlight_Type::symbol_brace);
                 }
                 else {
                     state = State::right_before_name;
-                    emit_and_advance(1, Highlight_Type::sym_op);
+                    emit_and_advance(1, Highlight_Type::symbol_op);
                 }
                 break;
             }
             case u8'[':
             case u8']': {
                 state = State::right_before_name;
-                emit_and_advance(1, Highlight_Type::sym_square);
+                emit_and_advance(1, Highlight_Type::symbol_square);
                 break;
             }
             case u8'{':
             case u8'}': {
                 state = State::right_before_name;
-                emit_and_advance(1, Highlight_Type::sym_brace);
+                emit_and_advance(1, Highlight_Type::symbol_brace);
                 break;
             }
             case u8'\'':
@@ -105,12 +105,12 @@ public:
             case u8';':
             case u8'.': {
                 state = State::left_before_name;
-                emit_and_advance(1, Highlight_Type::sym_punc);
+                emit_and_advance(1, Highlight_Type::symbol_punc);
                 break;
             }
             case u8'=': {
                 state = State::right_before_name;
-                emit_and_advance(1, Highlight_Type::sym_punc);
+                emit_and_advance(1, Highlight_Type::symbol_punc);
                 break;
             }
             case u8' ':
@@ -127,21 +127,21 @@ public:
                 }
                 else if (remainder.starts_with(u8"(:")) {
                     state = State::right_before_name;
-                    emit_and_advance(2, Highlight_Type::sym_brace);
+                    emit_and_advance(2, Highlight_Type::symbol_brace);
                 }
                 else if (remainder.starts_with(u8"(/")) {
                     state = State::right_before_name;
-                    emit_and_advance(2, Highlight_Type::sym_parens);
+                    emit_and_advance(2, Highlight_Type::symbol_parens);
                 }
                 else {
                     state = State::right_before_name;
-                    emit_and_advance(1, Highlight_Type::sym_parens);
+                    emit_and_advance(1, Highlight_Type::symbol_parens);
                 }
                 break;
             }
             case u8')': {
                 state = State::right_before_name;
-                emit_and_advance(1, Highlight_Type::sym_parens);
+                emit_and_advance(1, Highlight_Type::symbol_parens);
                 break;
             }
             case u8'?': {
@@ -161,11 +161,11 @@ public:
             case u8'9': {
                 switch (state) {
                 case State::left_in_name: {
-                    emit_and_advance(1, Highlight_Type::id_nonterminal_decl, Coalescing::forced);
+                    emit_and_advance(1, Highlight_Type::name_nonterminal_decl, Coalescing::forced);
                     break;
                 }
                 case State::right_in_name: {
-                    emit_and_advance(1, Highlight_Type::id_nonterminal, Coalescing::forced);
+                    emit_and_advance(1, Highlight_Type::name_nonterminal, Coalescing::forced);
                     break;
                 }
                 default: {
@@ -231,20 +231,20 @@ public:
                 switch (state) {
                 case State::left_before_name: {
                     state = State::left_in_name;
-                    emit_and_advance(1, Highlight_Type::id_nonterminal_decl);
+                    emit_and_advance(1, Highlight_Type::name_nonterminal_decl);
                     break;
                 }
                 case State::left_in_name: {
-                    emit_and_advance(1, Highlight_Type::id_nonterminal_decl, Coalescing::forced);
+                    emit_and_advance(1, Highlight_Type::name_nonterminal_decl, Coalescing::forced);
                     break;
                 }
                 case State::right_before_name: {
                     state = State::right_in_name;
-                    emit_and_advance(1, Highlight_Type::id_nonterminal);
+                    emit_and_advance(1, Highlight_Type::name_nonterminal);
                     break;
                 }
                 case State::right_in_name: {
-                    emit_and_advance(1, Highlight_Type::id_nonterminal, Coalescing::forced);
+                    emit_and_advance(1, Highlight_Type::name_nonterminal, Coalescing::forced);
                     break;
                 }
                 }
@@ -259,7 +259,7 @@ public:
 
                 const auto treat_hyphen_as_minus = [&] {
                     state = State::right_before_name;
-                    emit_and_advance(1, Highlight_Type::sym_op);
+                    emit_and_advance(1, Highlight_Type::symbol_op);
                 };
 
                 switch (state) {
@@ -271,7 +271,7 @@ public:
                 case State::left_in_name: {
                     if (is_ebnf_relaxed_meta_identifier(previous)) {
                         emit_and_advance(
-                            1, Highlight_Type::id_nonterminal_decl, Coalescing::forced
+                            1, Highlight_Type::name_nonterminal_decl, Coalescing::forced
                         );
                     }
                     else {
@@ -281,7 +281,7 @@ public:
                 }
                 case State::right_in_name: {
                     if (is_ebnf_relaxed_meta_identifier(previous)) {
-                        emit_and_advance(1, Highlight_Type::id_nonterminal, Coalescing::forced);
+                        emit_and_advance(1, Highlight_Type::name_nonterminal, Coalescing::forced);
                     }
                     else {
                         treat_hyphen_as_minus();
@@ -347,7 +347,7 @@ private:
     {
         ULIGHT_ASSERT(remainder.starts_with(u8'?'));
         const std::size_t length = ascii::length_until(remainder, u8'?', 1);
-        emit_and_advance(length, Highlight_Type::macro);
+        emit_and_advance(length, Highlight_Type::name_macro);
     }
 };
 
