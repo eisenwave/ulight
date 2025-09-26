@@ -392,7 +392,7 @@ private:
 
         const bool is_byte = remainder.starts_with(u8'b');
 
-        if (remainder.length() < 3 + is_byte || remainder[is_byte] != u8'\'') {
+        if (remainder.length() < 3uz + is_byte || remainder[is_byte] != u8'\'') {
             return false;
         }
 
