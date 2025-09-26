@@ -1,6 +1,7 @@
 #ifndef ULIGHT_HIGHLIGHT_TOKEN_HPP
 #define ULIGHT_HIGHLIGHT_TOKEN_HPP
 
+#include <array>
 #include <memory_resource>
 #include <string_view>
 
