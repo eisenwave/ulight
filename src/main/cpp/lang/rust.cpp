@@ -561,6 +561,17 @@ private:
             return false;
         }
 
+        const auto emit_result = [&](std::size_t delim_length, std::size_t id_length) {
+            const bool is_label = remainder.substr(delim_length + id_length).starts_with(u8':');
+            emit_and_advance(
+                delim_length,
+                is_label ? Highlight_Type::name_label_delim : Highlight_Type::name_lifetime_delim
+            );
+            emit_and_advance(
+                id_length, is_label ? Highlight_Type::name_label : Highlight_Type::name_lifetime
+            );
+        };
+
         if (remainder.starts_with(raw_prefix)) {
             const std::size_t id_length = match_identifier(remainder.substr(raw_prefix.length()));
             if (!id_length) {
@@ -571,23 +582,20 @@ private:
                 emit_and_advance(raw_prefix.length() + id_length, Highlight_Type::error);
             }
             else {
-                emit_and_advance(raw_prefix.length(), Highlight_Type::name_label_delim);
-                emit_and_advance(id_length, Highlight_Type::name_label);
+                emit_result(raw_prefix.length(), id_length);
             }
             // There should not be a closing apostrophe here because any such case would have
             // been interpreted as a character literal already.
             ULIGHT_DEBUG_ASSERT(!remainder.starts_with(u8'\''));
-            return true;
         }
-
-        const std::size_t id_length = match_identifier(remainder.substr(1));
-        if (!id_length) {
-            return false;
+        else {
+            const std::size_t id_length = match_identifier(remainder.substr(1));
+            if (!id_length) {
+                return false;
+            }
+            emit_result(1, id_length);
+            ULIGHT_DEBUG_ASSERT(!remainder.starts_with(u8'\''));
         }
-
-        emit_and_advance(1, Highlight_Type::name_label_delim);
-        emit_and_advance(id_length, Highlight_Type::name_label);
-        ULIGHT_DEBUG_ASSERT(!remainder.starts_with(u8'\''));
         return true;
     }
 
