@@ -9,60 +9,60 @@ similar English words. The non-terminal symbols
 not defined. The position of &lt;comments&gt; is
 stated in a comment but not formally defined.
 </h-><h- data-h=cmt_dlim>*)</h->
-<h- data-h=id_nt_dcl>syntax</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>syntax</h-> <h- data-h=id_nt>rule</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=id_nt>syntax</h-> <h- data-h=id_nt>rule</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>syntax</h-> <h- data-h=id_nt_dcl>rule</h->
-<h- data-h=sym_punc>=</h-> <h- data-h=id_nt>meta</h-> <h- data-h=id_nt>identifier</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>=</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>definitions</h-> <h- data-h=id_nt>list</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>;</h-><h- data-h=str_dlim>`</h->
+<h- data-h=name_nt_decl>syntax</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>syntax</h-> <h- data-h=name_nt>rule</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=name_nt>syntax</h-> <h- data-h=name_nt>rule</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>syntax</h-> <h- data-h=name_nt_decl>rule</h->
+<h- data-h=sym_punc>=</h-> <h- data-h=name_nt>meta</h-> <h- data-h=name_nt>identifier</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>=</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>definitions</h-> <h- data-h=name_nt>list</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>;</h-><h- data-h=str_dlim>`</h->
 <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> A &lt;syntax rule&gt; defines the sequences of
 symbols represented by a &lt;meta identifier&gt; </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>definitions</h-> <h- data-h=id_nt_dcl>list</h->
-<h- data-h=sym_punc>=</h-> <h- data-h=id_nt>single</h-> <h- data-h=id_nt>definition</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=str_dlim>`</h-><h- data-h=str>|</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>single</h-> <h- data-h=id_nt>definition</h-><h- data-h=sym_brac>}</h->
+<h- data-h=name_nt_decl>definitions</h-> <h- data-h=name_nt_decl>list</h->
+<h- data-h=sym_punc>=</h-> <h- data-h=name_nt>single</h-> <h- data-h=name_nt>definition</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=str_dlim>`</h-><h- data-h=str>|</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>single</h-> <h- data-h=name_nt>definition</h-><h- data-h=sym_brac>}</h->
 <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> | separates alternative
 &lt;single definitions&gt; </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>single</h-> <h- data-h=id_nt_dcl>definition</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>term</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=str_dlim>`</h-><h- data-h=str>,</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>term</h-><h- data-h=sym_brac>}</h->
+<h- data-h=name_nt_decl>single</h-> <h- data-h=name_nt_decl>definition</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>term</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=str_dlim>`</h-><h- data-h=str>,</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>term</h-><h- data-h=sym_brac>}</h->
 <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> , separates successive &lt;terms&gt; </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>term</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>factor</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-><h- data-h=str_dlim>`</h-><h- data-h=str>-</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>exception</h-><h- data-h=sym_sqr>]</h->
+<h- data-h=name_nt_decl>term</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>factor</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_sqr>[</h-><h- data-h=str_dlim>`</h-><h- data-h=str>-</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>exception</h-><h- data-h=sym_sqr>]</h->
 <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> A &lt;term&gt; represents any sequence of symbols
 that is defined by the &lt;factor&gt; but
 not defined by the &lt;exception&gt; </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>exception</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>factor</h->
+<h- data-h=name_nt_decl>exception</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>factor</h->
 <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> A &lt;factor&gt; may be used as an &lt;exception&gt;
 if it could be replaced by a &lt;factor&gt;
 containing no &lt;meta identifiers&gt; </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>factor</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-><h- data-h=id_nt>integer</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>*</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>primary</h->
+<h- data-h=name_nt_decl>factor</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_sqr>[</h-><h- data-h=name_nt>integer</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>*</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>primary</h->
 <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> The &lt;integer&gt; specifies the number of
 repetitions of the &lt;primary&gt; </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>primary</h->
-<h- data-h=sym_punc>=</h-> <h- data-h=id_nt>optional</h-> <h- data-h=id_nt>sequence</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>repeated</h-> <h- data-h=id_nt>sequence</h->
-<h- data-h=sym_op>|</h-> <h- data-h=id_nt>special</h-> <h- data-h=id_nt>sequence</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>grouped</h-> <h- data-h=id_nt>sequence</h->
-<h- data-h=sym_op>|</h-> <h- data-h=id_nt>meta</h-> <h- data-h=id_nt>identifier</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>terminal</h-> <h- data-h=id_nt>string</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>empty</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>empty</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>optional</h-> <h- data-h=id_nt_dcl>sequence</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>[</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>definitions</h-> <h- data-h=id_nt>list</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>]</h-><h- data-h=str_dlim>`</h->
+<h- data-h=name_nt_decl>primary</h->
+<h- data-h=sym_punc>=</h-> <h- data-h=name_nt>optional</h-> <h- data-h=name_nt>sequence</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>repeated</h-> <h- data-h=name_nt>sequence</h->
+<h- data-h=sym_op>|</h-> <h- data-h=name_nt>special</h-> <h- data-h=name_nt>sequence</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>grouped</h-> <h- data-h=name_nt>sequence</h->
+<h- data-h=sym_op>|</h-> <h- data-h=name_nt>meta</h-> <h- data-h=name_nt>identifier</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>terminal</h-> <h- data-h=name_nt>string</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>empty</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>empty</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>optional</h-> <h- data-h=name_nt_decl>sequence</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>[</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>definitions</h-> <h- data-h=name_nt>list</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>]</h-><h- data-h=str_dlim>`</h->
 <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> The brackets [ and ] enclose symbols
 which are optional </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>repeated</h-> <h- data-h=id_nt_dcl>sequence</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>{</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>definitions</h-> <h- data-h=id_nt>list</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>}</h-><h- data-h=str_dlim>`</h->
+<h- data-h=name_nt_decl>repeated</h-> <h- data-h=name_nt_decl>sequence</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>{</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>definitions</h-> <h- data-h=name_nt>list</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>}</h-><h- data-h=str_dlim>`</h->
 <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> The brackets { and } enclose symbols
 which may be repeated any number of times </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>grouped</h-> <h- data-h=id_nt_dcl>sequence</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>(</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>definitions</h-> <h- data-h=id_nt>list</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>)</h-><h- data-h=str_dlim>`</h->
+<h- data-h=name_nt_decl>grouped</h-> <h- data-h=name_nt_decl>sequence</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>(</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>definitions</h-> <h- data-h=name_nt>list</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>)</h-><h- data-h=str_dlim>`</h->
 <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> The brackets ( and ) allow any
 &lt;definitions list&gt; to be a &lt;primary&gt; </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>terminal</h-> <h- data-h=id_nt_dcl>string</h->
-<h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>`</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>character</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>`</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=id_nt>character</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>`</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>`</h-><h- data-h=str_dlim>"</h->
-<h- data-h=sym_op>|</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>"</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=id_nt>character</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>"</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=id_nt>character</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>"</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>"</h-><h- data-h=str_dlim>`</h->
+<h- data-h=name_nt_decl>terminal</h-> <h- data-h=name_nt_decl>string</h->
+<h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>`</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>character</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>`</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=name_nt>character</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>`</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>`</h-><h- data-h=str_dlim>"</h->
+<h- data-h=sym_op>|</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>"</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=name_nt>character</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>"</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=name_nt>character</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>"</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>"</h-><h- data-h=str_dlim>`</h->
 <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> A &lt;terminal string&gt; represents the
 &lt;characters&gt; between the quote symbols
 `_` or "_" </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>meta</h-> <h- data-h=id_nt_dcl>identifier</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>letter</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=id_nt>letter</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>decimal</h-> <h- data-h=id_nt>digit</h-><h- data-h=sym_brac>}</h->
+<h- data-h=name_nt_decl>meta</h-> <h- data-h=name_nt_decl>identifier</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>letter</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=name_nt>letter</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>decimal</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_brac>}</h->
 <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> A &lt;meta identifier&gt; is the name of a
 syntactic element of the language being
 defined </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>integer</h-> <h- data-h=sym_punc>=</h-> <h- data-h=id_nt>decimal</h-> <h- data-h=id_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=id_nt>decimal</h-> <h- data-h=id_nt>digit</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>special</h-> <h- data-h=id_nt_dcl>sequence</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>?</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=id_nt>character</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>?</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>?</h-><h- data-h=str_dlim>`</h->
+<h- data-h=name_nt_decl>integer</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name_nt>decimal</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=name_nt>decimal</h-> <h- data-h=name_nt>digit</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>special</h-> <h- data-h=name_nt_decl>sequence</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>?</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=name_nt>character</h-> <h- data-h=sym_op>-</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>?</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>?</h-><h- data-h=str_dlim>`</h->
 <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> The meaning of a &lt;special sequence&gt; is not
 defined in the standard metalanguage. </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>comment</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>(*</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=id_nt>comment</h-> <h- data-h=id_nt>symbol</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>*)</h-><h- data-h=str_dlim>`</h->
+<h- data-h=name_nt_decl>comment</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>(*</h-><h- data-h=str_dlim>`</h-><h- data-h=sym_op>,</h-> <h- data-h=sym_brac>{</h-><h- data-h=name_nt>comment</h-> <h- data-h=name_nt>symbol</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_op>,</h-> <h- data-h=str_dlim>`</h-><h- data-h=str>*)</h-><h- data-h=str_dlim>`</h->
 <h- data-h=cmt_dlim>(*</h-><h- data-h=cmt> A comment is allowed anywhere outside a
 &lt;terminal string&gt;, &lt;meta identifier&gt;,
 &lt;integer&gt; or &lt;special sequence&gt; </h-><h- data-h=cmt_dlim>*)</h-><h- data-h=sym_punc>;</h->
-<h- data-h=id_nt_dcl>comment</h-> <h- data-h=id_nt_dcl>symbol</h->
-<h- data-h=sym_punc>=</h-> <h- data-h=id_nt>comment</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>terminal</h-> <h- data-h=id_nt>string</h-> <h- data-h=sym_op>|</h-> <h- data-h=id_nt>special</h-> <h- data-h=id_nt>sequence</h->
-<h- data-h=sym_op>|</h-> <h- data-h=id_nt>character</h-><h- data-h=sym_punc>;</h->
+<h- data-h=name_nt_decl>comment</h-> <h- data-h=name_nt_decl>symbol</h->
+<h- data-h=sym_punc>=</h-> <h- data-h=name_nt>comment</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>terminal</h-> <h- data-h=name_nt>string</h-> <h- data-h=sym_op>|</h-> <h- data-h=name_nt>special</h-> <h- data-h=name_nt>sequence</h->
+<h- data-h=sym_op>|</h-> <h- data-h=name_nt>character</h-><h- data-h=sym_punc>;</h->
