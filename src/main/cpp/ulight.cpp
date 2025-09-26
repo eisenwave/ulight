@@ -120,7 +120,9 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("plist", ULIGHT_LANG_XML),
     make_lang_entry("py", ULIGHT_LANG_PYTHON),
     make_lang_entry("python", ULIGHT_LANG_PYTHON),
+    make_lang_entry("rs", ULIGHT_LANG_RUST),
     make_lang_entry("rss", ULIGHT_LANG_XML),
+    make_lang_entry("rust", ULIGHT_LANG_RUST),
     make_lang_entry("sh", ULIGHT_LANG_BASH),
     make_lang_entry("svg", ULIGHT_LANG_XML),
     make_lang_entry("tex", ULIGHT_LANG_TEX),
@@ -164,6 +166,7 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("Python"),
     make_sv("Kotlin"),
     make_sv("TypeScript"),
+    make_sv("Rust"),
 };
 // clang-format on
 

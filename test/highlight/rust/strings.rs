@@ -1,0 +1,15 @@
+"awoo"
+'a'
+'\n'
+b"awoo\n"
+b'a'
+b'\n'
+br"awoo\n"
+br#"awoo\n"..."#
+c"awoo\n"
+cr"awoo\n"
+r#"awoo\n"..."#
+"awoo
+chan"
+"awoo\
+chan"

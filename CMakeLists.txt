@@ -64,6 +64,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/lang/lua.cpp
     src/main/cpp/lang/nasm.cpp
     src/main/cpp/lang/python.cpp
+    src/main/cpp/lang/rust.cpp
     src/main/cpp/lang/tex.cpp
     src/main/cpp/lang/xml.cpp
 
@@ -152,6 +153,7 @@ else(NOT DEFINED EMSCRIPTEN)
             src/test/cpp/test_html.cpp
             src/test/cpp/test_js.cpp
             src/test/cpp/test_json.cpp
+            src/test/cpp/test_rust.cpp
             src/test/cpp/test_unicode.cpp
             src/test/cpp/test_unicode_algorithm.cpp
         )

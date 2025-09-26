@@ -44,6 +44,7 @@ Highlight_Fn highlight_kotlin;
 Highlight_Fn highlight_lua;
 Highlight_Fn highlight_nasm;
 Highlight_Fn highlight_python;
+Highlight_Fn highlight_rust;
 Highlight_Fn highlight_tex;
 Highlight_Fn highlight_typescript;
 Highlight_Fn highlight_xml;
@@ -94,6 +95,7 @@ inline Status highlight(
         result[ULIGHT_LANG_NASM] = highlight_nasm;
         result[ULIGHT_LANG_NONE] = nullptr;
         result[ULIGHT_LANG_PYTHON] = highlight_python;
+        result[ULIGHT_LANG_RUST] = highlight_rust;
         result[ULIGHT_LANG_TEX] = highlight_tex;
         result[ULIGHT_LANG_TXT] = highlight_txt;
         result[ULIGHT_LANG_TYPESCRIPT] = highlight_typescript;
