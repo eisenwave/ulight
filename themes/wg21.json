@@ -27,9 +27,11 @@
         "bool": "#9f6807",
         "number": "#9f6807",
         "string": "#9f6807",
-        "string-escape": "#9f6807",
+        "string-escape": "#70400c",
+        "string-interpolation": "#70400c",
         "name": "#000000",
         "name-label": "#517a0b",
+        "name-lifetime": "#517a0b",
         "name-nonterminal": {
             "font-style": "italic"
         },
@@ -117,8 +119,10 @@
         "string-delim": "#e6b191",
         "string-decor": "#e6b191",
         "string-escape": "#e6aee6",
+        "string-interpolation": "#e6aee6",
         "name": "#f0f0f0",
         "name-label": "#d8eda6",
+        "name-lifetime": "#d8eda6",
         "name-nonterminal": {
             "font-style": "italic"
         },

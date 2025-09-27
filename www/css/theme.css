@@ -625,7 +625,10 @@
     color: #b5cea8;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=name_labl] {
-    color: #c8c8c8;
+    color: #4ec9b0;
+}
+[data-ulight-theme=dark-vs-plus] h-[data-h^=name_life] {
+    color: #4ec9b0;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=name_mac] {
     color: #569cd6;
@@ -659,6 +662,9 @@
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=str_esc] {
     color: #d7ba7d;
+}
+[data-ulight-theme=dark-vs-plus] h-[data-h^=str_intp] {
+    color: #da70d6;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=sym] {
     color: d4d4d4;
@@ -773,6 +779,9 @@
 [data-ulight-theme=light-wg21] h-[data-h^=name_labl] {
     color: #517a0b;
 }
+[data-ulight-theme=light-wg21] h-[data-h^=name_life] {
+    color: #517a0b;
+}
 [data-ulight-theme=light-wg21] h-[data-h^=name_mac] {
     color: #6f4e37;
 }
@@ -796,7 +805,10 @@
     color: #9f6807;
 }
 [data-ulight-theme=light-wg21] h-[data-h^=str_esc] {
-    color: #9f6807;
+    color: #70400c;
+}
+[data-ulight-theme=light-wg21] h-[data-h^=str_intp] {
+    color: #70400c;
 }
 [data-ulight-theme=light-wg21] h-[data-h^=sym] {
     color: #570057;
@@ -919,6 +931,9 @@
 [data-ulight-theme=dark-wg21] h-[data-h^=name_labl] {
     color: #d8eda6;
 }
+[data-ulight-theme=dark-wg21] h-[data-h^=name_life] {
+    color: #d8eda6;
+}
 [data-ulight-theme=dark-wg21] h-[data-h^=name_mac] {
     color: #cc946e;
 }
@@ -954,6 +969,9 @@
     color: #e6b191;
 }
 [data-ulight-theme=dark-wg21] h-[data-h^=str_esc] {
+    color: #e6aee6;
+}
+[data-ulight-theme=dark-wg21] h-[data-h^=str_intp] {
     color: #e6aee6;
 }
 [data-ulight-theme=dark-wg21] h-[data-h^=sym] {
