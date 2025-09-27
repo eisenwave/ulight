@@ -122,7 +122,7 @@ constexpr Flag operator|(Flag x, Flag y) noexcept
     F(comment, "comment", "cmt", ULIGHT_HL_COMMENT)                                                \
     F(comment_delim, "comment-delim", "cmt_dlim", ULIGHT_HL_COMMENT_DELIM)                         \
     F(comment_doc, "comment-doc", "cmt_doc", ULIGHT_HL_COMMENT_DOC)                                \
-    F(comment_doc_delim, "comment-doc-delim", "cmt_dlim_doc", ULIGHT_HL_COMMENT_DOC_DELIM)         \
+    F(comment_doc_delim, "comment-doc-delim", "cmt_doc_dlim", ULIGHT_HL_COMMENT_DOC_DELIM)         \
                                                                                                    \
     F(value, "value", "val", ULIGHT_HL_VALUE)                                                      \
     F(value_delim, "value-delim", "val_dlim", ULIGHT_HL_VALUE_DELIM)                               \
