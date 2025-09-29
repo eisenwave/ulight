@@ -71,7 +71,7 @@ Common_Number_Result match_number(std::u8string_view str)
         { u8"e+", 10 }, { u8"e-", 10 }, { u8"e", 10 }, //
     };
     static constexpr std::u8string_view suffixes[] {
-        u8"F", u8"U", u8"UL", u8"f", u8"l", u8"u", u8"uL",
+        u8"F", u8"L", u8"U", u8"UL", u8"f", u8"l", u8"u", u8"uL",
     };
     static_assert(std::ranges::is_sorted(suffixes));
     static constexpr Common_Number_Options options {
