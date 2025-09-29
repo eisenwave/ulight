@@ -794,9 +794,7 @@ public:
             if (source[index] == quote_char) {
                 flush_chars();
                 emit_and_advance(1, Highlight_Type::string_delim);
-                expect_identifier_or_keyword([](std::u8string_view) {
-                    return Highlight_Type::string_decor;
-                });
+                consume_string_suffix();
                 fresh_line = false;
                 return;
             }
@@ -872,12 +870,20 @@ public:
                 emit_and_advance(raw_length, Highlight_Type::string);
             }
             emit_and_advance(d_char_sequence_length + 2, Highlight_Type::string_delim);
+            consume_string_suffix();
             return;
         }
         // Unterminated raw string, possibly empty in the case of trailing R"(
         if (raw_length != 0) {
             emit_and_advance(raw_length, Highlight_Type::string);
         }
+    }
+
+    void consume_string_suffix()
+    {
+        expect_identifier_or_keyword( //
+            [](std::u8string_view) { return Highlight_Type::string_decor; }
+        );
     }
 
     bool expect_pp_number()
