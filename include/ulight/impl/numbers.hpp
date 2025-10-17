@@ -39,6 +39,21 @@ inline Digits_Result match_digits_as_result(std::u8string_view str, int base = 1
 [[nodiscard]]
 Digits_Result match_separated_digits(std::u8string_view str, int base, char8_t separator = 0);
 
+enum struct Matched_Signs : Underlying {
+    none = 0b00,
+    minus_only = 0b01,
+    plus_only = 0b10,
+    minus_and_plus = 0b11,
+};
+
+[[nodiscard]]
+constexpr bool matched_signs_matches(Matched_Signs signs, char8_t c)
+{
+    const bool matches_minus = int(signs) & 1;
+    const bool matches_plus = int(signs) & 2;
+    return (c == u8'-' && matches_minus) || (c == u8'+' && matches_plus);
+}
+
 struct Number_Prefix {
     /// @brief The string content of the prefix.
     std::u8string_view str;
@@ -58,6 +73,11 @@ struct Exponent_Separator {
 };
 
 struct Common_Number_Options {
+    /// @brief A bitmask type specifying which signs are allowed.
+    /// By default, this is `none` because in many languages,
+    /// the sign is a separate unary operator, so it should not be highlighted
+    /// as part of the number.
+    Matched_Signs signs = Matched_Signs::none;
     /// @brief A list of prefixes.
     std::span<const Number_Prefix> prefixes;
     /// @brief A list of possible exponent separators with the corresponding base.
@@ -87,6 +107,8 @@ struct Common_Number_Result {
     /// @brief The total length.
     /// This is also the sum of all the other parts of the result.
     std::size_t length = 0;
+    /// @brief The length of the leading sign character.
+    std::size_t sign = 0;
     /// @brief The length of the prefix (e.g. `0x`) or zero if none present.
     std::size_t prefix = 0;
     /// @brief The length of the digits prior to the radix point or exponent part.
