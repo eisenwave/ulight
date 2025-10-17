@@ -52,6 +52,70 @@ struct Line_Result {
 [[nodiscard]]
 Line_Result match_crlf_line(std::u8string_view str);
 
+struct Enclosed_Result {
+    /// @brief The total length of the result,
+    /// including prefix and suffix, or zero if there is no match.
+    std::size_t length;
+    /// @brief `true` if a terminator/suffix was found,
+    /// `false` if the end of the string/file was reached before the suffix.
+    bool is_terminated;
+
+    [[nodiscard]]
+    constexpr explicit operator bool() const
+    {
+        return length != 0;
+    }
+};
+
+namespace detail {
+
+constexpr std::size_t length_of(std::u8string_view str)
+{
+    return str.length();
+}
+
+constexpr std::integral_constant<std::size_t, 1> length_of(char8_t)
+{
+    return {};
+}
+
+template <typename Prefix, typename Suffix>
+[[nodiscard]]
+Enclosed_Result
+match_enclosed_impl(const std::u8string_view str, const Prefix prefix, const Suffix suffix)
+{
+    if (!str.starts_with(prefix)) {
+        return {};
+    }
+    const std::size_t prefix_length = length_of(prefix);
+    const std::size_t suffix_index = str.find(suffix, prefix_length);
+    if (suffix_index == std::u8string_view::npos) {
+        return { .length = str.length(), .is_terminated = false };
+    }
+    return { .length = suffix_index + length_of(suffix), .is_terminated = true };
+}
+
+} // namespace detail
+
+/// @brief Matches a span within `str` that consists of `prefix`,
+/// followed by arbitrary code units,
+/// followed by `suffix`.
+/// This may be used to match regular lexical constructs like C-style block comments,
+/// but is insufficient for more complex constructs like string literals
+/// because it does not recognize nesting or escape sequences.
+[[nodiscard]]
+inline Enclosed_Result
+match_enclosed(std::u8string_view str, std::u8string_view prefix, std::u8string_view suffix)
+{
+    return detail::match_enclosed_impl(str, prefix, suffix);
+}
+
+[[nodiscard]]
+inline Enclosed_Result match_enclosed(std::u8string_view str, char8_t prefix, char8_t suffix)
+{
+    return detail::match_enclosed_impl(str, prefix, suffix);
+}
+
 /// @brief Like `parse_integer_literal`, but does not permit negative numbers and results
 /// in an unsigned integer.
 /// @param str the string containing the prefix and literal digits
