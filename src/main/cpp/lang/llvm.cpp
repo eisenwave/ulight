@@ -289,7 +289,7 @@ private:
             }
             case u8'\\': {
                 flush();
-                if (remainder.starts_with(u8"\\")) {
+                if (remainder.starts_with(u8"\\\\")) {
                     emit_and_advance(2, Highlight_Type::string_escape);
                 }
                 else if (const Escape_Result escape
