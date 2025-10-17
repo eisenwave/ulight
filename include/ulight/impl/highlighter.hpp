@@ -8,6 +8,7 @@
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/numbers.hpp"
+#include "ulight/impl/parse_utils.hpp"
 
 namespace ulight {
 
@@ -160,38 +161,61 @@ protected:
         return { data.data(), data.size(), this, flush };
     }
 
-    void highlight_number(const Common_Number_Result& result, char8_t digit_separator)
+private:
+    template <void (Highlighter_Base::*highlight_digits_fn)(std::u8string_view, char8_t)>
+    void highlight_number_impl(const Common_Number_Result& result, char8_t digit_separator)
     {
         if (result.erroneous) {
             emit_and_advance(result.length, Highlight_Type::error);
             return;
         }
 
-        if (result.prefix) {
-            emit_and_advance(result.prefix, Highlight_Type::number_decor);
+        if (result.sign + result.prefix) {
+            emit_and_advance(result.sign + result.prefix, Highlight_Type::number_decor);
         }
         if (result.integer) {
-            highlight_digits(remainder.substr(0, result.integer), digit_separator);
+            (this->*highlight_digits_fn)(remainder.substr(0, result.integer), digit_separator);
         }
         if (result.radix_point) {
             emit_and_advance(result.radix_point, Highlight_Type::number_delim);
         }
         if (result.fractional) {
-            highlight_digits(remainder.substr(0, result.fractional), digit_separator);
+            (this->*highlight_digits_fn)(remainder.substr(0, result.fractional), digit_separator);
         }
         if (result.exponent_sep) {
             emit_and_advance(result.exponent_sep, Highlight_Type::number_delim);
         }
         if (result.exponent_digits) {
-            highlight_digits(remainder.substr(0, result.exponent_digits), digit_separator);
+            (this->*highlight_digits_fn)(
+                remainder.substr(0, result.exponent_digits), digit_separator
+            );
         }
         if (result.suffix) {
             emit_and_advance(result.suffix, Highlight_Type::number_decor);
         }
     }
 
+    void highlight_digits_ignore_separator(std::u8string_view digits, char8_t)
+    {
+        if (!digits.empty()) {
+            emit_and_advance(digits.length(), Highlight_Type::number);
+        }
+    }
+
+public:
+    void highlight_number(const Common_Number_Result& result, char8_t digit_separator)
+    {
+        highlight_number_impl<&Highlighter_Base::highlight_digits>(result, digit_separator);
+    }
+
+    void highlight_number(const Common_Number_Result& result)
+    {
+        highlight_number_impl<&Highlighter_Base::highlight_digits_ignore_separator>(result, {});
+    }
+
     void highlight_digits(std::u8string_view digits, char8_t separator)
     {
+        ULIGHT_ASSERT(separator != char8_t {});
         ULIGHT_ASSERT(digits.length() <= remainder.length());
 
         std::size_t length = 0;
@@ -214,6 +238,49 @@ protected:
             }
         }
         flush();
+    }
+
+    void highlight_enclosed(
+        const Enclosed_Result& enclosed,
+        std::size_t prefix_length,
+        std::size_t suffix_length,
+        Highlight_Type content_highlight,
+        Highlight_Type delimiter_highlight
+    )
+    {
+        ULIGHT_DEBUG_ASSERT(enclosed);
+        ULIGHT_DEBUG_ASSERT(prefix_length <= enclosed.length);
+        ULIGHT_DEBUG_ASSERT(
+            !enclosed.is_terminated || prefix_length + suffix_length <= enclosed.length
+        );
+
+        emit(index, prefix_length, delimiter_highlight);
+        if (enclosed.is_terminated) {
+            const std::size_t content_length = enclosed.length - prefix_length - suffix_length;
+            if (content_length) {
+                emit(index + prefix_length, content_length, content_highlight);
+            }
+            emit(index + prefix_length + content_length, suffix_length, delimiter_highlight);
+        }
+        else {
+            const std::size_t content_length = enclosed.length - prefix_length;
+            if (content_length) {
+                emit(index + prefix_length, content_length, content_highlight);
+            }
+        }
+        advance(enclosed.length);
+    }
+
+    void highlight_enclosed_comment(
+        const Enclosed_Result& enclosed,
+        std::size_t prefix_length,
+        std::size_t suffix_length
+    )
+    {
+        highlight_enclosed(
+            enclosed, prefix_length, suffix_length, Highlight_Type::comment,
+            Highlight_Type::comment_delim
+        );
     }
 };
 
