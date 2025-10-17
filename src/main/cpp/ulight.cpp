@@ -113,6 +113,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("kt", ULIGHT_LANG_KOTLIN),
     make_lang_entry("kts", ULIGHT_LANG_KOTLIN),
     make_lang_entry("latex", ULIGHT_LANG_LATEX),
+    make_lang_entry("ll", ULIGHT_LANG_LLVM),
     make_lang_entry("llvm", ULIGHT_LANG_LLVM),
     make_lang_entry("lua", ULIGHT_LANG_LUA),
     make_lang_entry("nasm", ULIGHT_LANG_NASM),
