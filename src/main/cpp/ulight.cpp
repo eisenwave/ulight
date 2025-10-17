@@ -113,6 +113,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("kt", ULIGHT_LANG_KOTLIN),
     make_lang_entry("kts", ULIGHT_LANG_KOTLIN),
     make_lang_entry("latex", ULIGHT_LANG_LATEX),
+    make_lang_entry("llvm", ULIGHT_LANG_LLVM),
     make_lang_entry("lua", ULIGHT_LANG_LUA),
     make_lang_entry("nasm", ULIGHT_LANG_NASM),
     make_lang_entry("patch", ULIGHT_LANG_DIFF),
@@ -167,6 +168,7 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("Kotlin"),
     make_sv("TypeScript"),
     make_sv("Rust"),
+    make_sv("LLVM"),
 };
 // clang-format on
 

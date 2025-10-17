@@ -30,6 +30,7 @@ enum struct Lang : Underlying {
     jsonc = ULIGHT_LANG_JSONC,
     kotlin = ULIGHT_LANG_KOTLIN,
     latex = ULIGHT_LANG_LATEX,
+    llvm = ULIGHT_LANG_LLVM,
     lua = ULIGHT_LANG_LUA,
     nasm = ULIGHT_LANG_NASM,
     python = ULIGHT_LANG_PYTHON,
