@@ -37,31 +37,88 @@ std::size_t match_keyword(std::u8string_view str)
     return ascii::length_if(str, [](char8_t c) { return is_llvm_keyword(c); });
 }
 
-bool is_first_class_type(std::u8string_view str)
+struct LLVM_Keyword {
+    std::u8string_view string;
+    Highlight_Type highlight;
+};
+
+// https://llvm.org/docs/LangRef.html#simple-constants
+// https://llvm.org/docs/LangRef.html#first-class-types
+// https://llvm.org/docs/LangRef.html#complex-constants
+
+constexpr LLVM_Keyword keywords[] {
+    { u8"bfloat"sv, Highlight_Type::keyword_type },
+    // https://llvm.org/docs/LangRef.html#complex-constants
+    //     As a special case, character array constants may also be represented
+    //     as a double-quoted string using the c prefix.
+    { u8"br"sv, Highlight_Type::keyword_control },
+    { u8"c"sv, Highlight_Type::string_decor },
+    { u8"call"sv, Highlight_Type::keyword_control },
+    { u8"callbr"sv, Highlight_Type::keyword_control },
+    { u8"catchpad"sv, Highlight_Type::keyword_control },
+    { u8"catchret"sv, Highlight_Type::keyword_control },
+    { u8"catchswitch"sv, Highlight_Type::keyword_control },
+    { u8"cleanuppad"sv, Highlight_Type::keyword_control },
+    { u8"cleanupret"sv, Highlight_Type::keyword_control },
+    { u8"double"sv, Highlight_Type::keyword_type },
+    { u8"false"sv, Highlight_Type::bool_ },
+    { u8"float"sv, Highlight_Type::keyword_type },
+    { u8"fp128"sv, Highlight_Type::keyword_type },
+    { u8"indirectbr"sv, Highlight_Type::keyword_control },
+    { u8"invoke"sv, Highlight_Type::keyword_control },
+    { u8"label"sv, Highlight_Type::keyword_type },
+    { u8"landingpad"sv, Highlight_Type::keyword_control },
+    { u8"metadata"sv, Highlight_Type::keyword_type },
+    { u8"none"sv, Highlight_Type::null },
+    { u8"null"sv, Highlight_Type::null },
+    { u8"poison"sv, Highlight_Type::null },
+    { u8"ppc_fp128"sv, Highlight_Type::keyword_type },
+    { u8"ptr"sv, Highlight_Type::keyword_type },
+    { u8"resume"sv, Highlight_Type::keyword_control },
+    { u8"ret"sv, Highlight_Type::keyword_control },
+    { u8"switch"sv, Highlight_Type::keyword_control },
+    { u8"target"sv, Highlight_Type::keyword_type },
+    { u8"token"sv, Highlight_Type::keyword_type },
+    { u8"true"sv, Highlight_Type::bool_ },
+    { u8"undef"sv, Highlight_Type::null },
+    { u8"unreachable"sv, Highlight_Type::keyword_control },
+    // https://llvm.org/docs/LangRef.html#void-type
+    // Note that "void" is not technically a first class type,
+    // but we can treat it as such for highlighting purposes.
+    { u8"void"sv, Highlight_Type::keyword_type },
+    { u8"vscale"sv, Highlight_Type::keyword_type },
+    // https://llvm.org/docs/LangRef.html#t-vector
+    { u8"x"sv, Highlight_Type::symbol_punc },
+    { u8"x86_amx"sv, Highlight_Type::keyword_type },
+    { u8"x86_fp80"sv, Highlight_Type::keyword_type },
+};
+
+static_assert(std::ranges::is_sorted(keywords, {}, &LLVM_Keyword::string));
+
+[[nodiscard]]
+Highlight_Type classify_keyword(std::u8string_view str)
 {
+    ULIGHT_ASSERT(!str.empty());
+
     // https://llvm.org/docs/LangRef.html#first-class-types
-    if (str.empty()) {
-        return false;
-    }
     const bool is_integer = str[0] == u8'i' && str.length() >= 2
         && ascii::find_if_not(
                str, [](char8_t c) { return is_ascii_digit(c); }, 1
            ) == std::u8string_view::npos;
     if (is_integer) {
-        return true;
+        return Highlight_Type::keyword_type;
     }
 
-    // https://llvm.org/docs/LangRef.html#void-type
-    // Note that "void" is not technically a first class type,
-    // but we can treat it as such for highlighting purposes.
-    static constexpr std::u8string_view type_names[] {
-        u8"bfloat"sv,   u8"double"sv,    u8"float"sv,   u8"fp128"sv,    u8"label"sv,
-        u8"metadata"sv, u8"ppc_fp128"sv, u8"ptr"sv,     u8"target"sv,   u8"token"sv,
-        u8"void"sv,     u8"vscale"sv,    u8"x86_amx"sv, u8"x86_fp80"sv,
-    };
-    static_assert(std::ranges::is_sorted(type_names));
+    const LLVM_Keyword* const result
+        = std::ranges::lower_bound(keywords, str, {}, &LLVM_Keyword::string);
 
-    return std::ranges::binary_search(type_names, str);
+    // Unlike most highlighters, we simply assume that anything
+    // that could lexically be a keyword is a keyword.
+    // This is relatively safe considering that normal identifiers start with "@" or "%".
+    // It also means that we don't have to maintain a long manual list,
+    // only a list of keywords that are treated specially.
+    return result != std::ranges::end(keywords) && result->string == str ? result->highlight
+                                                                         : Highlight_Type::keyword;
 }
 
 struct Highlighter : Highlighter_Base {
@@ -238,30 +295,7 @@ private:
         }
 
         const std::u8string_view keyword = remainder.substr(0, length);
-        if (is_first_class_type(keyword)) {
-            emit_and_advance(length, Highlight_Type::keyword_type);
-        }
-        else if (keyword == u8"true"sv || keyword == u8"false"sv) {
-            // https://llvm.org/docs/LangRef.html#simple-constants
-            emit_and_advance(length, Highlight_Type::bool_);
-        }
-        else if (keyword == u8"null"sv || keyword == u8"none"sv || keyword == u8"undef"sv
-                 || keyword == u8"poison"sv) {
-            emit_and_advance(length, Highlight_Type::null);
-        }
-        else if (keyword == u8"c"sv) {
-            // https://llvm.org/docs/LangRef.html#complex-constants
-            //     As a special case, character array constants may also be represented
-            //     as a double-quoted string using the c prefix.
-            emit_and_advance(1, Highlight_Type::string_decor);
-        }
-        else if (keyword == u8"x"sv) {
-            // https://llvm.org/docs/LangRef.html#t-vector
-            emit_and_advance(1, Highlight_Type::symbol_punc);
-        }
-        else {
-            emit_and_advance(length, Highlight_Type::keyword);
-        }
+        emit_and_advance(length, classify_keyword(keyword));
         return true;
     }
 
