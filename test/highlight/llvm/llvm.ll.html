@@ -1,0 +1,12 @@
+<h- data-h=cmt_dlim>;</h-><h- data-h=cmt> Declare the string constant as a global constant.</h->
+<h- data-h=name_fun_dlim>@</h-><h- data-h=name_fun>.str</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw>private</h-> <h- data-h=kw>unnamed_addr</h-> <h- data-h=kw>constant</h-> <h- data-h=sym_sqr>[</h-><h- data-h=num>13</h-> <h- data-h=sym_punc>x</h-> <h- data-h=kw_type>i8</h-><h- data-h=sym_sqr>]</h-> <h- data-h=str_deco>c</h-><h- data-h=str_dlim>"</h-><h- data-h=str>hello world</h-><h- data-h=str_esc>\0A</h-><h- data-h=str_esc>\00</h-><h- data-h=str_dlim>"</h->
+
+<h- data-h=cmt_dlim>;</h-><h- data-h=cmt> External declaration of the puts function</h->
+<h- data-h=kw>declare</h-> <h- data-h=kw_type>i32</h-> <h- data-h=name_fun_dlim>@</h-><h- data-h=name_fun>puts</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>ptr</h-> <h- data-h=kw>captures</h-><h- data-h=sym_par>(</h-><h- data-h=null>none</h-><h- data-h=sym_par>)</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>nounwind</h->
+
+<h- data-h=cmt_dlim>;</h-><h- data-h=cmt> Definition of main function</h->
+<h- data-h=kw>define</h-> <h- data-h=kw_type>i32</h-> <h- data-h=name_fun_dlim>@</h-><h- data-h=name_fun>main</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h->
+  <h- data-h=cmt_dlim>;</h-><h- data-h=cmt> Call puts function to write out the string to stdout.</h->
+  <h- data-h=kw_ctrl>call</h-> <h- data-h=kw_type>i32</h-> <h- data-h=name_fun_dlim>@</h-><h- data-h=name_fun>puts</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>ptr</h-> <h- data-h=name_fun_dlim>@</h-><h- data-h=name_fun>.str</h-><h- data-h=sym_par>)</h->
+  <h- data-h=kw_ctrl>ret</h-> <h- data-h=kw_type>i32</h-> <h- data-h=num>0</h->
+<h- data-h=sym_brac>}</h->
