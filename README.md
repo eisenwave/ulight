@@ -123,6 +123,7 @@ and a stable numeric ID whose value can be found in `include/ulight.h`.
 | JSON with Comments | `jsonc` | `ULIGHT_LANG_JSONC` |
 | LaTeX | `latex` | `ULIGHT_LANG_LATEX` |
 | Kotlin | `kotlin`, `kt`, `kts` | `ULIGHT_LANG_KOTLIN` |
+| LLVM IR | `ll`, `llvm` | `ULIGHT_LANG_LLVM` |
 | Lua | `lua` | `ULIGHT_LANG_LUA` |
 | NASM | `asm`, `assembler`, `assembly`, `nasm`, `x86asm` | `ULIGHT_LANG_NASM` |
 | Python | `gyp`, `py`, `python` | `ULIGHT_LANG_PYTHON` |
