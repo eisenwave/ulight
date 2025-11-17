@@ -6,12 +6,14 @@
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/highlighter.hpp"
+#include "ulight/impl/numbers.hpp"
 #include "ulight/impl/strings.hpp"
 #include "ulight/impl/unicode.hpp"
 
 #include "ulight/ulight.hpp"
-
-#include <cctype>
+#include <array>
+#include <cstddef>
+#include <string_view>
 
 namespace ulight {
 
@@ -19,11 +21,38 @@ namespace xml {
 
 namespace {
 
+constexpr std::u8string_view attlist_att_types[]
+    = { u8"CDATA",  u8"ID",       u8"IDREF",   u8"IDREFS",
+        u8"ENTITY", u8"ENTITIES", u8"NMTOKEN", u8"NMTOKENS" };
 constexpr std::u8string_view comment_prefix = u8"<!--";
 constexpr std::u8string_view comment_suffix = u8"-->";
 constexpr std::u8string_view illegal_comment_sequence = u8"--";
 constexpr std::u8string_view cdata_section_prefix = u8"<![CDATA[";
 constexpr std::u8string_view cdata_section_suffix = u8"]]>";
+constexpr std::u8string_view xml_tag = u8"<?xml";
+constexpr std::u8string_view doctype_string = u8"<!DOCTYPE";
+constexpr std::u8string_view element_decl_string = u8"<!ELEMENT";
+constexpr std::u8string_view attlist_decl_string = u8"<!ATTLIST";
+constexpr std::u8string_view entity_decl_string = u8"<!ENTITY";
+constexpr std::u8string_view notation_decl_string = u8"<!NOTATION";
+constexpr std::u8string_view enumerated_type_begin = u8"NOTATION";
+constexpr std::u8string_view element_content_spec_empty = u8"EMPTY";
+constexpr std::u8string_view element_content_spec_any = u8"ANY";
+constexpr std::u8string_view decltype_version_attr = u8"version";
+constexpr std::u8string_view decltype_encoding_attr = u8"encoding";
+constexpr std::u8string_view decltype_standalone_attr = u8"standalone";
+
+bool is_entity_ref_content(std::u8string_view str)
+{
+
+    bool valid = true;
+    for (std::size_t i = 0; i < str.size(); i++) {
+        auto [code_point, length] = utf8::decode_and_length_or_replacement(str.substr(i));
+        valid = valid & is_xml_name(code_point);
+    }
+
+    return valid;
+}
 
 } // namespace
 
@@ -68,6 +97,19 @@ html::Match_Result match_comment(std::u8string_view str)
     return { length, false };
 }
 
+[[nodiscard]]
+std::size_t match_entity_reference(std::u8string_view str)
+{
+    if (!str.starts_with(u8'%')) {
+        return 0;
+    }
+    const std::size_t result = str.find(u8';', 1);
+    const bool success
+        = result != std::u8string_view::npos && is_entity_ref_content(str.substr(1, result - 1));
+    ;
+    return success ? result + 1 : 0;
+}
+
 struct XML_Highlighter : Highlighter_Base {
 
     XML_Highlighter(
@@ -82,6 +124,7 @@ struct XML_Highlighter : Highlighter_Base {
     // TODO: add prolog (declaration)
     bool operator()()
     {
+        expect_prolog();
         while (!remainder.empty()) {
             if (expect_comment() || //
                 expect_cdata_section() || //
@@ -98,6 +141,422 @@ struct XML_Highlighter : Highlighter_Base {
     }
 
 private:
+    bool expect_content_spec()
+    {
+        advance(match_whitespace(remainder));
+
+        if (remainder.starts_with(element_content_spec_empty)) {
+            emit_and_advance(element_content_spec_empty.size(), Highlight_Type::keyword);
+            return true;
+        }
+
+        if (remainder.starts_with(element_content_spec_any)) {
+            emit_and_advance(element_content_spec_any.size(), Highlight_Type::keyword);
+            return true;
+        }
+
+        if (remainder.starts_with(u8"(#PCDATA")) {
+            emit_and_advance(1, Highlight_Type::symbol_punc);
+            emit_and_advance(7, Highlight_Type::keyword);
+        }
+
+        static constexpr std::array<char8_t, 7> non_name_chars
+            = { u8'(', u8')', u8'|', u8'*', u8'+', u8'?', u8'>' };
+
+        constexpr auto is_after_name = [](std::u8string_view str) {
+            return std::ranges::find(non_name_chars, str.front()) != std::end(non_name_chars)
+                || match_whitespace(str);
+        };
+
+        advance(match_whitespace(remainder));
+        while (!remainder.starts_with(u8'>') && !remainder.empty()) {
+            auto current = remainder[0];
+            if (std::ranges::find(non_name_chars, current) != std::end(non_name_chars)) {
+                emit_and_advance(1, Highlight_Type::symbol_punc);
+            }
+            else if (expect_name(Highlight_Type::name, is_after_name)) {
+            }
+            else if (std::size_t white_space_len = match_whitespace(remainder)) {
+                advance(white_space_len);
+            }
+            else {
+                return true;
+            }
+        }
+
+        return true;
+    }
+
+    bool expect_default_att_decl()
+    {
+        if (remainder.starts_with(u8"#REQUIRED")) {
+            emit_and_advance(9, Highlight_Type::keyword);
+            return true;
+        }
+
+        if (remainder.starts_with(u8"#IMPLIED")) {
+            emit_and_advance(8, Highlight_Type::keyword);
+            return true;
+        }
+
+        if (remainder.starts_with(u8"#FIXED")) {
+            emit_and_advance(6, Highlight_Type::keyword);
+            advance(match_whitespace(remainder));
+        }
+
+        return expect_attribute_value();
+    }
+
+    bool expect_att_type()
+    {
+        advance(match_whitespace(remainder));
+
+        for (std::u8string_view type : attlist_att_types) {
+            if (remainder.starts_with(type)) {
+                emit_and_advance(type.size(), Highlight_Type::keyword);
+                break;
+            }
+        }
+
+        if (!remainder.starts_with(enumerated_type_begin)) {
+            return false;
+        }
+
+        emit_and_advance(enumerated_type_begin.size(), Highlight_Type::keyword);
+
+        if (!remainder.starts_with(u8'(')) {
+            return true;
+        }
+        emit_and_advance(1, Highlight_Type::symbol_punc);
+        advance(match_whitespace(remainder));
+
+        auto is_after_name = [](std::u8string_view str) {
+            return match_whitespace(str) || str.starts_with(u8'|') || str.starts_with(u8')');
+        };
+
+        while (!remainder.starts_with(u8')') && !remainder.empty()) {
+            advance(match_whitespace(remainder));
+            std::size_t len = expect_name(Highlight_Type::name, is_after_name);
+
+            if (!len) {
+                break;
+            }
+            advance(match_whitespace(remainder));
+
+            if (remainder.starts_with(u8'|')) {
+                emit_and_advance(1, Highlight_Type::symbol_punc);
+            }
+        }
+
+        if (remainder.starts_with(u8')')) {
+            emit_and_advance(1, Highlight_Type::symbol_punc);
+        }
+
+        return true;
+    }
+
+    bool expect_attlist_decl()
+    {
+
+        if (!remainder.starts_with(attlist_decl_string)) {
+            return false;
+        }
+        emit_and_advance(attlist_decl_string.length(), Highlight_Type::name_macro);
+        advance(match_whitespace(remainder));
+
+        expect_name(Highlight_Type::name, [](std::u8string_view str) {
+            return match_whitespace(str);
+        });
+
+        while (!remainder.starts_with(u8'>') && !remainder.empty()) {
+            advance(match_whitespace(remainder));
+
+            expect_name(Highlight_Type::name, [](std::u8string_view str) {
+                return match_whitespace(str);
+            });
+            advance(match_whitespace(remainder));
+
+            expect_att_type();
+            advance(match_whitespace(remainder));
+
+            expect_default_att_decl();
+            advance(match_whitespace(remainder));
+        }
+
+        if (remainder.starts_with(u8'>')) {
+            emit_and_advance(1, Highlight_Type::name_macro);
+        }
+
+        return true;
+    }
+
+    bool expect_element_decl()
+    {
+        advance(match_whitespace(remainder));
+
+        if (!remainder.starts_with(element_decl_string)) {
+            return false;
+        }
+        emit_and_advance(element_decl_string.size(), Highlight_Type::name_macro);
+        advance(match_whitespace(remainder));
+
+        const std::size_t name_length
+            = expect_name(Highlight_Type::name, [](std::u8string_view str) {
+                  return match_whitespace(str) != 0;
+              });
+
+        if (!name_length) {
+            return true;
+        }
+
+        expect_content_spec();
+
+        advance(match_whitespace(remainder));
+        if (remainder.starts_with(u8'>')) {
+            emit_and_advance(1, Highlight_Type::name_macro);
+        }
+
+        return true;
+    }
+
+    bool expect_entity_value()
+    {
+        if (remainder.empty() || (remainder.front() != u8'\'' && remainder.front() != u8'"')) {
+            return false;
+        }
+        char8_t quote_type = remainder.front();
+        emit_and_advance(1, Highlight_Type::string_delim);
+
+        if (html::match_character_reference(remainder)) {
+            expect_reference();
+        }
+        else if (std::size_t len = match_entity_reference(remainder)) {
+            emit_and_advance(len, Highlight_Type::string_escape);
+        }
+        else {
+            std::size_t value_end = remainder.find(quote_type);
+            if (value_end != std::u8string_view::npos && value_end > 0) {
+                emit_and_advance(value_end, Highlight_Type::string);
+            }
+        }
+
+        if (remainder.starts_with(quote_type)) {
+            emit_and_advance(1, Highlight_Type::string_delim);
+        }
+
+        return true;
+    }
+
+    bool expect_entity_decl()
+    {
+        advance(match_whitespace(remainder));
+        if (!remainder.starts_with(entity_decl_string)) {
+            return false;
+        }
+        emit_and_advance(entity_decl_string.size(), Highlight_Type::name_macro);
+        advance(match_whitespace(remainder));
+
+        if (remainder.starts_with(u8'%')) {
+            emit_and_advance(1, Highlight_Type::symbol_punc);
+        }
+        advance(match_whitespace(remainder));
+
+        auto is_after_name = [](std::u8string_view str) {
+            return match_whitespace(str) || str.starts_with(u8'\'') || str.starts_with(u8'"')
+                || str.starts_with(u8'>');
+        };
+
+        expect_name(Highlight_Type::name, is_after_name);
+        advance(match_whitespace(remainder));
+
+        if (!expect_entity_value()) {
+            expect_external_id();
+            if (remainder.starts_with(u8"NDATA")) {
+                emit_and_advance(5, Highlight_Type::name_macro);
+                advance(match_whitespace(remainder));
+                expect_name(Highlight_Type::name, [](std::u8string_view str) {
+                    return match_whitespace(str) || str.starts_with(u8'>');
+                });
+            }
+        }
+
+        if (remainder.starts_with(u8'>')) {
+            emit_and_advance(1, Highlight_Type::name_macro);
+        }
+
+        return true;
+    }
+
+    bool expect_notation_decl()
+    {
+        advance(match_whitespace(remainder));
+        if (!remainder.starts_with(notation_decl_string)) {
+            return false;
+        }
+        emit_and_advance(notation_decl_string.size(), Highlight_Type::name_macro);
+        advance(match_whitespace(remainder));
+
+        auto is_after_name = [](std::u8string_view str) {
+            return match_whitespace(str) || str.starts_with(u8'>');
+        };
+        expect_name(Highlight_Type::name, is_after_name);
+
+        auto match_pubID = [this]() {
+            if (!remainder.starts_with(u8"PUBLIC")) {
+                return;
+            }
+            emit_and_advance(6, Highlight_Type::name_macro);
+            advance(match_whitespace(remainder));
+
+            expect_attribute_value();
+        };
+
+        if (!expect_external_id()) {
+            match_pubID();
+        }
+        advance(match_whitespace(remainder));
+
+        if (remainder.starts_with(u8'>')) {
+            emit_and_advance(1, Highlight_Type::name_macro);
+        }
+
+        return true;
+    }
+
+    bool expect_markup_decl()
+    {
+        return expect_entity_decl() || expect_element_decl() || expect_attlist_decl()
+            || expect_notation_decl();
+    }
+
+    bool expect_external_id()
+    {
+        advance(match_whitespace(remainder));
+        if (remainder.starts_with(u8"SYSTEM")) {
+            emit_and_advance(6, Highlight_Type::name_macro);
+            advance(match_whitespace(remainder));
+            expect_attribute_value();
+            return true;
+        }
+
+        if (remainder.starts_with(u8"PUBLIC")) {
+            emit_and_advance(6, Highlight_Type::name_macro);
+            advance(match_whitespace(remainder));
+            expect_attribute_value();
+            advance(match_whitespace(remainder));
+            expect_attribute_value();
+            return true;
+        }
+
+        return false;
+    }
+
+    bool expect_doctype_decl()
+    {
+        advance(match_whitespace(remainder));
+        if (!remainder.starts_with(doctype_string)) {
+            return false;
+        }
+        emit_and_advance(doctype_string.size(), Highlight_Type::name_macro);
+        advance(match_whitespace(remainder));
+
+        expect_name(Highlight_Type::name, [](std::u8string_view str) {
+            return str.starts_with(u8'[') || str.starts_with(u8'>');
+        });
+        advance(match_whitespace(remainder));
+
+        expect_external_id();
+        advance(match_whitespace(remainder));
+
+        if (!remainder.starts_with(u8'[')) {
+            return true;
+        }
+        emit_and_advance(1, Highlight_Type::symbol_punc);
+
+        while (expect_markup_decl()) { };
+
+        advance(match_whitespace(remainder));
+        if (!remainder.starts_with(u8']')) {
+            return true;
+        }
+        emit_and_advance(1, Highlight_Type::symbol_punc);
+        advance(match_whitespace(remainder));
+
+        if (!remainder.starts_with(u8'>')) {
+            return true;
+        }
+        emit_and_advance(1, Highlight_Type::name_macro);
+
+        return true;
+    }
+
+    // write tests
+    bool expect_xml_decl()
+    {
+        if (!remainder.starts_with(xml_tag)) {
+            return false;
+        }
+        emit_and_advance(xml_tag.size(), Highlight_Type::name_macro);
+        advance(match_whitespace(remainder));
+
+        auto highlight_number = [&]() {
+            Common_Number_Result num_result
+                = match_common_number(remainder, Common_Number_Options {});
+            if (num_result.integer) {
+                emit_and_advance(num_result.integer, Highlight_Type::number);
+            }
+
+            if (num_result.radix_point) {
+                emit_and_advance(num_result.radix_point, Highlight_Type::symbol_punc);
+            }
+
+            if (num_result.fractional) {
+                emit_and_advance(num_result.fractional, Highlight_Type::number);
+            }
+        };
+
+        auto highlight_string = [&]() { expect_attribute_value(); };
+
+        auto highlight_decl_attr = [&](std::u8string_view attr_name, auto highlight_val) {
+            if (!remainder.starts_with(attr_name)) {
+                return;
+            }
+            emit_and_advance(attr_name.size(), Highlight_Type::markup_attr);
+
+            if (!remainder.starts_with(u8'=')) {
+                return;
+            }
+            emit_and_advance(1, Highlight_Type::symbol_punc);
+
+            if (!remainder.empty()) {
+                highlight_val();
+            }
+        };
+
+        highlight_decl_attr(decltype_version_attr, highlight_number);
+        advance(match_whitespace(remainder));
+
+        highlight_decl_attr(decltype_encoding_attr, highlight_string);
+        advance(match_whitespace(remainder));
+
+        highlight_decl_attr(decltype_standalone_attr, highlight_string);
+        advance(match_whitespace(remainder));
+
+        if (!remainder.starts_with(u8"?>")) {
+            return true;
+        }
+
+        emit_and_advance(2, Highlight_Type::name_macro);
+        return true;
+    }
+
+    bool expect_prolog()
+    {
+        expect_xml_decl();
+        expect_doctype_decl();
+        return true;
+    }
+
     bool expect_processing_instruction()
     {
         if (!remainder.starts_with(u8"<?")) {
