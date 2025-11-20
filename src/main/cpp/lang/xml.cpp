@@ -22,8 +22,8 @@ namespace xml {
 namespace {
 
 constexpr std::u8string_view attlist_att_types[]
-    = { u8"CDATA",  u8"ID",       u8"IDREF",   u8"IDREFS",
-        u8"ENTITY", u8"ENTITIES", u8"NMTOKEN", u8"NMTOKENS" };
+    = { u8"CDATA", u8"IDREFS", u8"IDREF", u8"ID",
+        u8"ENTITY", u8"ENTITIES", u8"NMTOKENS", u8"NMTOKEN" };
 constexpr std::u8string_view comment_prefix = u8"<!--";
 constexpr std::u8string_view comment_suffix = u8"-->";
 constexpr std::u8string_view illegal_comment_sequence = u8"--";
@@ -160,8 +160,8 @@ private:
             emit_and_advance(7, Highlight_Type::keyword);
         }
 
-        static constexpr std::array<char8_t, 7> non_name_chars
-            = { u8'(', u8')', u8'|', u8'*', u8'+', u8'?', u8'>' };
+        static constexpr std::array<char8_t, 8> non_name_chars
+            = { u8'(', u8')', u8'|', u8'*', u8'+', u8'?', u8'>', ',' };
 
         constexpr auto is_after_name = [](std::u8string_view str) {
             return std::ranges::find(non_name_chars, str.front()) != std::end(non_name_chars)
@@ -327,18 +327,29 @@ private:
         char8_t quote_type = remainder.front();
         emit_and_advance(1, Highlight_Type::string_delim);
 
-        if (html::match_character_reference(remainder)) {
-            expect_reference();
-        }
-        else if (std::size_t len = match_entity_reference(remainder)) {
-            emit_and_advance(len, Highlight_Type::string_escape);
-        }
-        else {
-            std::size_t value_end = remainder.find(quote_type);
-            if (value_end != std::u8string_view::npos && value_end > 0) {
-                emit_and_advance(value_end, Highlight_Type::string);
+        auto highlight_piece = [&](std::size_t piece_length) {
+            if (piece_length && piece_length <= remainder.length()) {
+                emit_and_advance(piece_length, Highlight_Type::string);
+            }
+        };
+        
+        std::size_t piece_len = 0;
+        while (remainder[piece_len] != quote_type && !remainder.empty()) {
+            if (std::size_t len = html::match_character_reference(remainder.substr(piece_len))) {
+                highlight_piece(piece_len);
+                emit_and_advance(len, Highlight_Type::string_escape);
+                piece_len = 0;
+            }
+            else if (std::size_t len = match_entity_reference(remainder.substr(piece_len))) {
+                highlight_piece(piece_len);
+                emit_and_advance(len, Highlight_Type::string_escape);
+                piece_len = 0;
+            }
+            else {
+                piece_len++;
             }
         }
+        highlight_piece(piece_len);
 
         if (remainder.starts_with(quote_type)) {
             emit_and_advance(1, Highlight_Type::string_delim);
@@ -371,6 +382,7 @@ private:
 
         if (!expect_entity_value()) {
             expect_external_id();
+            advance(match_whitespace(remainder));
             if (remainder.starts_with(u8"NDATA")) {
                 emit_and_advance(5, Highlight_Type::name_macro);
                 advance(match_whitespace(remainder));
@@ -380,6 +392,7 @@ private:
             }
         }
 
+        advance(match_whitespace(remainder));
         if (remainder.starts_with(u8'>')) {
             emit_and_advance(1, Highlight_Type::name_macro);
         }
@@ -426,7 +439,7 @@ private:
     bool expect_markup_decl()
     {
         return expect_entity_decl() || expect_element_decl() || expect_attlist_decl()
-            || expect_notation_decl();
+            || expect_notation_decl() || expect_comment() || expect_processing_instruction();
     }
 
     bool expect_external_id()
@@ -461,7 +474,7 @@ private:
         advance(match_whitespace(remainder));
 
         expect_name(Highlight_Type::name, [](std::u8string_view str) {
-            return str.starts_with(u8'[') || str.starts_with(u8'>');
+            return str.starts_with(u8'[') || str.starts_with(u8'>') || match_whitespace(str);
         });
         advance(match_whitespace(remainder));
 
@@ -490,7 +503,6 @@ private:
         return true;
     }
 
-    // write tests
     bool expect_xml_decl()
     {
         if (!remainder.starts_with(xml_tag)) {
@@ -715,14 +727,15 @@ private:
 
         while (!remainder.empty() && piece_length < remainder.length()
                && remainder[piece_length] != quote_type) {
-            if ((remainder[piece_length] == u8'&' && !html::match_character_reference(remainder))
+            std::u8string_view candidate = remainder.substr(piece_length);
+            if ((remainder[piece_length] == u8'&' && !html::match_character_reference(candidate))
                 || remainder[piece_length] == u8'<') {
                 highlight_piece();
                 emit_and_advance(1, Highlight_Type::error);
                 piece_length = 0;
             }
             else if (remainder[piece_length] == u8'&'
-                     && html::match_character_reference(remainder)) {
+                     && html::match_character_reference(candidate)) {
                 highlight_piece();
                 expect_reference();
                 piece_length = 0;

@@ -1,0 +1,25 @@
+<?xml version=1.99 encoding='UTF-8' standalone="yes"?>
+<!DOCTYPE my_xml_document PUBLIC "extern" "extern" [
+    <!ELEMENT my_elem EMPTY>
+    <!ELEMENT my_elem ANY>
+    <!ELEMENT my_elem (#PCDATA|a|b|i)*>
+    <!ELEMENT my_elem (#PCDATA| (front, middle | rear))*   >
+    <!-- note we do not check if  every opening
+         paren has a closing paren -->
+    <?target hello ?>
+    <!ELEMENT my_elem (no_pc, data, (just | names)* >
+    <!ATTLIST my_attlist
+         attribute1 CDATA #REQUIRED
+         attribute2 ID #IMPLIED
+         attribute3 IDREF #FIXED "fixed"
+         attribute4 IDREFS #FIXED "front &ref;"
+         attribute5 ENTITY #IMPLIED
+         attribute6 ENTITIES #REQUIRED
+         attribute7 NMTOKEN #FIXED '&ref; &ref; back'
+         attribute8 NMTOKENS #IMPLIED >
+    <!NOTATION my_notation PUBLIC ""
+    <!ENTITY my_entity "entity">
+    <!ENTITY my_entity "&ref; abc" >
+    <!ENTITY my_entity "abc %ref; abc" >
+    <!ENTITY my_entity PUBLIC "extern" "extern" NDATA data>
+]>
