@@ -43,7 +43,7 @@ constexpr bool is_xml_name_start(char32_t c) noexcept
         || (c >= U'\u2c00' && c <= U'\u2fef') //
         || (c >= U'\u3001' && c <= U'\ud7ff') //
         || (c >= U'\uf900' && c <= U'\ufdcf') //
-        || (c >= U'\ufdf0' && c <= U'\ufffd') // 
+        || (c >= U'\ufdf0' && c <= U'\ufffd') //
         || (c >= U'\U00010000' && c <= U'\U000effef');
 }
 
