@@ -22,7 +22,7 @@ namespace xml {
 namespace {
 
 constexpr std::u8string_view attlist_att_types[]
-    = { u8"CDATA", u8"IDREFS", u8"IDREF", u8"ID",
+    = { u8"CDATA",  u8"IDREFS",   u8"IDREF",    u8"ID",
         u8"ENTITY", u8"ENTITIES", u8"NMTOKENS", u8"NMTOKEN" };
 constexpr std::u8string_view comment_prefix = u8"<!--";
 constexpr std::u8string_view comment_suffix = u8"-->";
@@ -332,7 +332,7 @@ private:
                 emit_and_advance(piece_length, Highlight_Type::string);
             }
         };
-        
+
         std::size_t piece_len = 0;
         while (remainder[piece_len] != quote_type && !remainder.empty()) {
             if (std::size_t len = html::match_character_reference(remainder.substr(piece_len))) {

@@ -1,14 +1,14 @@
 <h- data-h=name_mac>&lt;?xml</h-> <h- data-h=mk_attr>version</h-><h- data-h=sym_punc>=</h-><h- data-h=num>1</h-><h- data-h=sym_punc>.</h-><h- data-h=num>99</h-> <h- data-h=mk_attr>encoding</h-><h- data-h=sym_punc>=</h-><h- data-h=str_dlim>'</h-><h- data-h=str>UTF-8</h-><h- data-h=str_dlim>'</h-> <h- data-h=mk_attr>standalone</h-><h- data-h=sym_punc>=</h-><h- data-h=str_dlim>"</h-><h- data-h=str>yes</h-><h- data-h=str_dlim>"</h-><h- data-h=name_mac>?&gt;</h->
-<h- data-h=name_mac>&lt;!DOCTYPE</h-> <h- data-h=name>my_xml_document</h-> <h- data-h=name_mac>PUBLIC</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>extern</h-><h- data-h=str_dlim>"</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>extern</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_punc>[</h-> 
+<h- data-h=name_mac>&lt;!DOCTYPE</h-> <h- data-h=name>my_xml_document</h-> <h- data-h=name_mac>PUBLIC</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>extern</h-><h- data-h=str_dlim>"</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>extern</h-><h- data-h=str_dlim>"</h-> <h- data-h=sym_punc>[</h->
     <h- data-h=name_mac>&lt;!ELEMENT</h-> <h- data-h=name>my_elem</h-> <h- data-h=kw>EMPTY</h-><h- data-h=name_mac>&gt;</h->
     <h- data-h=name_mac>&lt;!ELEMENT</h-> <h- data-h=name>my_elem</h-> <h- data-h=kw>ANY</h-><h- data-h=name_mac>&gt;</h->
     <h- data-h=name_mac>&lt;!ELEMENT</h-> <h- data-h=name>my_elem</h-> <h- data-h=sym_punc>(</h-><h- data-h=kw>#PCDATA</h-><h- data-h=sym_punc>|</h-><h- data-h=name>a</h-><h- data-h=sym_punc>|</h-><h- data-h=name>b</h-><h- data-h=sym_punc>|</h-><h- data-h=name>i</h-><h- data-h=sym_punc>)</h-><h- data-h=sym_punc>*</h-><h- data-h=name_mac>&gt;</h->
     <h- data-h=name_mac>&lt;!ELEMENT</h-> <h- data-h=name>my_elem</h-> <h- data-h=sym_punc>(</h-><h- data-h=kw>#PCDATA</h-><h- data-h=sym_punc>|</h-> <h- data-h=sym_punc>(</h-><h- data-h=name>front</h-><h- data-h=sym_punc>,</h-> <h- data-h=name>middle</h-> <h- data-h=sym_punc>|</h-> <h- data-h=name>rear</h-><h- data-h=sym_punc>)</h-><h- data-h=sym_punc>)</h-><h- data-h=sym_punc>*</h->   <h- data-h=name_mac>&gt;</h->
-    <h- data-h=cmt_dlim>&lt;!--</h-><h- data-h=cmt> note that its not checked that every opening 
+    <h- data-h=cmt_dlim>&lt;!--</h-><h- data-h=cmt> note we do not check if  every opening
          paren has a closing paren </h-><h- data-h=cmt_dlim>--&gt;</h->
     <h- data-h=sym_punc>&lt;?</h-><h- data-h=name_mac>target</h-> hello <h- data-h=sym_punc>?&gt;</h->
-    <h- data-h=name_mac>&lt;!ELEMENT</h-> <h- data-h=name>my_elem</h-> <h- data-h=sym_punc>(</h-><h- data-h=name>no_pc</h-><h- data-h=sym_punc>,</h-> <h- data-h=name>data</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_punc>(</h-><h- data-h=name>just</h-> <h- data-h=sym_punc>|</h-> <h- data-h=name>names</h-><h- data-h=sym_punc>)</h-><h- data-h=sym_punc>)</h-><h- data-h=sym_punc>*</h-> <h- data-h=name_mac>&gt;</h->
-    <h- data-h=name_mac>&lt;!ATTLIST</h-> <h- data-h=name>my_attlist</h-> 
+    <h- data-h=name_mac>&lt;!ELEMENT</h-> <h- data-h=name>my_elem</h-> <h- data-h=sym_punc>(</h-><h- data-h=name>no_pc</h-><h- data-h=sym_punc>,</h-> <h- data-h=name>data</h-><h- data-h=sym_punc>,</h-> <h- data-h=sym_punc>(</h-><h- data-h=name>just</h-> <h- data-h=sym_punc>|</h-> <h- data-h=name>names</h-><h- data-h=sym_punc>)</h-><h- data-h=sym_punc>*</h-> <h- data-h=name_mac>&gt;</h->
+    <h- data-h=name_mac>&lt;!ATTLIST</h-> <h- data-h=name>my_attlist</h->
          <h- data-h=name>attribute1</h-> <h- data-h=kw>CDATA</h-> <h- data-h=kw>#REQUIRED</h->
          <h- data-h=name>attribute2</h-> <h- data-h=kw>ID</h-> <h- data-h=kw>#IMPLIED</h->
          <h- data-h=name>attribute3</h-> <h- data-h=kw>IDREF</h-> <h- data-h=kw>#FIXED</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>fixed</h-><h- data-h=str_dlim>"</h->
@@ -21,5 +21,5 @@
     <h- data-h=name_mac>&lt;!ENTITY</h-> <h- data-h=name>my_entity</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>entity</h-><h- data-h=str_dlim>"</h-><h- data-h=name_mac>&gt;</h->
     <h- data-h=name_mac>&lt;!ENTITY</h-> <h- data-h=name>my_entity</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_esc>&amp;ref;</h-><h- data-h=str> abc</h-><h- data-h=str_dlim>"</h-> <h- data-h=name_mac>&gt;</h->
     <h- data-h=name_mac>&lt;!ENTITY</h-> <h- data-h=name>my_entity</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>abc </h-><h- data-h=str_esc>%ref;</h-><h- data-h=str> abc</h-><h- data-h=str_dlim>"</h-> <h- data-h=name_mac>&gt;</h->
-    <h- data-h=name_mac>&lt;!ENTITY</h-> <h- data-h=name>my_entity</h-> <h- data-h=name_mac>PUBLIC</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>extern</h-><h- data-h=str_dlim>"</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>extern</h-><h- data-h=str_dlim>"</h-> <h- data-h=name_mac>NDATA</h-> <h- data-h=name>data</h-><h- data-h=name_mac>&gt;</h-> 
-<h- data-h=sym_punc>]</h-> <h- data-h=name_mac>&gt;</h->
+    <h- data-h=name_mac>&lt;!ENTITY</h-> <h- data-h=name>my_entity</h-> <h- data-h=name_mac>PUBLIC</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>extern</h-><h- data-h=str_dlim>"</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>extern</h-><h- data-h=str_dlim>"</h-> <h- data-h=name_mac>NDATA</h-> <h- data-h=name>data</h-><h- data-h=name_mac>&gt;</h->
+<h- data-h=sym_punc>]</h-><h- data-h=name_mac>&gt;</h->
