@@ -87,7 +87,7 @@ constexpr bool is_cowel_ascii_directive_name(char32_t c) noexcept
 }
 
 inline constexpr Charset256 is_cowel_directive_name_start_set
-    = is_ascii_alpha_set | detail::to_charset256(u8"-_");
+    = is_ascii_alpha_set | detail::to_charset256(u8'_');
 
 /// @brief Returns `true` iff `c` can legally appear
 /// as the first character of a cowel directive.
