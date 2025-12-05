@@ -217,7 +217,8 @@ constexpr Flag operator|(Flag x, Flag y) noexcept
       ULIGHT_HL_NAME_SHELL_COMMAND_DECL)                                                           \
     F(name_shell_command_builtin, "name-command-builtin", "sh_cmd_pre",                            \
       ULIGHT_HL_NAME_SHELL_COMMAND_BUILTIN)                                                        \
-    F(name_shell_command_delim, "name-command", "name_cmd", ULIGHT_HL_NAME_SHELL_COMMAND_DELIM)    \
+    F(name_shell_command_delim, "name-command-delim", "name_cmd",                                  \
+      ULIGHT_HL_NAME_SHELL_COMMAND_DELIM)                                                          \
                                                                                                    \
     F(name_shell_option, "name-option", "name_opt", ULIGHT_HL_NAME_SHELL_OPTION)                   \
     F(name_shell_option_decl, "name-option-decl", "name_opt_decl",                                 \
@@ -272,7 +273,7 @@ constexpr Flag operator|(Flag x, Flag y) noexcept
     F(markup_attr_builtin, "markup-attr-builtin", "mk_attr_pre", ULIGHT_HL_MARKUP_ATTR_BUILTIN)    \
     F(markup_attr_delim, "markup-attr-delim", "mk_attr_dlim", ULIGHT_HL_MARKUP_ATTR_DELIM)         \
                                                                                                    \
-    F(text, "text-emph", "text", ULIGHT_HL_TEXT)                                                   \
+    F(text, "text", "text", ULIGHT_HL_TEXT)                                                        \
     F(text_heading, "text-heading", "text_head", ULIGHT_HL_TEXT_HEADING)                           \
     F(text_link, "text-link", "text_link", ULIGHT_HL_TEXT_LINK)                                    \
     F(text_mark, "text-mark", "text_mark", ULIGHT_HL_TEXT_MARK)                                    \
