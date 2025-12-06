@@ -29,5 +29,9 @@ html::Match_Result match_comment(std::u8string_view str);
 [[nodiscard]]
 std::size_t match_text(std::u8string_view str);
 
+/// @brief matches an entity reference at the beginning of str.
+[[nodiscard]]
+std::size_t match_entity_reference(std::u8string_view str);
+
 } // namespace ulight::xml
 #endif

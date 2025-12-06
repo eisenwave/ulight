@@ -17,19 +17,12 @@ TEST(XML, match_whitespace)
     EXPECT_EQ(match_whitespace(u8"\t\r\n"), 3);
 }
 
-TEST(XML, match_name_permissive)
+TEST(XML, match_entity_reference)
 {
-
-    Name_Match_Result result;
-    result = match_name_permissive(u8"simple_name", [](std::u8string_view) { return false; });
-    EXPECT_EQ(result.length, 11);
-    EXPECT_EQ(result.error_indicies.size(), 0);
-
-    result = match_name_permissive(u8"n&a&m&e", [](std::u8string_view) { return false; });
-    EXPECT_EQ(result.length, 7);
-    EXPECT_TRUE(result.error_indicies.contains(1));
-    EXPECT_TRUE(result.error_indicies.contains(3));
-    EXPECT_TRUE(result.error_indicies.contains(5));
+    EXPECT_EQ(match_entity_reference(u8"this is not a reference"), 0);
+    EXPECT_EQ(match_entity_reference(u8"%reference;"), 11);
+    EXPECT_EQ(match_entity_reference(u8"%reference; trailing"), 11);
+    EXPECT_EQ(match_entity_reference(u8"%re-f; illegal char"), 0);
 }
 
 } // namespace ulight::xml
