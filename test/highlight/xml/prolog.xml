@@ -1,7 +1,8 @@
 <?xml version=1.99 encoding='UTF-8' standalone="yes"?>
+<!-- comment -->
 <!DOCTYPE my_xml_document PUBLIC "extern" "extern" [
-    <!ELEMENT my_elem EMPTY>
-    <!ELEMENT my_elem ANY>
+    <!ELEMENT my_elem EMPTY >
+    <!ELEMENT my_elem ANY >
     <!ELEMENT my_elem (#PCDATA|a|b|i)*>
     <!ELEMENT my_elem (#PCDATA| (front, middle | rear))*   >
     <!-- note we do not check if  every opening
@@ -16,9 +17,9 @@
          attribute5 ENTITY #IMPLIED
          attribute6 ENTITIES #REQUIRED
          attribute7 NMTOKEN #FIXED '&ref; &ref; back'
-         attribute8 NMTOKENS #IMPLIED >
-    <!NOTATION my_notation PUBLIC ""
-    <!ENTITY my_entity "entity">
+         attribute8 NMTOKENS #IMPLIED        >
+    <!NOTATION my_notation PUBLIC "" >
+    <!ENTITY my_entity "entity" >
     <!ENTITY my_entity "&ref; abc" >
     <!ENTITY my_entity "abc %ref; abc" >
     <!ENTITY my_entity PUBLIC "extern" "extern" NDATA data>

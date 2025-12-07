@@ -3,6 +3,9 @@
 
 #include "ulight/impl/ascii_chars.hpp"
 
+#include <array>
+#include <algorithm>
+
 namespace ulight::xml {
 
 /// @brief Returns true iff `c` is whitespace according to the XML standard.
@@ -62,6 +65,16 @@ constexpr bool is_xml_name(char32_t c) noexcept
         || c == U'\u00b7' //
         || (c >= U'\u0300' && c <= U'\u036f') //
         || (c >= U'\u203f' && c <= U'\u2040');
+}
+
+/// @brief Returns true of `c` is a non name char
+///        but is allowed to appear in contentspec
+constexpr bool is_contentspec_non_name_char(char8_t c) noexcept
+{
+    static constexpr std::array<char8_t, 7> non_name_chars
+        = { u8'(', u8')', u8'|', u8'*', u8'+', u8'?', ',' };
+
+    return std::ranges::find(non_name_chars, c) != std::end(non_name_chars);
 }
 
 } // namespace ulight::xml
