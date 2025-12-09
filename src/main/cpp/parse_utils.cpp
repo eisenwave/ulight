@@ -175,21 +175,27 @@ match_common_number(const std::u8string_view str, const Common_Number_Options& o
     std::size_t length = 0;
     bool allow_float = true;
 
+    if (((int(options.signs) & int(Matched_Signs::plus_only)) && str.starts_with(u8'+'))
+        || ((int(options.signs) & int(Matched_Signs::minus_only)) && str.starts_with(u8'-'))) {
+        result.sign = 1;
+        length += 1;
+    }
     const auto base = [&] -> int {
         for (const Number_Prefix& prefix : options.prefixes) {
             ULIGHT_DEBUG_ASSERT(!prefix.str.empty());
-            if (str.starts_with(prefix.str)) {
+            if (str.substr(length).starts_with(prefix.str)) {
                 result.prefix = prefix.str.length();
                 length += result.prefix;
                 allow_float = !prefix.floating_point;
                 return prefix.base;
             }
         }
-        return str.starts_with(u8'0') ? options.default_leading_zero_base : options.default_base;
+        return str.substr(length).starts_with(u8'0') ? options.default_leading_zero_base
+                                                     : options.default_base;
     }();
     {
         const auto [integer_digits, integer_error]
-            = match_separated_digits(str.substr(result.prefix), base, options.digit_separator);
+            = match_separated_digits(str.substr(length), base, options.digit_separator);
         result.integer = integer_digits;
         result.erroneous |= options.nonempty_integer && integer_digits == 0;
         result.erroneous |= integer_error;
@@ -255,7 +261,7 @@ match_common_number(const std::u8string_view str, const Common_Number_Options& o
 
     result.length = length;
     ULIGHT_DEBUG_ASSERT(
-        (result.prefix + result.integer + result.radix_point + result.fractional
+        (result.sign + result.prefix + result.integer + result.radix_point + result.fractional
          + result.exponent_sep + result.exponent_digits + result.suffix)
         == result.length
     );
