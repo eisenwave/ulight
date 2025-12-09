@@ -65,6 +65,21 @@ std::size_t match_line_comment(std::u8string_view str)
     return ascii::length_if_not(str, is_terminator, 2);
 }
 
+Common_Number_Result match_number(std::u8string_view str)
+{
+    static constexpr Exponent_Separator exponent_separators[] {
+        { u8"E+", 10 }, { u8"E-", 10 }, { u8"E", 10 }, //
+        { u8"e+", 10 }, { u8"e-", 10 }, { u8"e", 10 }, //
+    };
+    static constexpr Common_Number_Options options {
+        .signs = Matched_Signs::minus_only,
+        .prefixes = {},
+        .exponent_separators = exponent_separators,
+        .suffixes = {},
+    };
+    return match_common_number(str, options);
+}
+
 bool starts_with_escape_comment_directive(std::u8string_view str)
 {
     return str.length() >= 2 && str[0] == u8'\\' && is_cowel_allowed_after_backslash(str[1]);

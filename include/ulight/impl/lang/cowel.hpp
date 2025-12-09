@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <string_view>
 
+#include "ulight/impl/numbers.hpp"
+
 namespace ulight::cowel {
 
 [[nodiscard]]
@@ -26,6 +28,9 @@ std::size_t match_whitespace(std::u8string_view str);
 /// but does not include the line terminator.
 [[nodiscard]]
 std::size_t match_line_comment(std::u8string_view str);
+
+[[nodiscard]]
+Common_Number_Result match_number(std::u8string_view str);
 
 [[nodiscard]]
 bool starts_with_escape_comment_directive(std::u8string_view str);
