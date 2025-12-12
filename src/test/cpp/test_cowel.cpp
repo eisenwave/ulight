@@ -21,6 +21,51 @@ TEST(COWEL, match_number_integer)
     EXPECT_EQ(minus_123.integer, 3);
 }
 
+TEST(COWEL, match_bin_int)
+{
+    constexpr auto bin_string = u8"0b11111111"sv;
+    constexpr Common_Number_Result bin_255_expected {
+        .length = bin_string.length(),
+        .prefix = 2,
+        .integer = 8,
+    };
+
+    const Common_Number_Result bin_255 = match_number(bin_string);
+    EXPECT_EQ(u8"0b", bin_255.extract_prefix(bin_string));
+    EXPECT_EQ(u8"11111111", bin_255.extract_integer(bin_string));
+    EXPECT_EQ(bin_255, bin_255_expected);
+}
+
+TEST(COWEL, match_oct_int)
+{
+    constexpr auto oct_string = u8"0o377"sv;
+    constexpr Common_Number_Result oct_255_expected {
+        .length = oct_string.length(),
+        .prefix = 2,
+        .integer = 3,
+    };
+
+    const Common_Number_Result oct_255 = match_number(oct_string);
+    EXPECT_EQ(u8"0o", oct_255.extract_prefix(oct_string));
+    EXPECT_EQ(u8"377", oct_255.extract_integer(oct_string));
+    EXPECT_EQ(oct_255, oct_255_expected);
+}
+
+TEST(COWEL, match_hex_int)
+{
+    constexpr auto hex_string = u8"0xff"sv;
+    constexpr Common_Number_Result hex_255_expected {
+        .length = hex_string.length(),
+        .prefix = 2,
+        .integer = 2,
+    };
+
+    const Common_Number_Result hex_255 = match_number(hex_string);
+    EXPECT_EQ(u8"0x", hex_255.extract_prefix(hex_string));
+    EXPECT_EQ(u8"ff", hex_255.extract_integer(hex_string));
+    EXPECT_EQ(hex_255, hex_255_expected);
+}
+
 TEST(COWEL, match_number_float)
 {
     EXPECT_EQ(match_number(u8"0.$"sv).length, 2);

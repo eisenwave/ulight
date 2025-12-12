@@ -1,5 +1,4 @@
 #include <cstddef>
-#include <expected>
 #include <memory_resource>
 #include <string_view>
 
@@ -67,13 +66,18 @@ std::size_t match_line_comment(std::u8string_view str)
 
 Common_Number_Result match_number(std::u8string_view str)
 {
+    static constexpr Number_Prefix prefixes[] {
+        { u8"0b", 2 },
+        { u8"0o", 8 },
+        { u8"0x", 16 },
+    };
     static constexpr Exponent_Separator exponent_separators[] {
         { u8"E+", 10 }, { u8"E-", 10 }, { u8"E", 10 }, //
         { u8"e+", 10 }, { u8"e-", 10 }, { u8"e", 10 }, //
     };
     static constexpr Common_Number_Options options {
         .signs = Matched_Signs::minus_only,
-        .prefixes = {},
+        .prefixes = prefixes,
         .exponent_separators = exponent_separators,
         .suffixes = {},
     };
