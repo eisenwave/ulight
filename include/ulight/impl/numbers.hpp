@@ -138,9 +138,21 @@ struct Common_Number_Result {
         = default;
 
     [[nodiscard]]
+    constexpr std::u8string_view extract_sign(std::u8string_view str) const
+    {
+        return str.substr(0, sign);
+    }
+
+    [[nodiscard]]
     constexpr std::u8string_view extract_prefix(std::u8string_view str) const
     {
-        return str.substr(0, prefix);
+        return str.substr(sign, prefix);
+    }
+
+    [[nodiscard]]
+    constexpr std::u8string_view extract_integer(std::u8string_view str) const
+    {
+        return str.substr(sign + prefix, integer);
     }
 
     [[nodiscard]]
