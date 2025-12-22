@@ -53,7 +53,7 @@ std::size_t match_whitespace(std::u8string_view str)
 
 std::size_t match_line_comment(std::u8string_view str)
 {
-    static constexpr char8_t comment_prefix[] { u8'\\', cowel_comment_char };
+    static constexpr char8_t comment_prefix[] { u8'\\', cowel_line_comment_char };
     static constexpr std::u8string_view comment_prefix_string { comment_prefix,
                                                                 std::size(comment_prefix) };
     if (!str.starts_with(comment_prefix_string)) {
@@ -62,6 +62,23 @@ std::size_t match_line_comment(std::u8string_view str)
 
     constexpr auto is_terminator = [](char8_t c) { return c == u8'\r' || c == u8'\n'; };
     return ascii::length_if_not(str, is_terminator, 2);
+}
+
+Comment_Result match_block_comment(const std::u8string_view s)
+{
+    static constexpr char8_t prefix[] { u8'\\', cowel_block_comment_char };
+    static constexpr char8_t suffix[] { cowel_block_comment_char, u8'\\' };
+    static constexpr std::u8string_view prefix_string { prefix, std::size(prefix) };
+    static constexpr std::u8string_view suffix_string { suffix, std::size(suffix) };
+
+    if (!s.starts_with(prefix_string)) {
+        return {};
+    }
+    const std::size_t end = s.find(suffix_string, 2);
+    if (end == std::string_view::npos) {
+        return Comment_Result { .length = s.length(), .is_terminated = false };
+    }
+    return Comment_Result { .length = end + 2, .is_terminated = true };
 }
 
 Common_Number_Result match_number(std::u8string_view str)
@@ -154,7 +171,8 @@ struct Consumer {
     virtual void whitespace(std::size_t length) = 0;
     virtual void text(std::size_t length) = 0;
     virtual void escape(std::size_t length) = 0;
-    virtual void comment(std::size_t length) = 0;
+    virtual void line_comment(std::size_t length) = 0;
+    virtual void block_comment(Comment_Result c) = 0;
 
     virtual void opening_parenthesis() = 0;
     virtual void closing_parenthesis() = 0;
@@ -194,13 +212,22 @@ std::size_t match_escape(Consumer& out, const std::u8string_view str)
 }
 
 [[nodiscard]]
-std::size_t match_comment(Consumer& out, const std::u8string_view str)
+std::size_t match_line_comment(Consumer& out, const std::u8string_view str)
 {
-    const std::size_t c = match_line_comment(str);
+    const std::size_t c = cowel::match_line_comment(str);
     if (c) {
-        out.comment(c);
+        out.line_comment(c);
     }
     return c;
+}
+[[nodiscard]]
+std::size_t match_block_comment(Consumer& out, const std::u8string_view str)
+{
+    const Comment_Result c = cowel::match_block_comment(str);
+    if (c) {
+        out.block_comment(c);
+    }
+    return c.length;
 }
 
 std::size_t match_directive(Consumer& out, std::u8string_view str);
@@ -218,7 +245,10 @@ std::size_t match_content(
     if (const std::size_t d = match_directive(out, str)) {
         return d;
     }
-    if (const std::size_t c = match_comment(out, str)) {
+    if (const std::size_t c = match_line_comment(out, str)) {
+        return c;
+    }
+    if (const std::size_t c = match_block_comment(out, str)) {
         return c;
     }
 
@@ -407,7 +437,7 @@ std::size_t match_directive(Consumer& out, const std::u8string_view str)
     return 1 + name_length + args_length + block_length;
 }
 
-struct [[nodiscard]] Highlighter : Highlighter_Base {
+struct [[nodiscard]] Highlighter : Highlighter_Base, Consumer {
 
     Highlighter(
         Non_Owning_Buffer<Token>& out,
@@ -418,320 +448,86 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
     {
     }
 
-    bool operator()();
-
-    struct Dispatch_Consumer;
-    struct Normal_Consumer;
-    struct Comment_Consumer;
-};
-
-struct Highlighter::Normal_Consumer final : Consumer {
-    Highlighter& self;
-
-    Normal_Consumer(Highlighter& self)
-        : self { self }
+    bool operator()()
     {
+        match_content_sequence(*this, remainder, Content_Context::document);
+        return true;
     }
+
+    struct Normal_Consumer;
 
     void whitespace(std::size_t w) final
     {
-        self.advance(w);
+        advance(w);
     }
     void text(std::size_t t) final
     {
-        self.advance(t);
+        advance(t);
     }
     void escape(std::size_t e) final
     {
-        self.emit_and_advance(e, Highlight_Type::string_escape);
+        emit_and_advance(e, Highlight_Type::string_escape);
     }
-    void comment(std::size_t c) final
+    void line_comment(std::size_t c) final
     {
         ULIGHT_ASSERT(c >= 2);
-        self.emit_and_advance(2, Highlight_Type::comment_delim);
+        emit_and_advance(2, Highlight_Type::comment_delim);
         if (c > 2) {
-            self.emit_and_advance(c - 2, Highlight_Type::comment);
+            emit_and_advance(c - 2, Highlight_Type::comment);
         }
     }
-
+    void block_comment(Comment_Result c) final
+    {
+        ULIGHT_ASSERT(c.length >= 2);
+        emit_and_advance(2, Highlight_Type::comment_delim);
+        if (c.is_terminated) {
+            if (c.length > 4) {
+                emit_and_advance(c.length - 4, Highlight_Type::comment);
+            }
+            emit_and_advance(2, Highlight_Type::comment_delim);
+        }
+        else if (c.length > 2) {
+            emit_and_advance(c.length - 2, Highlight_Type::comment);
+        }
+    }
     void opening_parenthesis() final
     {
-        self.emit_and_advance(1, Highlight_Type::symbol_parens);
+        emit_and_advance(1, Highlight_Type::symbol_parens);
     }
     void closing_parenthesis() final
     {
-        self.emit_and_advance(1, Highlight_Type::symbol_parens);
+        emit_and_advance(1, Highlight_Type::symbol_parens);
     }
     void comma() final
     {
-        self.emit_and_advance(1, Highlight_Type::symbol_punc);
+        emit_and_advance(1, Highlight_Type::symbol_punc);
     }
     void argument_name(std::size_t a) final
     {
-        self.emit_and_advance(a, Highlight_Type::markup_attr);
+        emit_and_advance(a, Highlight_Type::markup_attr);
     }
     void equals() final
     {
-        self.emit_and_advance(1, Highlight_Type::symbol_punc);
+        emit_and_advance(1, Highlight_Type::symbol_punc);
     }
     void argument_ellipsis(std::size_t e) final
     {
-        self.emit_and_advance(e, Highlight_Type::name_attr);
+        emit_and_advance(e, Highlight_Type::name_attr);
     }
     void directive_name(std::size_t d) final
     {
-        self.emit_and_advance(d, Highlight_Type::markup_tag);
+        emit_and_advance(d, Highlight_Type::markup_tag);
     }
     void opening_brace() final
     {
-        self.emit_and_advance(1, Highlight_Type::symbol_brace);
+        emit_and_advance(1, Highlight_Type::symbol_brace);
     }
     void closing_brace() final
     {
-        self.emit_and_advance(1, Highlight_Type::symbol_brace);
+        emit_and_advance(1, Highlight_Type::symbol_brace);
     }
     void unexpected_eof() final { }
 };
-
-struct Highlighter::Comment_Consumer final : Consumer {
-    std::size_t prefix_length = 0;
-    std::size_t content_length = 0;
-    std::size_t suffix_length = 0;
-
-private:
-    std::size_t arguments_level = 0;
-    std::size_t brace_level = 0;
-    std::size_t* active_length = &prefix_length;
-
-public:
-    Comment_Consumer() = default;
-    ~Comment_Consumer() = default;
-
-    Comment_Consumer(const Comment_Consumer&) = delete;
-    Comment_Consumer& operator=(const Comment_Consumer&) = delete;
-
-    void reset()
-    {
-        prefix_length = 0;
-        content_length = 0;
-        suffix_length = 0;
-        arguments_level = 0;
-        brace_level = 0;
-        active_length = &prefix_length;
-    }
-
-    [[nodiscard]]
-    bool done() const
-    {
-        return active_length == &suffix_length;
-    }
-
-    void whitespace(std::size_t w) final
-    {
-        *active_length += w;
-    }
-    void text(std::size_t t) final
-    {
-        *active_length += t;
-    }
-    void escape(std::size_t e) final
-    {
-        *active_length += e;
-    }
-    void comment(std::size_t c) final
-    {
-        *active_length += c;
-    }
-
-    void opening_parenthesis() final
-    {
-        *active_length += 1;
-    }
-    void closing_parenthesis() final
-    {
-        *active_length += 1;
-    }
-    void comma() final
-    {
-        *active_length += 1;
-    }
-    void argument_name(std::size_t a) final
-    {
-        *active_length += a;
-    }
-    void equals() final
-    {
-        *active_length += 1;
-    }
-    void argument_ellipsis(std::size_t e) final
-    {
-        *active_length += e;
-    }
-    void directive_name(std::size_t d) final
-    {
-        *active_length += d;
-    }
-    void opening_brace() final
-    {
-        *active_length += 1;
-        if (arguments_level == 0 && brace_level == 0) {
-            ULIGHT_DEBUG_ASSERT(prefix_length != 0);
-            active_length = &content_length;
-        }
-        ++brace_level;
-    }
-    void closing_brace() final
-    {
-        --brace_level;
-        if (arguments_level == 0 && brace_level == 0 && active_length == &content_length) {
-            active_length = &suffix_length;
-        }
-        *active_length += 1;
-    }
-    void pop_directive() final
-    {
-        if (arguments_level == 0 && brace_level == 0) {
-            active_length = &suffix_length;
-        }
-    }
-    void push_arguments() final
-    {
-        ++arguments_level;
-    }
-    void pop_arguments() final
-    {
-        --arguments_level;
-    }
-    void unexpected_eof() final
-    {
-        active_length = &suffix_length;
-        ULIGHT_DEBUG_ASSERT(done());
-    }
-};
-
-struct Highlighter::Dispatch_Consumer final : Consumer {
-private:
-    Normal_Consumer m_normal;
-    Comment_Consumer m_comment;
-    Consumer* m_current = &m_normal;
-
-public:
-    Dispatch_Consumer(Highlighter& self)
-        : m_normal { self }
-    {
-    }
-
-    void whitespace(std::size_t w) final
-    {
-        ULIGHT_DEBUG_ASSERT(w != 0);
-        m_current->whitespace(w);
-    }
-    void text(std::size_t t) final
-    {
-        ULIGHT_DEBUG_ASSERT(t != 0);
-        m_current->text(t);
-    }
-    void escape(std::size_t e) final
-    {
-        m_current->escape(e);
-    }
-    void comment(std::size_t c) final
-    {
-        m_current->comment(c);
-    }
-
-    void opening_parenthesis() final
-    {
-        m_current->opening_parenthesis();
-    }
-    void closing_parenthesis() final
-    {
-        m_current->closing_parenthesis();
-    }
-    void comma() final
-    {
-        m_current->comma();
-    }
-    void argument_name(std::size_t a) final
-    {
-        ULIGHT_DEBUG_ASSERT(a != 0);
-        m_current->argument_name(a);
-    }
-    void equals() final
-    {
-        m_current->equals();
-    }
-    void argument_ellipsis(std::size_t e) final
-    {
-        ULIGHT_DEBUG_ASSERT(e != 0);
-        m_current->argument_ellipsis(e);
-    }
-    void directive_name(std::size_t d) final
-    {
-        ULIGHT_DEBUG_ASSERT(d != 0);
-        const std::u8string_view name = m_normal.self.remainder.substr(0, d);
-        if (name == u8"\\comment" || name == u8"\\-comment") {
-            m_current = &m_comment;
-        }
-        m_current->directive_name(d);
-    }
-    void opening_brace() final
-    {
-        m_current->opening_brace();
-    }
-    void closing_brace() final
-    {
-        m_current->closing_brace();
-    }
-
-    void push_directive() final
-    {
-        m_current->push_directive();
-    }
-    void pop_directive() final
-    {
-        m_current->pop_directive();
-        try_flush_special_consumer();
-    }
-    void push_arguments() final
-    {
-        m_current->push_arguments();
-    }
-    void pop_arguments() final
-    {
-        m_current->pop_arguments();
-    }
-    void unexpected_eof() final
-    {
-        m_current->unexpected_eof();
-        try_flush_special_consumer();
-    }
-
-    void try_flush_special_consumer()
-    {
-        Highlighter& self = m_normal.self;
-        if (m_current == &m_comment && m_comment.done()) {
-            ULIGHT_ASSERT(m_comment.prefix_length != 0);
-            self.emit_and_advance(m_comment.prefix_length, Highlight_Type::comment_delim);
-            if (m_comment.content_length) {
-                self.emit_and_advance(m_comment.content_length, Highlight_Type::comment);
-            }
-            if (m_comment.suffix_length) {
-                ULIGHT_ASSERT(m_comment.suffix_length == 1);
-                self.emit_and_advance(m_comment.suffix_length, Highlight_Type::comment_delim);
-            }
-            m_comment.reset();
-            m_current = &m_normal;
-        }
-    }
-};
-
-bool Highlighter::operator()()
-{
-    Dispatch_Consumer consumer { *this };
-    match_content_sequence(consumer, remainder, Content_Context::document);
-    return true;
-}
 
 } // namespace
 } // namespace cowel

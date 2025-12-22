@@ -29,6 +29,20 @@ std::size_t match_whitespace(std::u8string_view str);
 [[nodiscard]]
 std::size_t match_line_comment(std::u8string_view str);
 
+struct Comment_Result {
+    std::size_t length;
+    bool is_terminated;
+
+    [[nodiscard]]
+    constexpr explicit operator bool() const noexcept
+    {
+        return length != 0;
+    }
+};
+
+[[nodiscard]]
+Comment_Result match_block_comment(std::u8string_view str);
+
 [[nodiscard]]
 Common_Number_Result match_number(std::u8string_view str);
 

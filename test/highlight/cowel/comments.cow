@@ -5,3 +5,6 @@
 \: nested \: comment
 trailing \: comment
 \: \dir[]{}
+\* awoo *\ \* chan *\
+\* \: *\ text
+\* unterminated
