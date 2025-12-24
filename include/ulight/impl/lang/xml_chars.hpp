@@ -3,8 +3,8 @@
 
 #include "ulight/impl/ascii_chars.hpp"
 
-#include <array>
 #include <algorithm>
+#include <array>
 
 namespace ulight::xml {
 

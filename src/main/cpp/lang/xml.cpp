@@ -36,14 +36,13 @@ constexpr std::u8string_view illegal_comment_sequence = u8"--";
 constexpr std::u8string_view cdata_section_prefix = u8"<![CDATA[";
 constexpr std::u8string_view cdata_section_suffix = u8"]]>";
 constexpr std::u8string_view xml_tag = u8"<?xml";
-constexpr std::u8string_view doctype_string = u8"<!DOCTYPE";
-constexpr std::u8string_view element_decl_string = u8"ELEMENT";
-constexpr std::u8string_view attlist_decl_string = u8"ATTLIST";
-constexpr std::u8string_view entity_decl_string = u8"ENTITY";
-constexpr std::u8string_view notation_decl_string = u8"NOTATION";
-constexpr std::u8string_view enumerated_type_begin = u8"NOTATION";
-constexpr std::u8string_view element_content_spec_empty = u8"EMPTY";
-constexpr std::u8string_view element_content_spec_any = u8"ANY";
+constexpr std::u8string_view external_id_public = u8"PUBLIC";
+constexpr std::u8string_view external_id_system = u8"SYSTEM";
+constexpr std::u8string_view content_spec_empty = u8"EMPTY";
+constexpr std::u8string_view content_spec_any = u8"ANY";
+constexpr std::u8string_view ndata_decl_string = u8"NDATA";
+constexpr std::u8string_view pcdata_decl_string = u8"#PCDATA";
+
 constexpr std::u8string_view decltype_version_attr = u8"version";
 constexpr std::u8string_view decltype_encoding_attr = u8"encoding";
 constexpr std::u8string_view decltype_standalone_attr = u8"standalone";
@@ -51,31 +50,6 @@ constexpr std::u8string_view decltype_standalone_attr = u8"standalone";
 bool is_entity_ref_content(std::u8string_view str)
 {
     return utf8::all_of(str, [](char32_t c) { return is_xml_name(c); });
-}
-
-enum class Decl_Type : Underlying {
-    ATTLIST,
-    ELEMENT,
-    NOTATION,
-    ENTITY,
-    INVALID
-};
-
-} // namespace
-
-[[nodiscard]]
-std::size_t match_whitespace(std::u8string_view str)
-{
-    return ascii::length_if(str, [](char8_t c) { return is_xml_whitespace(c); });
-}
-
-[[nodiscard]]
-std::size_t match_text(std::u8string_view str)
-{
-    const std::size_t result
-        = ascii::length_if_not(str, [](char8_t c) { return c == u8'<' || c == u8'&'; });
-
-    return result == std::u8string_view::npos ? str.length() : result;
 }
 
 [[nodiscard]]
@@ -102,10 +76,10 @@ std::size_t match_name(std::u8string_view str)
 std::size_t match_att_type(std::u8string_view str)
 {
     // consider the next "word" (everything until whitespace or >)
-    // to avoid highlight splitting
-    std::size_t word_lenght
-        = ascii::length_if(str, [](char8_t c) { return is_xml_whitespace(c) || c == u8'>'; });
-    std::u8string_view word = str.substr(0, word_lenght);
+    // to avoid "highlight splitting"
+    std::size_t word_len
+        = ascii::find_if(str, [](char8_t c) { return is_xml_whitespace(c) || c == u8'>'; });
+    std::u8string_view word = str.substr(0, word_len);
 
     for (const auto& att_type_string : attlist_att_types) {
         if (word == att_type_string) {
@@ -131,8 +105,12 @@ std::size_t match_default_decl_type(std::u8string_view str)
 [[nodiscard]]
 std::size_t match_external_id_type(std::u8string_view str)
 {
-    if (str.starts_with(u8"PUBLIC") || str.starts_with(u8"SYSTEM")) {
-        return 6;
+    if (str.starts_with(external_id_public)) {
+        return external_id_public.size();
+    }
+
+    if (str.starts_with(external_id_system)) {
+        return external_id_system.size();
     }
 
     return 0;
@@ -141,12 +119,12 @@ std::size_t match_external_id_type(std::u8string_view str)
 [[nodiscard]]
 std::size_t match_content_spec_type(std::u8string_view str)
 {
-    if (str.starts_with(u8"EMPTY")) {
-        return 5;
+    if (str.starts_with(content_spec_empty)) {
+        return content_spec_empty.size();
     }
 
-    if (str.starts_with(u8"ANY")) {
-        return 3;
+    if (str.starts_with(content_spec_any)) {
+        return content_spec_any.size();
     }
 
     return 0;
@@ -155,13 +133,30 @@ std::size_t match_content_spec_type(std::u8string_view str)
 [[nodiscard]]
 std::size_t match_ndata_decl(std::u8string_view str)
 {
-    return str.starts_with(u8"NDATA") ? 5 : 0;
+    return str.starts_with(ndata_decl_string) ? ndata_decl_string.size() : 0;
 }
 
 [[nodiscard]]
 std::size_t match_pcdata_decl(std::u8string_view str)
 {
-    return str.starts_with(u8"#PCDATA") ? 7 : 0;
+    return str.starts_with(pcdata_decl_string) ? pcdata_decl_string.size() : 0;
+}
+
+} // namespace
+
+[[nodiscard]]
+std::size_t match_whitespace(std::u8string_view str)
+{
+    return ascii::length_if(str, [](char8_t c) { return is_xml_whitespace(c); });
+}
+
+[[nodiscard]]
+std::size_t match_text(std::u8string_view str)
+{
+    const std::size_t result
+        = ascii::length_if_not(str, [](char8_t c) { return c == u8'<' || c == u8'&'; });
+
+    return result == std::u8string_view::npos ? str.length() : result;
 }
 
 [[nodiscard]]
@@ -200,7 +195,6 @@ std::size_t match_entity_reference(std::u8string_view str)
     const std::size_t result = str.find(u8';', 1);
     const bool success
         = result != std::u8string_view::npos && is_entity_ref_content(str.substr(1, result - 1));
-    ;
     return success ? result + 1 : 0;
 }
 
@@ -241,15 +235,15 @@ private:
             = utf8::find_if(remainder, [](char32_t c) { return is_xml_whitespace(c); });
         const std::u8string_view external_id = remainder.substr(0, external_id_len);
 
-        if (external_id == u8"SYSTEM") {
-            emit_and_advance(6, Highlight_Type::name_macro);
+        if (external_id == external_id_system) {
+            emit_and_advance(external_id_system.size(), Highlight_Type::keyword);
             expect_whitespace();
             expect_attribute_value();
             return true;
         }
 
-        if (external_id == u8"PUBLIC") {
-            emit_and_advance(6, Highlight_Type::name_macro);
+        if (external_id == external_id_public) {
+            emit_and_advance(external_id_public.size(), Highlight_Type::keyword);
             expect_whitespace();
             expect_attribute_value();
             expect_whitespace();
@@ -257,11 +251,12 @@ private:
             return true;
         }
 
-        advance(external_id_len);
-        return external_id_len != 0;
+        return false;
     }
 
+    // This method matches a superset of
     // https://www.w3.org/TR/xml/#NT-markupdecl
+    // to provide better highlighting.
     // TODO: match PERef
     bool expect_markup_decl()
     {
@@ -274,9 +269,6 @@ private:
         }
 
         emit_and_advance(2, Highlight_Type::name_macro);
-
-        expect_whitespace();
-
         constexpr auto after_markup_decl_name
             = [](std::u8string_view str) { return match_whitespace(str); };
 
@@ -307,7 +299,7 @@ private:
                 emit_and_advance(default_decl_len, Highlight_Type::keyword);
             }
             else if (std::size_t external_id_len = match_external_id_type(remainder)) {
-                emit_and_advance(external_id_len, Highlight_Type::name);
+                emit_and_advance(external_id_len, Highlight_Type::keyword);
             }
             else if (std::size_t content_spec_len = match_content_spec_type(remainder)) {
                 emit_and_advance(content_spec_len, Highlight_Type::keyword);
@@ -328,6 +320,7 @@ private:
                 std::size_t len = ascii::find_if(remainder, [](char8_t c) {
                     return is_xml_whitespace(c) || c == u8'>';
                 });
+                len = std::min(len, remainder.size());
                 advance(len);
             }
             expect_whitespace();
@@ -339,18 +332,39 @@ private:
     // https://www.w3.org/TR/xml/#NT-doctypedecl
     bool expect_doctype_decl()
     {
-        if (!remainder.starts_with(doctype_string)) {
+        if (!remainder.starts_with(u8"<!")) {
             return false;
         }
-        emit_and_advance(doctype_string.size(), Highlight_Type::name_macro);
+        emit_and_advance(2, Highlight_Type::name_macro);
 
-        expect_whitespace();
-        expect_name(Highlight_Type::name, [](std::u8string_view str) {
+        constexpr auto stop = [](std::u8string_view str) {
             return str.starts_with(u8'[') || str.starts_with(u8'>') || match_whitespace(str);
-        });
+        };
+
+        expect_name(Highlight_Type::name_macro, stop);
+        expect_whitespace();
+        expect_name(Highlight_Type::name, stop);
 
         expect_whitespace();
-        expect_external_id();
+        if (match_external_id_type(remainder)) {
+            expect_external_id();
+        }
+        else if (!remainder.starts_with(u8'[')) {
+            std::size_t word_len
+                = ascii::find_if(remainder, [](char8_t c) { return is_xml_whitespace(c); });
+            word_len = std::min(word_len, remainder.size());
+            advance(word_len);
+
+            expect_whitespace();
+            if (remainder.starts_with(u8'\'') || remainder.starts_with(u8'"')) {
+                expect_attribute_value();
+            }
+            expect_whitespace();
+
+            if (remainder.starts_with(u8'\'') || remainder.starts_with(u8'"')) {
+                expect_attribute_value();
+            }
+        }
 
         expect_whitespace();
         if (!remainder.starts_with(u8'[')) {
