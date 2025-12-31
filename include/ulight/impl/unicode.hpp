@@ -7,7 +7,6 @@
 #include <cstdint>
 #include <expected>
 #include <iterator>
-#include <ranges>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -24,6 +23,7 @@
 
 #include "ulight/ulight.hpp"
 
+#include "ulight/impl/algorithm/min_max.hpp"
 #include "ulight/impl/assert.hpp"
 #include "ulight/impl/platform.h"
 
@@ -257,7 +257,7 @@ ULIGHT_HOT [[nodiscard]]
 constexpr std::array<char8_t, size> first_n_padded(std::u8string_view str) noexcept
 {
     std::array<char8_t, size> result {};
-    const std::size_t n = std::min(size, str.size());
+    const std::size_t n = min(size, str.size());
     // NOLINTNEXTLINE(readability-simplify-subscript-expr) to avoid hardened bounds checks
     for (std::size_t i = 0; i < n; ++i) {
         result.data()[i] = str[i];
@@ -544,8 +544,6 @@ struct Code_Point_View {
         return {};
     }
 };
-
-static_assert(std::ranges::forward_range<Code_Point_View>);
 
 struct Code_Units_And_Length {
     std::array<char8_t, 4> code_units;

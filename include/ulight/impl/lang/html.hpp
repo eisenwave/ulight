@@ -4,8 +4,8 @@
 #include <cstddef>
 #include <string_view>
 
+#include "ulight/impl/algorithm/all_of.hpp"
 #include "ulight/impl/lang/html_chars.hpp"
-#include "ulight/impl/strings.hpp"
 #include "ulight/impl/unicode.hpp"
 
 namespace ulight::html {
@@ -44,13 +44,16 @@ std::size_t match_tag_name(std::u8string_view str);
 std::size_t match_attribute_name(std::u8string_view str);
 
 /// @brief Matches a block of raw text starting at `str` and returns its length.
-/// That is, text that can appear in raw text elements like `<script>` or `<style>`.
-/// @param closing_name The name of the closing tag (usually `"script" or `"style"`).
+/// That is, text that can appear in raw text elements like `<script>` or
+/// `<style>`.
+/// @param closing_name The name of the closing tag (usually `"script" or
+/// `"style"`).
 [[nodiscard]]
 std::size_t match_raw_text(std::u8string_view str, std::u8string_view closing_name);
 
 struct Raw_Text_Result {
-    /// @brief The length up to the character reference or raw text end, in code units.
+    /// @brief The length up to the character reference or raw text end, in code
+    /// units.
     std::size_t raw_length;
     /// @brief The length of the character reference, if any.
     std::size_t ref_length;
@@ -84,9 +87,8 @@ Match_Result match_comment(std::u8string_view str);
 
 /// @brief Matches a DOCTYPE at the start of `str`.
 ///
-/// This function is more permissive than the actual restrictions for DOCTYPEs in the HTML
-/// standard.
-/// Any contents between `<!DOCTYPE` and `>` is accepted.
+/// This function is more permissive than the actual restrictions for DOCTYPEs
+/// in the HTML standard. Any contents between `<!DOCTYPE` and `>` is accepted.
 [[nodiscard]]
 Match_Result match_doctype_permissive(std::u8string_view str);
 
@@ -128,7 +130,7 @@ constexpr bool is_tag_name(std::u8string_view str)
 
     // https://html.spec.whatwg.org/dev/custom-elements.html#valid-custom-element-name
     return !str.empty() //
-        && is_ascii_alpha(str[0]) && detail::all_of(utf8::Code_Point_View { str }, predicate);
+        && is_ascii_alpha(str[0]) && all_of(utf8::Code_Point_View { str }, predicate);
 }
 
 /// @brief Returns `true` if `str` is a valid HTML attribute name.
@@ -139,13 +141,13 @@ constexpr bool is_attribute_name(std::u8string_view str)
 
     // https://html.spec.whatwg.org/dev/syntax.html#syntax-attribute-name
     return !str.empty() //
-        && detail::all_of(utf8::Code_Point_View { str }, predicate);
+        && all_of(utf8::Code_Point_View { str }, predicate);
 }
 
-/// @brief Returns `true` if the given string requires no wrapping in quotes when it
-/// appears as the value in an attribute.
-/// For example, `id=123` is a valid HTML attribute with a value and requires
-/// no wrapping, but `id="<x>"` requires `<x>` to be surrounded by quotes.
+/// @brief Returns `true` if the given string requires no wrapping in quotes
+/// when it appears as the value in an attribute. For example, `id=123` is a
+/// valid HTML attribute with a value and requires no wrapping, but `id="<x>"`
+/// requires `<x>` to be surrounded by quotes.
 [[nodiscard]]
 constexpr bool is_unquoted_attribute_value(std::u8string_view str)
 {
@@ -154,7 +156,7 @@ constexpr bool is_unquoted_attribute_value(std::u8string_view str)
     };
 
     // https://html.spec.whatwg.org/dev/syntax.html#unquoted
-    return detail::all_of(str, predicate);
+    return all_of(str, predicate);
 }
 
 } // namespace ulight::html

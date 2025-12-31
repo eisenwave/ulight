@@ -1,10 +1,11 @@
 #ifndef ULIGHT_ESCAPES_HPP
 #define ULIGHT_ESCAPES_HPP
 
-#include <algorithm>
 #include <cstddef>
 #include <string_view>
 
+#include "ulight/impl/algorithm/all_of.hpp"
+#include "ulight/impl/algorithm/min_max.hpp"
 #include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/ascii_chars.hpp"
 #include "ulight/impl/platform.h"
@@ -110,7 +111,7 @@ constexpr Escape_Result match_common_braced_escape(std::u8string_view str, Predi
     }
     const std::size_t length_without_brace = ascii::length_before(str, u8'}', 1);
     const std::u8string_view digits = str.substr(1, length_without_brace - 1);
-    const bool erroneous = length_without_brace <= 1 || !std::ranges::all_of(digits, p);
+    const bool erroneous = length_without_brace <= 1 || !all_of(digits, p);
     const std::size_t length
         = length_without_brace == str.length() || str[length_without_brace] != u8'}'
         ? length_without_brace
@@ -129,14 +130,14 @@ constexpr Escape_Result match_common_escape(std::u8string_view str)
 
     if constexpr (type == Common_Escape::octal_1_to_2 || type == Common_Escape::octal_1_to_3) {
         constexpr std::size_t max_length = escape_type_max_length(type);
-        str = str.substr(0, std::min(max_length, str.length()));
+        str = str.substr(0, min(max_length, str.length()));
         const std::size_t length = ascii::length_if(str, octal_digit_lambda);
         return { .length = length, .erroneous = length == 0 };
     }
 
     else if constexpr (type == Common_Escape::octal_3) {
         const std::size_t length
-            = ascii::length_if(str.substr(0, std::min(3uz, str.length())), octal_digit_lambda);
+            = ascii::length_if(str.substr(0, min(3uz, str.length())), octal_digit_lambda);
         return { .length = length, .erroneous = length != 3 };
     }
 
@@ -145,7 +146,7 @@ constexpr Escape_Result match_common_escape(std::u8string_view str)
     }
 
     else if constexpr (type == Common_Escape::hex_1_to_2) {
-        str = str.substr(0, std::min(2uz, str.length()));
+        str = str.substr(0, min(2uz, str.length()));
         const std::size_t length = ascii::length_if(str, hex_digit_lambda);
         return { .length = length, .erroneous = length == 0 };
     }
@@ -158,11 +159,11 @@ constexpr Escape_Result match_common_escape(std::u8string_view str)
     else if constexpr (type == Common_Escape::hex_2 || type == Common_Escape::hex_4
                        || type == Common_Escape::hex_8) {
         constexpr std::size_t min_length = escape_type_min_length(type);
-        str = str.substr(0, std::min(min_length, str.length()));
+        str = str.substr(0, min(min_length, str.length()));
         if (str.length() < min_length) {
             return { .length = str.length(), .erroneous = true };
         }
-        const bool all_hex = std::ranges::all_of(str, hex_digit_lambda);
+        const bool all_hex = all_of(str, hex_digit_lambda);
         return { .length = str.length(), .erroneous = !all_hex };
     }
 

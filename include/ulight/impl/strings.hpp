@@ -3,6 +3,7 @@
 
 #include <string_view>
 
+#include "ulight/impl/algorithm/all_of.hpp"
 #include "ulight/impl/ascii_chars.hpp"
 
 namespace ulight {
@@ -64,29 +65,12 @@ constexpr bool contains(std::u32string_view str, char32_t c)
     return str.find(c) != std::u32string_view::npos;
 }
 
-namespace detail {
-
-/// @brief Rudimentary version of `std::ranges::all_of` to avoid including all of `<algorithm>`
-template <typename R, typename Predicate>
-[[nodiscard]]
-constexpr bool all_of(R&& r, Predicate predicate) // NOLINT(cppcoreguidelines-missing-std-forward)
-{
-    for (const auto& e : r) { // NOLINT(readability-use-anyofallof)
-        if (!predicate(e)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-} // namespace detail
-
 /// @brief Returns `true` if `str` is a possibly empty ASCII string.
 [[nodiscard]]
 constexpr bool is_ascii(std::u8string_view str)
 {
     constexpr auto predicate = [](char8_t x) { return is_ascii(x); };
-    return detail::all_of(str, predicate);
+    return all_of(str, predicate);
 }
 
 } // namespace ulight

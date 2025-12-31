@@ -16,6 +16,8 @@
 namespace ulight::utf8 {
 namespace {
 
+static_assert(std::ranges::forward_range<Code_Point_View>);
+
 [[nodiscard]]
 std::pmr::vector<char32_t> to_utf32(std::u8string_view utf8, std::pmr::memory_resource* memory)
 {
