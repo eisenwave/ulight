@@ -4,6 +4,10 @@
 #include <cstddef>
 #include <string_view>
 
+#include "ulight/impl/lang/html_chars.hpp"
+#include "ulight/impl/strings.hpp"
+#include "ulight/impl/unicode.hpp"
+
 namespace ulight::html {
 
 struct Match_Result {
@@ -113,6 +117,45 @@ struct End_Tag_Result {
 /// This does not validate whether the tag name is valid.
 [[nodiscard]]
 End_Tag_Result match_end_tag_permissive(std::u8string_view str);
+
+/// @brief Returns `true` if `str` is a valid HTML tag identifier.
+/// This includes both builtin tag names (which are purely alphabetic)
+/// and custom tag names.
+[[nodiscard]]
+constexpr bool is_tag_name(std::u8string_view str)
+{
+    constexpr auto predicate = [](char32_t x) { return is_html_tag_name_character(x); };
+
+    // https://html.spec.whatwg.org/dev/custom-elements.html#valid-custom-element-name
+    return !str.empty() //
+        && is_ascii_alpha(str[0]) && detail::all_of(utf8::Code_Point_View { str }, predicate);
+}
+
+/// @brief Returns `true` if `str` is a valid HTML attribute name.
+[[nodiscard]]
+constexpr bool is_attribute_name(std::u8string_view str)
+{
+    constexpr auto predicate = [](char32_t x) { return is_html_attribute_name_character(x); };
+
+    // https://html.spec.whatwg.org/dev/syntax.html#syntax-attribute-name
+    return !str.empty() //
+        && detail::all_of(utf8::Code_Point_View { str }, predicate);
+}
+
+/// @brief Returns `true` if the given string requires no wrapping in quotes when it
+/// appears as the value in an attribute.
+/// For example, `id=123` is a valid HTML attribute with a value and requires
+/// no wrapping, but `id="<x>"` requires `<x>` to be surrounded by quotes.
+[[nodiscard]]
+constexpr bool is_unquoted_attribute_value(std::u8string_view str)
+{
+    constexpr auto predicate = [](char8_t code_unit) {
+        return !is_ascii(code_unit) || is_html_ascii_unquoted_attribute_value_character(code_unit);
+    };
+
+    // https://html.spec.whatwg.org/dev/syntax.html#unquoted
+    return detail::all_of(str, predicate);
+}
 
 } // namespace ulight::html
 

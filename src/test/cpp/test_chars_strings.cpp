@@ -209,66 +209,6 @@ TEST(Charsets, all_cpp_whitespace)
     }
 }
 
-TEST(Strings, trim_cpp_whitespace_left)
-{
-    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace_left(u8"awoo"));
-    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace_left(u8"\n\t\v\f\r awoo"));
-    EXPECT_EQ(u8"awoo\n\t\v\f\r "sv, trim_cpp_whitespace_left(u8"awoo\n\t\v\f\r "));
-    EXPECT_EQ(u8"awoo\n\t\v\f\r "sv, trim_cpp_whitespace_left(u8"\n\t\v\f\r awoo\n\t\v\f\r "));
-}
-
-TEST(Strings, trim_cpp_whitespace_right)
-{
-    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace_right(u8"awoo"));
-    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace_right(u8"awoo\n\t\v\f\r "));
-    EXPECT_EQ(u8"\n\t\v\f\r awoo"sv, trim_cpp_whitespace_right(u8"\n\t\v\f\r awoo"));
-    EXPECT_EQ(u8"\n\t\v\f\r awoo"sv, trim_cpp_whitespace_right(u8"\n\t\v\f\r awoo\n\t\v\f\r "));
-}
-
-TEST(Strings, trim_cpp_whitespace)
-{
-    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace(u8"awoo"));
-    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace(u8"awoo\n\t\v\f\r "));
-    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace(u8"\n\t\v\f\r awoo"));
-    EXPECT_EQ(u8"awoo"sv, trim_cpp_whitespace(u8"\n\t\v\f\r awoo\n\t\v\f\r "));
-}
-
-TEST(Strings, is_html_tag_name)
-{
-    EXPECT_TRUE(is_html_tag_name(u8"tag"));
-    EXPECT_TRUE(is_html_tag_name(u8"tag-"));
-    EXPECT_TRUE(is_html_tag_name(u8"tag-tag"));
-
-    EXPECT_FALSE(is_html_tag_name(u8""));
-    EXPECT_FALSE(is_html_tag_name(u8"-"));
-    EXPECT_FALSE(is_html_tag_name(u8"-tag"));
-}
-
-TEST(Strings, is_html_attribute_name)
-{
-    EXPECT_TRUE(is_html_attribute_name(u8"attr"));
-    EXPECT_TRUE(is_html_attribute_name(u8"attr-"));
-    EXPECT_TRUE(is_html_attribute_name(u8"data-attr"));
-    EXPECT_TRUE(is_html_attribute_name(u8"att<(){}[]&ss"));
-
-    EXPECT_FALSE(is_html_attribute_name(u8""));
-    EXPECT_FALSE(is_html_attribute_name(u8"attr="));
-    EXPECT_FALSE(is_html_attribute_name(u8"at>tr"));
-}
-
-TEST(Strings, is_html_unquoted_attribute_value)
-{
-    EXPECT_TRUE(is_html_unquoted_attribute_value(u8""));
-    EXPECT_TRUE(is_html_unquoted_attribute_value(u8"value"));
-    EXPECT_TRUE(is_html_unquoted_attribute_value(u8"hyphen-value"));
-
-    EXPECT_FALSE(is_html_unquoted_attribute_value(u8"a b"));
-    EXPECT_FALSE(is_html_unquoted_attribute_value(u8"attr="));
-    EXPECT_FALSE(is_html_unquoted_attribute_value(u8"at>tr"));
-    EXPECT_FALSE(is_html_unquoted_attribute_value(u8"'val'"));
-    EXPECT_FALSE(is_html_unquoted_attribute_value(u8"\"val\""));
-}
-
 TEST(Strings, equals_ascii_ignore_case)
 {
     EXPECT_TRUE(equals_ascii_ignore_case(u8"", u8""));

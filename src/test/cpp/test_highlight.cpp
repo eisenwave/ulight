@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <iostream>
 #include <iterator>
+#include <ranges>
 #include <span>
 #include <string>
 #include <string_view>
@@ -12,6 +13,7 @@
 
 #include "ulight/impl/ansi.hpp"
 #include "ulight/impl/io.hpp"
+#include "ulight/impl/lang/html_chars.hpp"
 #include "ulight/impl/string_diff.hpp"
 #include "ulight/impl/strings.hpp"
 #include "ulight/ulight.hpp"

@@ -182,5 +182,41 @@ TEST(HTML, match_attribute_name)
     EXPECT_EQ(match_attribute_name(u8"<abc"), 4);
 }
 
+TEST(HTML, is_html_tag_name)
+{
+    EXPECT_TRUE(is_tag_name(u8"tag"));
+    EXPECT_TRUE(is_tag_name(u8"tag-"));
+    EXPECT_TRUE(is_tag_name(u8"tag-tag"));
+
+    EXPECT_FALSE(is_tag_name(u8""));
+    EXPECT_FALSE(is_tag_name(u8"-"));
+    EXPECT_FALSE(is_tag_name(u8"-tag"));
+}
+
+TEST(HTML, is_html_attribute_name)
+{
+    EXPECT_TRUE(is_attribute_name(u8"attr"));
+    EXPECT_TRUE(is_attribute_name(u8"attr-"));
+    EXPECT_TRUE(is_attribute_name(u8"data-attr"));
+    EXPECT_TRUE(is_attribute_name(u8"att<(){}[]&ss"));
+
+    EXPECT_FALSE(is_attribute_name(u8""));
+    EXPECT_FALSE(is_attribute_name(u8"attr="));
+    EXPECT_FALSE(is_attribute_name(u8"at>tr"));
+}
+
+TEST(HTML, is_html_unquoted_attribute_value)
+{
+    EXPECT_TRUE(is_unquoted_attribute_value(u8""));
+    EXPECT_TRUE(is_unquoted_attribute_value(u8"value"));
+    EXPECT_TRUE(is_unquoted_attribute_value(u8"hyphen-value"));
+
+    EXPECT_FALSE(is_unquoted_attribute_value(u8"a b"));
+    EXPECT_FALSE(is_unquoted_attribute_value(u8"attr="));
+    EXPECT_FALSE(is_unquoted_attribute_value(u8"at>tr"));
+    EXPECT_FALSE(is_unquoted_attribute_value(u8"'val'"));
+    EXPECT_FALSE(is_unquoted_attribute_value(u8"\"val\""));
+}
+
 } // namespace
 } // namespace ulight::html

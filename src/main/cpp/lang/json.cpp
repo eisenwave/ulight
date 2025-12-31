@@ -12,6 +12,7 @@
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/highlighter.hpp"
 #include "ulight/impl/strings.hpp"
+#include "ulight/impl/unicode.hpp"
 
 #include "ulight/impl/lang/json.hpp"
 #include "ulight/impl/lang/json_chars.hpp"
