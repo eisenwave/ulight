@@ -121,7 +121,7 @@ constexpr bool contains_ascii_ignore_case(std::u8string_view haystack, std::u8st
         return true;
     }
     for (std::size_t i = 0; i + needle.length() <= haystack.length(); ++i) {
-        if (equals_ascii_ignore_case(haystack.substr(0, needle.length()), needle)) {
+        if (equals_ascii_ignore_case(haystack.substr(i, needle.length()), needle)) {
             return true;
         }
     }
