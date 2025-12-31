@@ -1,8 +1,10 @@
 #ifndef ULIGHT_ASCII_ALGORITHM_HPP
 #define ULIGHT_ASCII_ALGORITHM_HPP
 
+#include <cstddef>
 #include <string_view>
 
+#include "ulight/impl/ascii_chars.hpp"
 #include "ulight/impl/assert.hpp"
 
 namespace ulight::ascii {
@@ -136,6 +138,69 @@ length_until_not(std::u8string_view str, char8_t delimiter, std::size_t start = 
 {
     const std::size_t result = str.find_first_not_of(delimiter, start);
     return result == std::u8string_view::npos ? str.length() : result + 1;
+}
+
+/// @brief Returns the result of a comparison between `x` and `y`
+/// where both strings are mapped to lower case for the purpose of comparison.
+[[nodiscard]]
+constexpr std::strong_ordering compare_to_lower(std::u8string_view x, std::u8string_view y)
+{
+    for (std::size_t i = 0; i < x.length() && i < y.length(); ++i) {
+        const char8_t x_low = to_ascii_lower(x[i]);
+        const char8_t y_low = to_ascii_lower(y[i]);
+        if (x_low != y_low) {
+            return x_low <=> y_low;
+        }
+    }
+    return x.length() <=> y.length();
+}
+
+/// @brief Returns `true` iff `x` and `y` are equal,
+/// ignoring any case differences between ASCII alphabetic characters.
+[[nodiscard]]
+constexpr bool equals_ignore_case(std::u8string_view x, std::u8string_view y)
+{
+    if (x.length() != y.length()) {
+        return false;
+    }
+    for (std::size_t i = 0; i < x.length(); ++i) {
+        if (to_ascii_upper(x[i]) != to_ascii_upper(y[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/// @brief Returns `true` iff `str` starts with `prefix`,
+/// ignoring any case differences between ASCII alphabetic characters.
+[[nodiscard]]
+constexpr bool starts_with_ignore_case(std::u8string_view str, std::u8string_view prefix)
+{
+    if (prefix.length() > str.length()) {
+        return false;
+    }
+    for (std::size_t i = 0; i < prefix.length(); ++i) {
+        if (to_ascii_upper(prefix[i]) != to_ascii_upper(str[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/// @brief Returns `true` iff `haystack` contains `needle`,
+/// ignoring any case differences between ASCII alphabetic characters.
+[[nodiscard]]
+constexpr bool contains_ignore_case(std::u8string_view haystack, std::u8string_view needle)
+{
+    if (needle.empty()) {
+        return true;
+    }
+    for (std::size_t i = 0; i + needle.length() <= haystack.length(); ++i) {
+        if (equals_ignore_case(haystack.substr(i, needle.length()), needle)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 } // namespace ulight::ascii

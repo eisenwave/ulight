@@ -1,7 +1,6 @@
 #ifndef ULIGHT_STRINGS_HPP
 #define ULIGHT_STRINGS_HPP
 
-#include <cstddef>
 #include <string_view>
 
 #include "ulight/impl/ascii_chars.hpp"
@@ -63,69 +62,6 @@ constexpr bool contains(std::u8string_view str, char8_t c)
 constexpr bool contains(std::u32string_view str, char32_t c)
 {
     return str.find(c) != std::u32string_view::npos;
-}
-
-/// @brief Returns `true` iff `x` and `y` are equal,
-/// ignoring any case differences between ASCII alphabetic characters.
-[[nodiscard]]
-constexpr bool equals_ascii_ignore_case(std::u8string_view x, std::u8string_view y)
-{
-    if (x.length() != y.length()) {
-        return false;
-    }
-    for (std::size_t i = 0; i < x.length(); ++i) {
-        if (to_ascii_upper(x[i]) != to_ascii_upper(y[i])) {
-            return false;
-        }
-    }
-    return true;
-}
-
-/// @brief Returns the result of a comparison between `x` and `y`
-/// where both strings are mapped to lower case for the purpose of comparison.
-[[nodiscard]]
-constexpr std::strong_ordering compare_ascii_to_lower(std::u8string_view x, std::u8string_view y)
-{
-    for (std::size_t i = 0; i < x.length() && i < y.length(); ++i) {
-        const char8_t x_low = to_ascii_lower(x[i]);
-        const char8_t y_low = to_ascii_lower(y[i]);
-        if (x_low != y_low) {
-            return x_low <=> y_low;
-        }
-    }
-    return x.length() <=> y.length();
-}
-
-/// @brief Returns `true` iff `str` starts with `prefix`,
-/// ignoring any case differences between ASCII alphabetic characters.
-[[nodiscard]]
-constexpr bool starts_with_ascii_ignore_case(std::u8string_view str, std::u8string_view prefix)
-{
-    if (prefix.length() > str.length()) {
-        return false;
-    }
-    for (std::size_t i = 0; i < prefix.length(); ++i) {
-        if (to_ascii_upper(prefix[i]) != to_ascii_upper(str[i])) {
-            return false;
-        }
-    }
-    return true;
-}
-
-/// @brief Returns `true` iff `haystack` contains `needle`,
-/// ignoring any case differences between ASCII alphabetic characters.
-[[nodiscard]]
-constexpr bool contains_ascii_ignore_case(std::u8string_view haystack, std::u8string_view needle)
-{
-    if (needle.empty()) {
-        return true;
-    }
-    for (std::size_t i = 0; i + needle.length() <= haystack.length(); ++i) {
-        if (equals_ascii_ignore_case(haystack.substr(i, needle.length()), needle)) {
-            return true;
-        }
-    }
-    return false;
 }
 
 namespace detail {

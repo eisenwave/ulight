@@ -5,7 +5,6 @@
 #include "ulight/impl/highlighter.hpp"
 #include "ulight/impl/numbers.hpp"
 #include "ulight/impl/parse_utils.hpp"
-#include "ulight/impl/strings.hpp"
 
 #include "ulight/impl/lang/nasm.hpp"
 #include "ulight/impl/lang/nasm_chars.hpp"
@@ -285,7 +284,7 @@ constexpr bool binary_search_case_insensitive(
 )
 {
     constexpr auto case_insensitive_less = [](std::u8string_view x, std::u8string_view y) {
-        return compare_ascii_to_lower(x, y) < 0;
+        return ascii::compare_to_lower(x, y) < 0;
     };
     return std::ranges::binary_search(haystack, needle, case_insensitive_less);
 }
@@ -475,8 +474,8 @@ private:
         const std::size_t length = match_identifier(remainder);
         ULIGHT_ASSUME(length > 0);
         const std::u8string_view identifier = remainder.substr(0, length);
-        if (equals_ascii_ignore_case(identifier, u8"seg")
-            || equals_ascii_ignore_case(identifier, u8"wrt")) {
+        if (ascii::equals_ignore_case(identifier, u8"seg")
+            || ascii::equals_ignore_case(identifier, u8"wrt")) {
             emit_and_advance(length, Highlight_Type::keyword_op);
             return;
         }

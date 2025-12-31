@@ -3,6 +3,7 @@
 
 #include <gtest/gtest.h>
 
+#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/ascii_chars.hpp"
 #include "ulight/impl/parse_utils.hpp"
 #include "ulight/impl/strings.hpp"
@@ -209,60 +210,60 @@ TEST(Charsets, all_cpp_whitespace)
     }
 }
 
-TEST(Strings, equals_ascii_ignore_case)
+TEST(Strings, ascii_equals_ignore_case)
 {
-    EXPECT_TRUE(equals_ascii_ignore_case(u8"", u8""));
-    EXPECT_TRUE(equals_ascii_ignore_case(u8"abc", u8"abc"));
-    EXPECT_TRUE(equals_ascii_ignore_case(u8"abc", u8"ABC"));
-    EXPECT_TRUE(equals_ascii_ignore_case(u8"aBc", u8"AbC"));
+    EXPECT_TRUE(ascii::equals_ignore_case(u8"", u8""));
+    EXPECT_TRUE(ascii::equals_ignore_case(u8"abc", u8"abc"));
+    EXPECT_TRUE(ascii::equals_ignore_case(u8"abc", u8"ABC"));
+    EXPECT_TRUE(ascii::equals_ignore_case(u8"aBc", u8"AbC"));
 
-    EXPECT_FALSE(equals_ascii_ignore_case(u8"abc", u8"abcd"));
+    EXPECT_FALSE(ascii::equals_ignore_case(u8"abc", u8"abcd"));
 }
 
-TEST(Strings, starts_with_ascii_ignore_case)
+TEST(Strings, ascii_starts_with_ignore_case)
 {
-    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"", u8""));
-    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"abc", u8""));
+    EXPECT_TRUE(ascii::starts_with_ignore_case(u8"", u8""));
+    EXPECT_TRUE(ascii::starts_with_ignore_case(u8"abc", u8""));
 
-    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"abcd", u8"abc"));
+    EXPECT_TRUE(ascii::starts_with_ignore_case(u8"abcd", u8"abc"));
 
-    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"abc", u8"ABC"));
-    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"abcd", u8"ABC"));
-    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"aBc", u8"AbC"));
-    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"aBcD", u8"AbC"));
+    EXPECT_TRUE(ascii::starts_with_ignore_case(u8"abc", u8"ABC"));
+    EXPECT_TRUE(ascii::starts_with_ignore_case(u8"abcd", u8"ABC"));
+    EXPECT_TRUE(ascii::starts_with_ignore_case(u8"aBc", u8"AbC"));
+    EXPECT_TRUE(ascii::starts_with_ignore_case(u8"aBcD", u8"AbC"));
 
-    EXPECT_TRUE(starts_with_ascii_ignore_case(u8"aBc", u8"AbC"));
+    EXPECT_TRUE(ascii::starts_with_ignore_case(u8"aBc", u8"AbC"));
 
-    EXPECT_FALSE(starts_with_ascii_ignore_case(u8"abc", u8"abcd"));
-    EXPECT_FALSE(starts_with_ascii_ignore_case(u8"abc", u8"ABCD"));
-    EXPECT_FALSE(starts_with_ascii_ignore_case(u8"abc", u8"aBcD"));
+    EXPECT_FALSE(ascii::starts_with_ignore_case(u8"abc", u8"abcd"));
+    EXPECT_FALSE(ascii::starts_with_ignore_case(u8"abc", u8"ABCD"));
+    EXPECT_FALSE(ascii::starts_with_ignore_case(u8"abc", u8"aBcD"));
 }
 
-TEST(Strings, contains_ascii_ignore_case)
+TEST(Strings, ascii_contains_ignore_case)
 {
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"", u8""));
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"abc", u8""));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"", u8""));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"abc", u8""));
 
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"abcd", u8"abc"));
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"abcd", u8"bcd"));
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"abcd", u8"bc"));
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"abcd", u8"b"));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"abcd", u8"abc"));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"abcd", u8"bcd"));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"abcd", u8"bc"));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"abcd", u8"b"));
 
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"abc", u8"ABC"));
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"abc", u8"BC"));
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"abcd", u8"ABC"));
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"abcd", u8"BCD"));
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"aBc", u8"AbC"));
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"aBc", u8"BC"));
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"aBcD", u8"AbC"));
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"aBcD", u8"CD"));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"abc", u8"ABC"));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"abc", u8"BC"));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"abcd", u8"ABC"));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"abcd", u8"BCD"));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"aBc", u8"AbC"));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"aBc", u8"BC"));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"aBcD", u8"AbC"));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"aBcD", u8"CD"));
 
-    EXPECT_TRUE(contains_ascii_ignore_case(u8"aBc", u8"AbC"));
+    EXPECT_TRUE(ascii::contains_ignore_case(u8"aBc", u8"AbC"));
 
-    EXPECT_FALSE(contains_ascii_ignore_case(u8"abc", u8"abcd"));
-    EXPECT_FALSE(contains_ascii_ignore_case(u8"abc", u8"ABCD"));
-    EXPECT_FALSE(contains_ascii_ignore_case(u8"abc", u8"aBcD"));
-    EXPECT_FALSE(contains_ascii_ignore_case(u8"abc", u8"x"));
+    EXPECT_FALSE(ascii::contains_ignore_case(u8"abc", u8"abcd"));
+    EXPECT_FALSE(ascii::contains_ignore_case(u8"abc", u8"ABCD"));
+    EXPECT_FALSE(ascii::contains_ignore_case(u8"abc", u8"aBcD"));
+    EXPECT_FALSE(ascii::contains_ignore_case(u8"abc", u8"x"));
 }
 
 TEST(Parse_Utils, find_blank_line_sequence)

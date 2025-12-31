@@ -1,12 +1,11 @@
 #include "ulight/impl/lang/xml.hpp"
-#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/lang/html.hpp"
 #include "ulight/impl/lang/xml_chars.hpp"
 
+#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/highlighter.hpp"
-#include "ulight/impl/strings.hpp"
 #include "ulight/impl/unicode.hpp"
 
 #include "ulight/ulight.hpp"
@@ -117,7 +116,7 @@ private:
         // TODO: this check for whether xml is in the name is most likely unnecessary and only
         //       breaks highlighting
         const std::u8string_view target_name = remainder.substr(0, name_length);
-        if (contains_ascii_ignore_case(target_name, u8"xml")) {
+        if (ascii::contains_ignore_case(target_name, u8"xml")) {
             return true;
         }
 

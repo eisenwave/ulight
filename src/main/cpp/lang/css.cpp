@@ -4,11 +4,11 @@
 
 #include "ulight/ulight.hpp"
 
+#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/assert.hpp"
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/highlighter.hpp"
-#include "ulight/impl/strings.hpp"
 #include "ulight/impl/unicode.hpp"
 
 #include "ulight/impl/lang/cpp.hpp"
@@ -134,7 +134,7 @@ Ident_Result match_ident_like_token(std::u8string_view str)
         return { .length = length, .type = Ident_Type::ident };
     }
 
-    if (equals_ascii_ignore_case(result, u8"url")) {
+    if (ascii::equals_ignore_case(result, u8"url")) {
         return { .length = length, .type = Ident_Type::url };
     }
 
@@ -334,7 +334,7 @@ public:
                 const std::size_t white_length = html::match_whitespace(remainder.substr(1));
                 if (const std::size_t name_length
                     = match_ident_sequence(remainder.substr(1 + white_length))) {
-                    if (starts_with_ascii_ignore_case(
+                    if (ascii::starts_with_ignore_case(
                             remainder.substr(1 + white_length, name_length), important
                         )) {
                         emit_and_advance(

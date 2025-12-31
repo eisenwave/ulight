@@ -3,9 +3,9 @@
 #include <memory_resource>
 #include <string_view>
 
-#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/ulight.hpp"
 
+#include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/assert.hpp"
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
@@ -99,7 +99,7 @@ std::size_t match_raw_text(std::u8string_view str, std::u8string_view closing_na
         // and only commit to updating length once all parts are matched.
         std::size_t new_length = length + 2;
         str.remove_prefix(2);
-        if (!starts_with_ascii_ignore_case(str, closing_name)) {
+        if (!ascii::starts_with_ignore_case(str, closing_name)) {
             length = new_length;
             continue;
         }
@@ -148,7 +148,7 @@ match_escapable_raw_text_piece(std::u8string_view str, std::u8string_view closin
         // and only commit to updating length once all parts are matched.
         std::size_t new_length = length + 2;
         str.remove_prefix(2);
-        if (!starts_with_ascii_ignore_case(str, closing_name)) {
+        if (!ascii::starts_with_ignore_case(str, closing_name)) {
             length = new_length;
             continue;
         }
@@ -394,8 +394,8 @@ private:
         constexpr std::u8string_view script_tag = u8"script";
         constexpr std::u8string_view style_tag = u8"style";
 
-        if (equals_ascii_ignore_case(name, textarea_tag)
-            || equals_ascii_ignore_case(name, title_tag)) {
+        if (ascii::equals_ignore_case(name, textarea_tag)
+            || ascii::equals_ignore_case(name, title_tag)) {
             while (const Raw_Text_Result result = match_escapable_raw_text_piece(remainder, name)) {
                 advance(result.raw_length);
                 if (result.ref_length != 0) {
@@ -404,12 +404,12 @@ private:
             }
             return true;
         }
-        if (equals_ascii_ignore_case(name, script_tag)) {
+        if (ascii::equals_ignore_case(name, script_tag)) {
             const std::size_t js_length = match_raw_text(remainder, script_tag);
             consume_nested_css_or_js(Lang::javascript, js_length);
             return true;
         }
-        if (equals_ascii_ignore_case(name, style_tag)) {
+        if (ascii::equals_ignore_case(name, style_tag)) {
             const std::size_t css_length = match_raw_text(remainder, style_tag);
             consume_nested_css_or_js(Lang::css, css_length);
             return true;
