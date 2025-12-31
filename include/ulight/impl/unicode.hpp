@@ -449,25 +449,25 @@ private:
     const char8_t* m_end = nullptr;
 
 public:
-    Code_Point_Iterator() noexcept = default;
+    constexpr Code_Point_Iterator() noexcept = default;
 
-    Code_Point_Iterator(std::u8string_view str) noexcept
+    constexpr Code_Point_Iterator(std::u8string_view str) noexcept
         : m_pointer { str.data() }
         , m_end { str.data() + str.size() }
     {
     }
 
     [[nodiscard]]
-    friend bool operator==(Code_Point_Iterator, Code_Point_Iterator) noexcept
+    friend constexpr bool operator==(Code_Point_Iterator, Code_Point_Iterator) noexcept
         = default;
 
     [[nodiscard]]
-    friend bool operator==(Code_Point_Iterator i, Code_Point_Iterator_Sentinel) noexcept
+    friend constexpr bool operator==(Code_Point_Iterator i, Code_Point_Iterator_Sentinel) noexcept
     {
         return i.m_pointer == i.m_end;
     }
 
-    Code_Point_Iterator& operator++()
+    constexpr Code_Point_Iterator& operator++()
     {
         const int length = sequence_length(*m_pointer);
         if (length == 0 || length > m_end - m_pointer) {
@@ -482,7 +482,7 @@ public:
         return *this;
     }
 
-    Code_Point_Iterator operator++(int)
+    constexpr Code_Point_Iterator operator++(int)
     {
         Code_Point_Iterator copy = *this;
         ++*this;
@@ -490,7 +490,7 @@ public:
     }
 
     [[nodiscard]]
-    char32_t operator*() const
+    constexpr char32_t operator*() const
     {
         const std::expected<Code_Point_And_Length, Error_Code> result = next();
         if (!result) {
@@ -504,7 +504,7 @@ public:
     }
 
     [[nodiscard]]
-    std::expected<Code_Point_And_Length, Error_Code> next() const noexcept
+    constexpr std::expected<Code_Point_And_Length, Error_Code> next() const noexcept
     {
         const std::u8string_view str { m_pointer, m_end };
         return decode_and_length(str);
@@ -521,25 +521,25 @@ struct Code_Point_View {
     std::u8string_view string;
 
     [[nodiscard]]
-    iterator begin() const noexcept
+    constexpr iterator begin() const noexcept
     {
         return iterator { string };
     }
 
     [[nodiscard]]
-    iterator cbegin() const noexcept
+    constexpr iterator cbegin() const noexcept
     {
         return begin();
     }
 
     [[nodiscard]]
-    Code_Point_Iterator_Sentinel end() const noexcept
+    constexpr Code_Point_Iterator_Sentinel end() const noexcept
     {
         return {};
     }
 
     [[nodiscard]]
-    Code_Point_Iterator_Sentinel cend() const noexcept
+    constexpr Code_Point_Iterator_Sentinel cend() const noexcept
     {
         return {};
     }
@@ -550,19 +550,19 @@ struct Code_Units_And_Length {
     int length;
 
     [[nodiscard]]
-    std::u8string_view as_string() const
+    constexpr std::u8string_view as_string() const
     {
         return { code_units.data(), std::size_t(length) };
     }
 
     [[nodiscard]]
-    const char8_t* begin() const
+    constexpr const char8_t* begin() const
     {
         return code_units.data();
     }
 
     [[nodiscard]]
-    const char8_t* end() const
+    constexpr const char8_t* end() const
     {
         return code_units.data() + length;
     }
