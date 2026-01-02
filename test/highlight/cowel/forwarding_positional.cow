@@ -1,6 +1,6 @@
 \m(cat3){\p{0}\p{1}\p{2}}
 \m(a){\cat3(...)}
-\m(b){\cat3(\cowel_put{0}, ...)}
+\m(b){\cat3(cowel_put{0}, ...)}
 \m(c){\cat3(c, ...)}
 \m(d){\cat3(..., d)}
 \m(e){\cat3(e, ..., E)}

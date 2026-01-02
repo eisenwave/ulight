@@ -12,7 +12,7 @@ namespace ulight::cowel {
 std::size_t match_directive_name(std::u8string_view str);
 
 [[nodiscard]]
-std::size_t match_argument_name(std::u8string_view str);
+std::size_t match_member_name(std::u8string_view str);
 
 [[nodiscard]]
 std::size_t match_escape(std::u8string_view str);
@@ -47,26 +47,13 @@ Comment_Result match_block_comment(std::u8string_view str);
 Common_Number_Result match_number(std::u8string_view str);
 
 [[nodiscard]]
-bool starts_with_escape_comment_directive(std::u8string_view str);
-
-struct Named_Argument_Result {
-    std::size_t length;
-    std::size_t leading_whitespace;
-    std::size_t name_length;
-    std::size_t trailing_whitespace;
-
-    [[nodiscard]]
-    constexpr explicit operator bool() const
-    {
-        return length != 0;
-    }
-
-    friend constexpr bool operator==(const Named_Argument_Result&, const Named_Argument_Result&)
-        = default;
-};
+std::size_t match_unquoted_string(std::u8string_view str);
 
 [[nodiscard]]
-Named_Argument_Result match_named_argument_prefix(std::u8string_view str);
+bool starts_with_escape_or_comment_or_directive(std::u8string_view str);
+
+[[nodiscard]]
+std::size_t match_blank(std::u8string_view str);
 
 } // namespace ulight::cowel
 
