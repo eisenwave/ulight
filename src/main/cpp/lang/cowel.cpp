@@ -234,7 +234,12 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
 
     after_loop:
         if (plain_length) {
-            advance(plain_length);
+            if (text_kind == Text_Kind::quoted_string) {
+                emit_and_advance(plain_length, Highlight_Type::string);
+            }
+            else {
+                advance(plain_length);
+            }
             return true;
         }
         return false;
