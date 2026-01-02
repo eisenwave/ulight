@@ -143,9 +143,9 @@ TEST_F(Highlight_Test, file_tests)
         if (!compare_succeeded) {
             std::cout << ansi::h_red << "FAIL: " //
                       << ansi::reset << input_path //
-                      << ":\nActual (" << input_path << ") -> expected (" << expectations_path
-                      << ") difference:\n";
-            print_lines_diff(std::cout, as_string_view(actual), as_string_view(expected));
+                      << ":\nDeviation of actual (" << input_path //
+                      << ") from expected (" << expectations_path << "):\n";
+            print_lines_diff(std::cout, as_string_view(expected), as_string_view(actual));
             std::cout << ansi::reset << '\n';
         }
         EXPECT_TRUE(compare_succeeded);
