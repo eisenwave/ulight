@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cstddef>
 #include <cstdlib>
 #include <optional>
 #include <string_view>

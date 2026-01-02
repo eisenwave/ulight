@@ -1,3 +1,7 @@
+#include <algorithm>
+#include <memory_resource>
+#include <string_view>
+
 #include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/escapes.hpp"
 #include "ulight/ulight.hpp"

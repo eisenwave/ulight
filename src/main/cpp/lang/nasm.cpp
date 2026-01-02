@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <string_view>
 
 #include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/highlight.hpp"

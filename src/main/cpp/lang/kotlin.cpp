@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <memory_resource>
 #include <string_view>
 

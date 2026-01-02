@@ -10,6 +10,7 @@
 
 #include "ulight/function_ref.hpp"
 
+#include "ulight/impl/algorithm/copy.hpp"
 #include "ulight/impl/assert.hpp"
 
 namespace ulight {
@@ -151,7 +152,7 @@ public:
             ULIGHT_DEBUG_ASSERT(begin + Diff(chunk_size) <= end);
             ULIGHT_DEBUG_ASSERT(m_size + chunk_size <= m_capacity);
 
-            std::ranges::copy(begin, begin + Diff(chunk_size), m_buffer + m_size);
+            ulight::copy(begin, begin + Diff(chunk_size), m_buffer + m_size);
             begin += Diff(chunk_size);
             m_size += chunk_size;
         }
