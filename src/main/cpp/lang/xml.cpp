@@ -15,7 +15,6 @@
 #include "ulight/ulight.hpp"
 
 #include <algorithm>
-#include <array>
 #include <cstddef>
 #include <string_view>
 
@@ -47,10 +46,7 @@ constexpr std::u8string_view decltype_version_attr = u8"version";
 constexpr std::u8string_view decltype_encoding_attr = u8"encoding";
 constexpr std::u8string_view decltype_standalone_attr = u8"standalone";
 
-bool is_entity_ref_content(std::u8string_view str)
-{
-    return utf8::all_of(str, [](char32_t c) { return is_xml_name(c); });
-}
+} // namespace
 
 [[nodiscard]]
 std::size_t match_name(std::u8string_view str)
@@ -142,8 +138,6 @@ std::size_t match_pcdata_decl(std::u8string_view str)
     return str.starts_with(pcdata_decl_string) ? pcdata_decl_string.size() : 0;
 }
 
-} // namespace
-
 [[nodiscard]]
 std::size_t match_whitespace(std::u8string_view str)
 {
@@ -185,7 +179,6 @@ html::Match_Result match_comment(std::u8string_view str)
     return { length, false };
 }
 
-// https://www.w3.org/TR/xml/#NT-PEReference
 [[nodiscard]]
 std::size_t match_entity_reference(std::u8string_view str)
 {
@@ -193,8 +186,24 @@ std::size_t match_entity_reference(std::u8string_view str)
         return 0;
     }
     const std::size_t result = str.find(u8';', 1);
+    std::u8string_view ref_content = str.substr(1, result - 1);
     const bool success
-        = result != std::u8string_view::npos && is_entity_ref_content(str.substr(1, result - 1));
+        = result != std::u8string_view::npos && match_name(ref_content) == ref_content.size();
+    return success ? result + 1 : 0;
+}
+
+[[nodiscard]]
+std::size_t match_pe_reference(std::u8string_view str)
+{
+
+    if (!str.starts_with(u8'&')) {
+        return 0;
+    }
+
+    const std::size_t result = str.find(u8';', 1);
+    std::u8string_view ref_content = str.substr(1, result - 1);
+    const bool success
+        = result != std::u8string_view::npos && match_name(ref_content) == ref_content.size();
     return success ? result + 1 : 0;
 }
 
@@ -257,7 +266,6 @@ private:
     // This method matches a superset of
     // https://www.w3.org/TR/xml/#NT-markupdecl
     // to provide better highlighting.
-    // TODO: match PERef
     bool expect_markup_decl()
     {
         if (expect_comment() || expect_processing_instruction()) {
@@ -289,38 +297,41 @@ private:
             if (remainder.starts_with(u8')') || //
                 remainder.starts_with(u8'(') || //
                 remainder.starts_with(u8'|') || //
-                remainder.starts_with(u8'*')) { //
+                remainder.starts_with(u8'*') || //
+                remainder.starts_with(u8',')) { //
                 emit_and_advance(1, Highlight_Type::symbol_punc);
             }
-            else if (std::size_t att_type_len = match_att_type(remainder)) {
+            else if (const std::size_t att_type_len = match_att_type(remainder)) {
                 emit_and_advance(att_type_len, Highlight_Type::keyword);
             }
-            else if (std::size_t default_decl_len = match_default_decl_type(remainder)) {
+            else if (const std::size_t default_decl_len = match_default_decl_type(remainder)) {
                 emit_and_advance(default_decl_len, Highlight_Type::keyword);
             }
-            else if (std::size_t external_id_len = match_external_id_type(remainder)) {
+            else if (const std::size_t external_id_len = match_external_id_type(remainder)) {
                 emit_and_advance(external_id_len, Highlight_Type::keyword);
             }
-            else if (std::size_t content_spec_len = match_content_spec_type(remainder)) {
+            else if (const std::size_t content_spec_len = match_content_spec_type(remainder)) {
                 emit_and_advance(content_spec_len, Highlight_Type::keyword);
             }
-            else if (std::size_t ndata_len = match_ndata_decl(remainder)) {
+            else if (const std::size_t ndata_len = match_ndata_decl(remainder)) {
                 emit_and_advance(ndata_len, Highlight_Type::keyword);
             }
-            else if (std::size_t pcdata_decl_len = match_pcdata_decl(remainder)) {
+            else if (const std::size_t pcdata_decl_len = match_pcdata_decl(remainder)) {
                 emit_and_advance(pcdata_decl_len, Highlight_Type::keyword);
             }
-            else if (std::size_t name_len = match_name(remainder)) {
+            else if (const std::size_t pe_ref_len = match_pe_reference(remainder)) {
+                emit_and_advance(pe_ref_len, Highlight_Type::string_escape);
+            }
+            else if (const std::size_t name_len = match_name(remainder)) {
                 emit_and_advance(name_len, Highlight_Type::name);
             }
             else if (remainder.starts_with(u8'\'') || remainder.starts_with(u8'"')) {
                 expect_attribute_value();
             }
             else {
-                std::size_t len = ascii::find_if(remainder, [](char8_t c) {
+                const std::size_t len = ascii::length_if_not(remainder, [](char8_t c) {
                     return is_xml_whitespace(c) || c == u8'>';
                 });
-                len = std::min(len, remainder.size());
                 advance(len);
             }
             expect_whitespace();
@@ -350,9 +361,8 @@ private:
             expect_external_id();
         }
         else if (!remainder.starts_with(u8'[')) {
-            std::size_t word_len
-                = ascii::find_if(remainder, [](char8_t c) { return is_xml_whitespace(c); });
-            word_len = std::min(word_len, remainder.size());
+            const std::size_t word_len
+                = ascii::length_if_not(remainder, [](char8_t c) { return is_xml_whitespace(c); });
             advance(word_len);
 
             expect_whitespace();
@@ -402,9 +412,9 @@ private:
             return false;
         }
         emit_and_advance(xml_tag.size(), Highlight_Type::name_macro);
-        advance(match_whitespace(remainder));
+        expect_whitespace();
 
-        auto highlight_number = [&]() {
+        const auto highlight_number = [&]() {
             Common_Number_Result num_result
                 = match_common_number(remainder, Common_Number_Options {});
             if (num_result.integer) {
@@ -439,13 +449,13 @@ private:
         };
 
         highlight_decl_attr(decltype_version_attr, highlight_number);
-        advance(match_whitespace(remainder));
+        expect_whitespace();
 
         highlight_decl_attr(decltype_encoding_attr, expect_string);
-        advance(match_whitespace(remainder));
+        expect_whitespace();
 
         highlight_decl_attr(decltype_standalone_attr, expect_string);
-        advance(match_whitespace(remainder));
+        expect_whitespace();
 
         if (!remainder.starts_with(u8"?>")) {
             return true;
@@ -488,7 +498,7 @@ private:
             return true;
         }
 
-        advance(match_whitespace(remainder));
+        expect_whitespace();
 
         while (!remainder.empty() && !remainder.starts_with(u8"?>")) {
             advance(1);
@@ -558,7 +568,7 @@ private:
 
         while (!remainder.empty()) {
 
-            advance(match_whitespace(remainder));
+            expect_whitespace();
 
             if (remainder.starts_with(u8'>') || remainder.starts_with(u8"/>")) {
                 break;
@@ -590,7 +600,7 @@ private:
         };
         expect_name(Highlight_Type::markup_attr, is_attribute_name_end);
 
-        advance(match_whitespace(remainder));
+        expect_whitespace();
 
         if (!remainder.starts_with(u8'=')) {
             return true;
@@ -598,7 +608,7 @@ private:
 
         emit_and_advance(1, Highlight_Type::symbol_punc);
 
-        advance(match_whitespace(remainder));
+        expect_whitespace();
 
         return expect_attribute_value();
     }
@@ -701,7 +711,7 @@ private:
             return true;
         }
 
-        advance(match_whitespace(remainder));
+        expect_whitespace();
 
         if (remainder.starts_with(u8'>')) {
             emit_and_advance(1, Highlight_Type::symbol_punc);
