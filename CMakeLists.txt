@@ -6,6 +6,12 @@ set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+option(ULIGHT_BUILD_MODULE "Build C++ module" OFF)
+
+if(ULIGHT_BUILD_MODULE)
+    cmake_minimum_required(VERSION 3.28)
+endif()
+
 set(LLVM_WARNING_OPTIONS
     -Wall
     -Wimplicit-fallthrough
@@ -82,6 +88,27 @@ target_include_directories(ulight PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include")
 
 target_compile_options(ulight PUBLIC ${WARNING_OPTIONS} ${SANITIZER_OPTIONS})
 target_link_options(ulight PUBLIC ${SANITIZER_OPTIONS})
+
+if(ULIGHT_BUILD_MODULE)
+    add_library(ulight-module)
+    
+    target_sources(ulight-module
+        PUBLIC
+            FILE_SET CXX_MODULES FILES
+                src/main/cpp/ulight.cppm
+    )
+    
+    target_compile_features(ulight-module PUBLIC cxx_std_23)
+    
+    target_include_directories(ulight-module PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    )
+    
+    target_link_libraries(ulight-module PUBLIC ulight)
+    
+    add_library(ulight::module ALIAS ulight-module)
+endif()
 
 if(DEFINED EMSCRIPTEN)
     # https://stunlock.gg/posts/emscripten_with_cmake/
