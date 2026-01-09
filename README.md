@@ -66,6 +66,8 @@ and because the library's ABI is C-based.
 The `ulight.hpp` header is just a wrapper for convenience,
 and requires C++20 to use.
 
+To compile it as a C++20 module, use the `ULIGHT_BUILD_MODULE` option in CMake.
+
 ### Building the WASM library
 
 µlight is also designed to target WASM, using emscripten.
