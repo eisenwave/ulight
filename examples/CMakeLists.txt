@@ -5,3 +5,8 @@ foreach(EXAMPLE ${EXAMPLES})
     add_executable(${EXAMPLE_NAME} ${EXAMPLE})
     target_link_libraries(${EXAMPLE_NAME} PRIVATE ulight)
 endforeach()
+
+if(ULIGHT_BUILD_MODULE)
+    add_subdirectory(modules)
+endif()
+
