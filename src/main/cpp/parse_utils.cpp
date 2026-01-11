@@ -186,7 +186,7 @@ match_common_number(const std::u8string_view str, const Common_Number_Options& o
             if (str.substr(length).starts_with(prefix.str)) {
                 result.prefix = prefix.str.length();
                 length += result.prefix;
-                allow_float = !prefix.floating_point;
+                allow_float = prefix.floating_point;
                 return prefix.base;
             }
         }
@@ -260,6 +260,7 @@ match_common_number(const std::u8string_view str, const Common_Number_Options& o
     }
 
     result.length = length;
+    result.erroneous |= result.prefix == length;
     ULIGHT_DEBUG_ASSERT(
         (result.sign + result.prefix + result.integer + result.radix_point + result.fractional
          + result.exponent_sep + result.exponent_digits + result.suffix)
