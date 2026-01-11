@@ -24,12 +24,7 @@ constexpr bool is_cowel_special(char32_t c) noexcept
     return is_ascii(c) && is_cowel_special(char8_t(c));
 }
 
-inline constexpr Charset256 is_cowel_escapeable_set
-    = (is_ascii_punctuation_set //
-       - detail::to_charset256(u8'_') //
-       - detail::to_charset256(cowel_line_comment_char)
-       - detail::to_charset256(cowel_block_comment_char)) //
-    | detail::to_charset256(u8" \t\v\r\n");
+inline constexpr Charset256 is_cowel_escapeable_set = detail::to_charset256(u8"{}\\\" \r\n");
 
 /// @brief Returns `true` if `c` is an escapable cowel character.
 /// That is, if `\c` would be treated specially,
@@ -157,6 +152,22 @@ constexpr bool is_cowel_unquoted_string(char8_t c) noexcept
 constexpr bool is_cowel_unquoted_string(char32_t c) noexcept
 {
     return is_ascii(c) && is_cowel_unquoted_string(char8_t(c));
+}
+
+inline constexpr Charset256 is_cowel_ascii_reserved_escapeable_set = is_ascii_set
+    - is_cowel_escapeable_set - is_cowel_directive_name_start_set
+    - detail::to_charset256(u8":*\n\r");
+
+[[nodiscard]]
+constexpr bool is_cowel_ascii_reserved_escapable(char8_t c) noexcept
+{
+    return is_cowel_ascii_reserved_escapeable_set.contains(c);
+}
+
+[[nodiscard]]
+constexpr bool is_cowel_ascii_reserved_escapable(char32_t c) noexcept
+{
+    return is_ascii(c) && is_cowel_ascii_reserved_escapable(char8_t(c));
 }
 
 } // namespace ulight

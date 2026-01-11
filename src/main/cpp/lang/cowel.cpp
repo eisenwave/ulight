@@ -33,13 +33,33 @@ std::size_t match_member_name(const std::u8string_view str)
     return str.empty() || is_ascii_digit(str[0]) ? 0 : utf8::length_if(str, predicate);
 }
 
-std::size_t match_escape(const std::u8string_view str)
+Escape_Result match_escape(const std::u8string_view str)
 {
-    constexpr std::size_t sequence_length = 2;
-    if (str.length() < sequence_length || str[0] != u8'\\' || !is_cowel_escapeable(str[1])) {
-        return 0;
+    if (str.empty() || str[0] != u8'\\') {
+        return {};
     }
-    return str.starts_with(u8"\\\r\n") ? 3 : 2;
+    if (str.length() == 1) [[unlikely]] {
+        return { .length = 1, .is_reserved = true };
+    }
+    if (is_cowel_escapeable(str[1])) {
+        if (str.starts_with(u8"\\\r\n")) {
+            return { .length = 3 };
+        }
+        // Only ASCII characters can form an ESCAPE-TOKEN,
+        // so we don't need to do a Unicode decode.
+        ULIGHT_DEBUG_ASSERT(is_ascii(str[1]));
+        return { .length = 2 };
+    }
+    if (!is_ascii(str[1])) {
+        // However, for a RESERVED-ESCAPE-TOKEN,
+        // the escaped code point may be non-ASCII, so we need to decode for error handling.
+        const auto [c, length] = utf8::decode_and_length_or_replacement(str.substr(1));
+        return { .length = std::size_t(length + 1), .is_reserved = true };
+    }
+    if (is_cowel_ascii_reserved_escapable(str[1])) {
+        return { .length = 2, .is_reserved = true };
+    }
+    return {};
 }
 
 std::size_t match_ellipsis(const std::u8string_view str)
@@ -247,11 +267,11 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
 
     bool expect_escape()
     {
-        const std::size_t e = match_escape(remainder);
+        const Escape_Result e = match_escape(remainder);
         if (!e) {
             return false;
         }
-        const std::u8string_view escape = remainder.substr(0, e);
+        const std::u8string_view escape = remainder.substr(0, e.length);
         // Even though the escape sequence technically includes newlines and carriage returns,
         // we do not want those to be part of the token for the purpose of syntax highlighting.
         // That is because cross-line tokens are ugly.
@@ -260,7 +280,9 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             emit_and_advance(1, Highlight_Type::string_escape);
             return true;
         }
-        emit_and_advance(e, Highlight_Type::string_escape);
+        const auto highlight
+            = e.is_reserved ? Highlight_Type::error : Highlight_Type::string_escape;
+        emit_and_advance(e.length, highlight);
         return true;
     }
 

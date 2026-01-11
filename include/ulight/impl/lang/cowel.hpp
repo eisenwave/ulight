@@ -14,8 +14,19 @@ std::size_t match_directive_name(std::u8string_view str);
 [[nodiscard]]
 std::size_t match_member_name(std::u8string_view str);
 
+struct Escape_Result {
+    std::size_t length;
+    bool is_reserved = false;
+
+    [[nodiscard]]
+    constexpr explicit operator bool() const noexcept
+    {
+        return length != 0;
+    }
+};
+
 [[nodiscard]]
-std::size_t match_escape(std::u8string_view str);
+Escape_Result match_escape(std::u8string_view str);
 
 [[nodiscard]]
 std::size_t match_ellipsis(std::u8string_view str);
