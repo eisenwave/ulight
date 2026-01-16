@@ -170,10 +170,43 @@ std::size_t match_blank(const std::u8string_view str)
     return length;
 }
 
+[[nodiscard]]
+std::size_t match_quoted_member_name(const std::u8string_view str)
+{
+    if (!str.starts_with(u8'"')) {
+        return {};
+    }
+    std::size_t length = 1;
+    while (length < str.length()) {
+        if (str[length] == u8'"') {
+            return length + 1;
+        }
+        if (str[length] == u8'\\') {
+            const auto remainder = str.substr(length);
+            if (const Escape_Result r = match_escape(remainder)) {
+                length += r.length;
+                continue;
+            }
+            if (const std::size_t c = match_line_comment(remainder)) {
+                length += c;
+                continue;
+            }
+            if (const Comment_Result c = match_block_comment(remainder)) {
+                length += c.length;
+                continue;
+            }
+            break;
+        }
+        ++length;
+    }
+    return {};
+}
+
 namespace {
 
 enum struct Text_Kind : Underlying {
     document,
+    quoted_member_name,
     quoted_string,
     block,
 };
@@ -226,6 +259,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             case Text_Kind::document: {
                 continue;
             }
+            case Text_Kind::quoted_member_name:
             case Text_Kind::quoted_string: {
                 if (c == u8'"') {
                     goto done;
@@ -250,11 +284,20 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             return false;
         }
 
-        if (text_kind == Text_Kind::quoted_string) {
-            emit_and_advance(plain_length, Highlight_Type::string);
-        }
-        else {
+        switch (text_kind) {
+        case Text_Kind::document:
+        case Text_Kind::block: {
             advance(plain_length);
+            break;
+        }
+        case Text_Kind::quoted_member_name: {
+            emit_and_advance(plain_length, Highlight_Type::markup_attr);
+            break;
+        }
+        case Text_Kind::quoted_string: {
+            emit_and_advance(plain_length, Highlight_Type::string);
+            break;
+        }
         }
         return true;
     }
@@ -307,7 +350,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         }
         const std::size_t name_length = match_identifier(remainder.substr(1));
         if (name_length == 0) {
-            return 0;
+            return false;
         }
         emit_and_advance(1 + name_length, Highlight_Type::markup_tag);
         expect_group();
@@ -372,11 +415,20 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
 
     bool expect_group_member()
     {
-        if (const std::size_t name = match_identifier(remainder)) {
-            const std::size_t space_before_equals = match_blank(remainder.substr(name));
-            if (remainder.substr(name + space_before_equals).starts_with(u8'=')) {
-                emit_and_advance(name, Highlight_Type::markup_attr);
+        const auto name_length = [&] -> std::size_t {
+            if (const std::size_t id = match_identifier(remainder)) {
+                return id;
+            }
+            return match_quoted_member_name(remainder);
+        }();
+        if (name_length) {
+            const std::size_t space_before_equals = match_blank(remainder.substr(name_length));
+            if (remainder.substr(name_length + space_before_equals).starts_with(u8'=')) {
+                if (!expect_quoted_member_name()) {
+                    emit_and_advance(name_length, Highlight_Type::markup_attr);
+                }
                 consume_blank();
+                ULIGHT_ASSERT(remainder.starts_with(u8'='));
                 emit_and_advance(1, Highlight_Type::symbol_punc); // =
                 consume_blank();
                 expect_member_value();
@@ -513,6 +565,19 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         consume_markup_element_sequence(Text_Kind::quoted_string);
         if (remainder.starts_with(u8'"')) {
             emit_and_advance(1, Highlight_Type::string_delim);
+        }
+        return true;
+    }
+
+    bool expect_quoted_member_name()
+    {
+        if (!remainder.starts_with(u8'"')) {
+            return false;
+        }
+        emit_and_advance(1, Highlight_Type::markup_attr_delim);
+        consume_markup_element_sequence(Text_Kind::quoted_member_name);
+        if (remainder.starts_with(u8'"')) {
+            emit_and_advance(1, Highlight_Type::markup_attr_delim);
         }
         return true;
     }

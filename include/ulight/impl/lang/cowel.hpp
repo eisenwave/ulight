@@ -60,6 +60,9 @@ std::size_t match_reserved_number(std::u8string_view str);
 [[nodiscard]]
 std::size_t match_blank(std::u8string_view str);
 
+[[nodiscard]]
+std::size_t match_quoted_member_name(std::u8string_view str);
+
 } // namespace ulight::cowel
 
 #endif

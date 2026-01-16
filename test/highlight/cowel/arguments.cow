@@ -3,6 +3,8 @@
 \tag(a, b, c)
 \tag(){}
 \tag(xzy, abc = 123){}
+\tag("awoo" = 0)
+\tag("aw\"oo" = 0)
 
 \tag(()){}
 \tag((())){}
