@@ -149,11 +149,6 @@ std::size_t match_reserved_number(const std::u8string_view str)
     return length;
 }
 
-bool starts_with_escape_or_comment_or_directive(const std::u8string_view str)
-{
-    return str.length() >= 2 && str[0] == u8'\\' && is_cowel_allowed_after_backslash(str[1]);
-}
-
 std::size_t match_blank(const std::u8string_view str)
 {
     std::size_t length = 0;
@@ -225,10 +220,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         for (; plain_length < remainder.length(); ++plain_length) {
             const char8_t c = remainder[plain_length];
             if (c == u8'\\') {
-                if (starts_with_escape_or_comment_or_directive(remainder.substr(plain_length))) {
-                    goto done;
-                }
-                continue;
+                goto done;
             }
             switch (text_kind) {
             case Text_Kind::document: {

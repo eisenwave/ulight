@@ -58,9 +58,6 @@ Common_Number_Result match_number(std::u8string_view str);
 std::size_t match_reserved_number(std::u8string_view str);
 
 [[nodiscard]]
-bool starts_with_escape_or_comment_or_directive(std::u8string_view str);
-
-[[nodiscard]]
 std::size_t match_blank(std::u8string_view str);
 
 } // namespace ulight::cowel
