@@ -52,7 +52,7 @@ constexpr bool is_cowel_identifier_start(char8_t c) noexcept
 }
 
 [[nodiscard]]
-constexpr bool is_cowel_identifer_start(char32_t c) noexcept
+constexpr bool is_cowel_identifier_start(char32_t c) noexcept
 {
     return is_ascii(c) && is_cowel_identifier_start(char8_t(c));
 }
