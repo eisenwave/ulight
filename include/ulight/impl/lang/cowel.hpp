@@ -9,10 +9,7 @@
 namespace ulight::cowel {
 
 [[nodiscard]]
-std::size_t match_directive_name(std::u8string_view str);
-
-[[nodiscard]]
-std::size_t match_member_name(std::u8string_view str);
+std::size_t match_identifier(std::u8string_view str);
 
 struct Escape_Result {
     std::size_t length;
@@ -58,7 +55,7 @@ Comment_Result match_block_comment(std::u8string_view str);
 Common_Number_Result match_number(std::u8string_view str);
 
 [[nodiscard]]
-std::size_t match_unquoted_string(std::u8string_view str);
+std::size_t match_reserved_number(std::u8string_view str);
 
 [[nodiscard]]
 bool starts_with_escape_or_comment_or_directive(std::u8string_view str);

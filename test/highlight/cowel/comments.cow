@@ -6,5 +6,6 @@
 trailing \: comment
 \: \dir[]{}
 \* awoo *\ \* chan *\
+\* \* *\ text
 \* \: *\ text
 \* unterminated

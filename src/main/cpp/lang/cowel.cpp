@@ -4,33 +4,27 @@
 
 #include "ulight/ulight.hpp"
 
-#include "ulight/impl/algorithm/all_of.hpp"
 #include "ulight/impl/ascii_algorithm.hpp"
 #include "ulight/impl/assert.hpp"
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/highlighter.hpp"
-#include "ulight/impl/unicode_algorithm.hpp"
+#include "ulight/impl/unicode.hpp"
 
 #include "ulight/impl/lang/cowel.hpp"
 #include "ulight/impl/lang/cowel_chars.hpp"
+#include "ulight/impl/lang/html_chars.hpp"
 
 using namespace std::string_view_literals;
 
 namespace ulight {
 namespace cowel {
 
-std::size_t match_directive_name(const std::u8string_view str)
+std::size_t match_identifier(const std::u8string_view str)
 {
-    constexpr auto head = [](char8_t c) { return is_cowel_directive_name_start(c); };
-    constexpr auto tail = [](char8_t c) { return is_cowel_directive_name(c); };
+    constexpr auto head = [](char8_t c) { return is_cowel_identifier_start(c); };
+    constexpr auto tail = [](char8_t c) { return is_cowel_identifier(c); };
     return ascii::length_if_head_tail(str, head, tail);
-}
-
-std::size_t match_member_name(const std::u8string_view str)
-{
-    constexpr auto predicate = [](char32_t c) { return is_cowel_argument_name(c); };
-    return str.empty() || is_ascii_digit(str[0]) ? 0 : utf8::length_if(str, predicate);
 }
 
 Escape_Result match_escape(const std::u8string_view str)
@@ -104,12 +98,6 @@ Comment_Result match_block_comment(const std::u8string_view s)
     return Comment_Result { .length = end + 2, .is_terminated = true };
 }
 
-std::size_t match_unquoted_string(const std::u8string_view str)
-{
-    constexpr auto predicate = [](char8_t c) { return is_cowel_unquoted_string(c); };
-    return ascii::length_if(str, predicate);
-}
-
 Common_Number_Result match_number(const std::u8string_view str)
 {
     static constexpr Number_Prefix prefixes[] {
@@ -128,6 +116,37 @@ Common_Number_Result match_number(const std::u8string_view str)
         .suffixes = {},
     };
     return match_common_number(str, options);
+}
+
+std::size_t match_reserved_number(const std::u8string_view str)
+{
+    if (str.empty() || str.length() < 3) {
+        return 0;
+    }
+    std::size_t length = 0;
+    if (str[0] == u8'-') {
+        if (!is_ascii_digit(str[1])) {
+            return 0;
+        }
+        length += 2;
+    }
+    else if (str[0] == u8'.') {
+        length += 1;
+    }
+    while (length < str.length()) {
+        const std::u8string_view remainder = str.substr(length);
+        if (remainder.starts_with(u8"e+") || remainder.starts_with(u8"E+")
+            || remainder.starts_with(u8"e-") || remainder.starts_with(u8"E-")) {
+            length += 2;
+        }
+        else if (is_ascii_alphanumeric(remainder[0]) || remainder[0] == u8'.') {
+            length += 1;
+        }
+        else {
+            break;
+        }
+    }
+    return length;
 }
 
 bool starts_with_escape_or_comment_or_directive(const std::u8string_view str)
@@ -159,26 +178,10 @@ std::size_t match_blank(const std::u8string_view str)
 namespace {
 
 enum struct Text_Kind : Underlying {
-    /// @brief *document-text*.
     document,
-    /// @brief *quoted-string-text*.
     quoted_string,
-    /// @brief *block-text*.
     block,
 };
-
-[[nodiscard]]
-bool is_terminated_by(const Text_Kind kind, const char8_t c)
-{
-    switch (kind) {
-    case Text_Kind::document: return false;
-    case Text_Kind::quoted_string: //
-        return c == u8'"';
-    case Text_Kind::block: //
-        return c == u8'}';
-    }
-    ULIGHT_ASSERT_UNREACHABLE(u8"Invalid text kind.");
-}
 
 struct [[nodiscard]] Highlighter : Highlighter_Base {
 
@@ -200,14 +203,12 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
     void consume_markup_element_sequence(const Text_Kind text_kind)
     {
         int brace_level = 0;
-
-        while (!eof() && !is_terminated_by(text_kind, remainder[0])) {
-            expect_content(text_kind, brace_level);
-        }
+        while (brace_level >= 0 && expect_content(text_kind, brace_level)) { }
     }
 
     bool expect_content(const Text_Kind text_kind, int& brace_level)
     {
+        ULIGHT_ASSERT(brace_level >= 0);
         return expect_escape() //
             || expect_directive_splice() //
             || expect_line_comment() //
@@ -215,7 +216,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             || expect_text(text_kind, brace_level);
     }
 
-    bool expect_text(const Text_Kind text_kind, int brace_level)
+    bool expect_text(const Text_Kind text_kind, int& brace_level)
     {
         ULIGHT_ASSERT(brace_level >= 0);
 
@@ -225,7 +226,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             const char8_t c = remainder[plain_length];
             if (c == u8'\\') {
                 if (starts_with_escape_or_comment_or_directive(remainder.substr(plain_length))) {
-                    goto after_loop;
+                    goto done;
                 }
                 continue;
             }
@@ -235,7 +236,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             }
             case Text_Kind::quoted_string: {
                 if (c == u8'"') {
-                    goto after_loop;
+                    goto done;
                 }
                 continue;
             }
@@ -244,7 +245,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
                     ++brace_level;
                 }
                 if (c == u8'}' && brace_level-- == 0) {
-                    goto after_loop;
+                    goto done;
                 }
                 continue;
             }
@@ -252,17 +253,18 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             ULIGHT_ASSERT_UNREACHABLE(u8"Invalid text kind.");
         }
 
-    after_loop:
-        if (plain_length) {
-            if (text_kind == Text_Kind::quoted_string) {
-                emit_and_advance(plain_length, Highlight_Type::string);
-            }
-            else {
-                advance(plain_length);
-            }
-            return true;
+    done:
+        if (plain_length == 0) {
+            return false;
         }
-        return false;
+
+        if (text_kind == Text_Kind::quoted_string) {
+            emit_and_advance(plain_length, Highlight_Type::string);
+        }
+        else {
+            advance(plain_length);
+        }
+        return true;
     }
 
     bool expect_escape()
@@ -311,7 +313,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         if (!remainder.starts_with(u8'\\')) {
             return 0;
         }
-        const std::size_t name_length = match_directive_name(remainder.substr(1));
+        const std::size_t name_length = match_identifier(remainder.substr(1));
         if (name_length == 0) {
             return 0;
         }
@@ -378,7 +380,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
 
     bool expect_group_member()
     {
-        if (const std::size_t name = match_member_name(remainder)) {
+        if (const std::size_t name = match_identifier(remainder)) {
             const std::size_t space_before_equals = match_blank(remainder.substr(name));
             if (remainder.substr(name + space_before_equals).starts_with(u8'=')) {
                 emit_and_advance(name, Highlight_Type::markup_attr);
@@ -422,7 +424,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
 
     bool expect_directive_call()
     {
-        const std::size_t name_length = match_directive_name(remainder);
+        const std::size_t name_length = match_identifier(remainder);
         if (name_length == 0) {
             return false;
         }
@@ -444,21 +446,36 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
 
     bool expect_primary_value()
     {
-        return expect_unquoted_value() //
-            || expect_int_or_float_literal() //
+        return expect_identifier_like() //
+            || expect_number() //
             || expect_quoted_string() //
             || expect_block() //
             || expect_group();
     }
 
-    bool expect_unquoted_value()
+    bool expect_identifier_like()
     {
-        const std::size_t unquoted = match_unquoted_string(remainder);
-        if (unquoted == 0) {
+        constexpr auto infinity_highlight = Highlight_Type::value;
+
+        if (remainder.starts_with(u8'-')) {
+            const std::size_t length = match_identifier(remainder.substr(1));
+            const std::u8string_view str = remainder.substr(0, length + 1);
+            if (str == u8"-infinity"sv) {
+                emit_and_advance(1, Highlight_Type::value_delim);
+                emit_and_advance(8, infinity_highlight);
+                return true;
+            }
             return false;
         }
 
-        const std::u8string_view str = remainder.substr(0, unquoted);
+        const std::size_t length = match_identifier(remainder);
+        if (length == 0) {
+            return false;
+        }
+
+        const std::u8string_view str = remainder.substr(0, length);
+        ULIGHT_DEBUG_ASSERT(!is_ascii_digit(str[0]));
+
         if (str == u8"unit"sv || str == u8"null"sv) {
             emit_and_advance(4, Highlight_Type::keyword);
         }
@@ -469,28 +486,30 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             emit_and_advance(5, Highlight_Type::bool_);
         }
         else if (str == u8"infinity"sv) {
-            emit_and_advance(8, Highlight_Type::value);
-        }
-        else if (str == u8"-infinity"sv) {
-            emit_and_advance(1, Highlight_Type::value_delim);
-            emit_and_advance(8, Highlight_Type::value);
-        }
-        else if (all_of(str, [](char8_t c) { return is_ascii_digit(c); })) {
-            emit_and_advance(unquoted, Highlight_Type::number);
+            emit_and_advance(8, infinity_highlight);
         }
         else {
-            emit_and_advance(unquoted, Highlight_Type::string);
+            emit_and_advance(length, Highlight_Type::string);
         }
         return true;
     }
 
-    bool expect_int_or_float_literal()
+    bool expect_number()
     {
-        if (const Common_Number_Result number = match_number(remainder)) {
-            highlight_number(number);
-            return true;
+        const std::size_t reserved_length = match_reserved_number(remainder);
+        if (!reserved_length) {
+            return false;
         }
-        return false;
+        const std::u8string_view reserved = remainder.substr(0, reserved_length);
+
+        const Common_Number_Result number = match_number(reserved);
+        if (number.length != reserved_length || number.erroneous) {
+            emit_and_advance(reserved_length, Highlight_Type::error);
+        }
+        else {
+            highlight_number(number);
+        }
+        return true;
     }
 
     bool expect_quoted_string()
