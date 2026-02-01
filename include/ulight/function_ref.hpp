@@ -187,13 +187,13 @@ public:
     }
 
     [[nodiscard]]
-    Invoker* get_invoker() const noexcept
+    constexpr Invoker* get_invoker() const noexcept
     {
         return m_invoker;
     }
 
     [[nodiscard]]
-    Storage* get_entity() const noexcept
+    constexpr Storage* get_entity() const noexcept
     {
         return m_entity;
     }
