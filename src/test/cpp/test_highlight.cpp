@@ -13,7 +13,7 @@
 
 #include "ulight/impl/ansi.hpp"
 #include "ulight/impl/io.hpp"
-#include "ulight/impl/lang/html_chars.hpp"
+#include "ulight/impl/lang/html.hpp"
 #include "ulight/impl/string_diff.hpp"
 #include "ulight/impl/strings.hpp"
 #include "ulight/ulight.hpp"
@@ -195,7 +195,7 @@ TEST_F(Highlight_Test, exhaustive_one_char)
                 std::cout << ansi::h_red << "FAIL: " << ansi::reset
                           << lang_display_name(Lang(lang)) //
                           << ", for" << " U+00" << std::hex << int(source) << std::dec;
-                if (!is_html_ascii_control(source)) {
+                if (!html::is_html_ascii_control(source)) {
                     std::cout << " '" << source_view << '\'';
                 }
                 std::cout << ": " << state.get_error_string() << "\n";

@@ -8,9 +8,9 @@
 #include "ulight/impl/parse_utils.hpp"
 #include "ulight/impl/strings.hpp"
 
-#include "ulight/impl/lang/cowel_chars.hpp"
-#include "ulight/impl/lang/cpp_chars.hpp"
-#include "ulight/impl/lang/html_chars.hpp"
+#include "ulight/impl/lang/cowel.hpp"
+#include "ulight/impl/lang/cpp.hpp"
+#include "ulight/impl/lang/html.hpp"
 
 namespace ulight {
 namespace {
@@ -102,13 +102,13 @@ TEST(Chars, is_ascii_alpha)
 TEST(Chars, is_cowel_directive_name)
 {
     for (const char32_t c : all_cowel_special) {
-        EXPECT_FALSE(is_cowel_identifier(c));
+        EXPECT_FALSE(cowel::is_cowel_identifier(c));
     }
     for (const char32_t c : all_ascii_alpha) {
-        EXPECT_TRUE(is_cowel_identifier(c));
+        EXPECT_TRUE(cowel::is_cowel_identifier(c));
     }
     for (const char32_t c : all_ascii_digit) {
-        EXPECT_TRUE(is_cowel_identifier(c));
+        EXPECT_TRUE(cowel::is_cowel_identifier(c));
     }
 }
 
@@ -185,28 +185,28 @@ TEST(Charsets, all_ascii_alphanumeric)
 TEST(Charsets, all_ascii_whitespace8)
 {
     for (char8_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_whitespace8, c), is_html_whitespace(c));
+        EXPECT_EQ(contains(all_ascii_whitespace8, c), html::is_html_whitespace(c));
     }
 }
 
 TEST(Charsets, all_ascii_whitespace)
 {
     for (char32_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_ascii_whitespace, c), is_html_whitespace(c));
+        EXPECT_EQ(contains(all_ascii_whitespace, c), html::is_html_whitespace(c));
     }
 }
 
 TEST(Charsets, all_cpp_whitespace8)
 {
     for (char8_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_cpp_whitespace8, c), is_cpp_whitespace(c));
+        EXPECT_EQ(contains(all_cpp_whitespace8, c), cpp::is_cpp_whitespace(c));
     }
 }
 
 TEST(Charsets, all_cpp_whitespace)
 {
     for (char32_t c = 0; c < 128; ++c) {
-        EXPECT_EQ(contains(all_cpp_whitespace, c), is_cpp_whitespace(c));
+        EXPECT_EQ(contains(all_cpp_whitespace, c), cpp::is_cpp_whitespace(c));
     }
 }
 

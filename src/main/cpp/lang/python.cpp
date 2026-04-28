@@ -15,7 +15,6 @@
 #include "ulight/impl/lang/bash.hpp"
 #include "ulight/impl/lang/cpp.hpp"
 #include "ulight/impl/lang/python.hpp"
-#include "ulight/impl/lang/python_chars.hpp"
 
 namespace ulight {
 namespace python {

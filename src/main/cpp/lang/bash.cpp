@@ -9,7 +9,6 @@
 #include "ulight/impl/highlighter.hpp"
 
 #include "ulight/impl/lang/bash.hpp"
-#include "ulight/impl/lang/bash_chars.hpp"
 
 namespace ulight {
 namespace bash {

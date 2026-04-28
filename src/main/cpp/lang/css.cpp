@@ -13,7 +13,6 @@
 
 #include "ulight/impl/lang/cpp.hpp"
 #include "ulight/impl/lang/css.hpp"
-#include "ulight/impl/lang/css_chars.hpp"
 #include "ulight/impl/lang/html.hpp"
 
 namespace ulight {

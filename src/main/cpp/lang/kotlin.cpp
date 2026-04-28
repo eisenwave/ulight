@@ -8,7 +8,7 @@
 
 #include "ulight/impl/lang/js.hpp"
 #include "ulight/impl/lang/kotlin.hpp"
-#include "ulight/impl/lang/python_chars.hpp"
+#include "ulight/impl/lang/python.hpp"
 
 namespace ulight {
 namespace kotlin {
@@ -264,7 +264,7 @@ private:
 
     void consume_whitespace()
     {
-        const std::size_t space = ascii::length_if(remainder, is_python_whitespace);
+        const std::size_t space = ascii::length_if(remainder, python::is_python_whitespace);
         advance(space);
     }
 

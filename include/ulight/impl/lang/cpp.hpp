@@ -5,9 +5,49 @@
 #include <optional>
 #include <string_view>
 
+#include "ulight/impl/ascii_chars.hpp"
+#include "ulight/impl/unicode_chars.hpp"
 #include "ulight/ulight.hpp"
 
 namespace ulight::cpp {
+
+/// @brief Returns `true` iff `c` is in the set `[A-Za-z_]`.
+inline constexpr Charset256 is_cpp_ascii_identifier_start = is_ascii_xid_start | u8'_';
+
+inline constexpr struct Is_CPP_Identifier_Start {
+    static constexpr bool operator()(const char8_t c) = delete;
+
+    [[nodiscard]]
+    static constexpr bool operator()(const char32_t c) noexcept
+    {
+        // https://eel.is/c++draft/lex.name#nt:identifier-start
+        return c == U'_' || is_xid_start(c);
+    }
+} is_cpp_identifier_start;
+
+/// @brief Returns `true` iff `c` is in the set `[A-Za-z0-9_]`.
+inline constexpr Charset256 is_cpp_ascii_identifier_continue = is_ascii_xid_continue;
+
+inline constexpr struct Is_CPP_Identifier_Continue {
+    static constexpr bool operator()(const char8_t c) = delete;
+
+    [[nodiscard]]
+    static constexpr bool operator()(const char32_t c) noexcept
+    {
+        // https://eel.is/c++draft/lex.name#nt:identifier-start
+        return c == U'_' || is_xid_continue(c);
+    }
+} is_cpp_identifier_continue;
+
+/// @brief consistent with `isspace` in the C locale.
+inline constexpr auto is_cpp_whitespace = Charset256(u8"\t\n\f\r \v");
+
+/// @brief Returns `true` iff `c` is in the
+/// [basic character set](https://eel.is/c++draft/tab:lex.charset.basic).
+inline constexpr auto is_cpp_basic
+    = is_ascii_alphanumeric | Charset256(u8"\t\v\f\r\n!\"#$%&'()*+,-./:;<>=?@[]\\^_`{|}~");
+
+inline constexpr auto is_cpp_d_char = (is_ascii_set & ~is_cpp_whitespace) - u8'(' - u8')' - u8'\\';
 
 enum struct Feature_Source : Underlying {
     /// @brief Compiler extensions. Neither standard C nor standard C++.

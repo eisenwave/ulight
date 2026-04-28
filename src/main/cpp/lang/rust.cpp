@@ -17,7 +17,6 @@
 #include "ulight/impl/lang/cpp.hpp"
 #include "ulight/impl/lang/js.hpp"
 #include "ulight/impl/lang/rust.hpp"
-#include "ulight/impl/lang/rust_chars.hpp"
 
 namespace ulight {
 namespace rust {

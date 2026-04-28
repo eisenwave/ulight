@@ -9,7 +9,7 @@
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/highlighter.hpp"
 
-#include "ulight/impl/lang/ebnf_chars.hpp"
+#include "ulight/impl/lang/ebnf.hpp"
 
 namespace ulight {
 namespace ebnf {

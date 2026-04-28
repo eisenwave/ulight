@@ -12,8 +12,7 @@
 #include "ulight/impl/unicode.hpp"
 
 #include "ulight/impl/lang/cowel.hpp"
-#include "ulight/impl/lang/cowel_chars.hpp"
-#include "ulight/impl/lang/html_chars.hpp"
+#include "ulight/impl/lang/html.hpp"
 
 using namespace std::string_view_literals;
 
@@ -62,7 +61,7 @@ std::size_t match_ellipsis(const std::u8string_view str)
 
 std::size_t match_whitespace(const std::u8string_view str)
 {
-    return ascii::length_if(str, is_html_whitespace);
+    return ascii::length_if(str, html::is_html_whitespace);
 }
 
 std::size_t match_line_comment(const std::u8string_view str)

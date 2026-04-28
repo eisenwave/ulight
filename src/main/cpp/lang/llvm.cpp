@@ -11,7 +11,6 @@
 #include "ulight/impl/parse_utils.hpp"
 
 #include "ulight/impl/lang/llvm.hpp"
-#include "ulight/impl/lang/llvm_chars.hpp"
 
 using namespace std::string_view_literals;
 
