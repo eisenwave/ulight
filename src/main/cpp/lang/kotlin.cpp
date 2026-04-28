@@ -264,8 +264,7 @@ private:
 
     void consume_whitespace()
     {
-        const std::size_t space
-            = ascii::length_if(remainder, [](char8_t c) { return is_python_whitespace(c); });
+        const std::size_t space = ascii::length_if(remainder, is_python_whitespace);
         advance(space);
     }
 

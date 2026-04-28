@@ -138,7 +138,7 @@ std::size_t match_pcdata_decl(const std::u8string_view str)
 [[nodiscard]]
 std::size_t match_whitespace(const std::u8string_view str)
 {
-    return ascii::length_if(str, [](char8_t c) { return is_xml_whitespace(c); });
+    return ascii::length_if(str, is_xml_whitespace);
 }
 
 [[nodiscard]]
@@ -235,8 +235,7 @@ private:
     bool expect_external_id()
     {
         // https://www.w3.org/TR/xml/#NT-ExternalID
-        const std::size_t external_id_len
-            = utf8::find_if(remainder, [](char32_t c) { return is_xml_whitespace(c); });
+        const std::size_t external_id_len = utf8::find_if(remainder, is_xml_whitespace);
         const std::u8string_view external_id = remainder.substr(0, external_id_len);
 
         if (external_id == external_id_system) {
@@ -355,8 +354,7 @@ private:
             expect_external_id();
         }
         else if (!remainder.starts_with(u8'[')) {
-            const std::size_t word_len
-                = ascii::length_if_not(remainder, [](char8_t c) { return is_xml_whitespace(c); });
+            const std::size_t word_len = ascii::length_if_not(remainder, is_xml_whitespace);
             advance(word_len);
 
             expect_whitespace();

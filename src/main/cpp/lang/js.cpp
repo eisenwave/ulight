@@ -182,8 +182,7 @@ std::size_t match_line_terminator_sequence(std::u8string_view s)
 std::size_t match_whitespace(std::u8string_view str)
 {
     // https://262.ecma-international.org/15.0/index.html#sec-white-space
-    constexpr auto predicate = [](char32_t c) { return is_js_whitespace(c); };
-    const std::size_t result = utf8::find_if_not(str, predicate);
+    const std::size_t result = utf8::find_if_not(str, is_js_whitespace);
     return result == std::u8string_view::npos ? str.length() : result;
 }
 
@@ -430,8 +429,7 @@ std::size_t match_name(std::u8string_view str, Name_Type type)
 std::size_t match_regex_flags(std::u8string_view str)
 {
     // https://262.ecma-international.org/15.0/index.html#prod-RegularExpressionFlags
-    constexpr auto predicate = [](char32_t c) { return is_js_identifier_part(c); };
-    return utf8::length_if(str, predicate);
+    return utf8::length_if(str, is_js_identifier_part);
 }
 
 } // namespace

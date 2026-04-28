@@ -26,8 +26,7 @@ Identifier_Result match_identifier(std::u8string_view str)
     if (str.empty() || !is_ascii_alpha(str[0])) {
         return {};
     }
-    const std::size_t length
-        = ascii::length_if(str, [](char8_t c) { return is_ascii_alphanumeric(c); }, 1);
+    const std::size_t length = ascii::length_if(str, is_ascii_alphanumeric, 1);
     ULIGHT_ASSERT(length != 0);
     const std::u8string_view id = str.substr(0, length);
     const auto type = id == u8"null" ? Identifier_Type::null
@@ -67,12 +66,12 @@ Escape_Result match_escape_sequence(std::u8string_view str, Escape_Policy policy
 
 std::size_t match_digits(std::u8string_view str)
 {
-    return ascii::length_if(str, [](char8_t c) { return is_ascii_digit(c); });
+    return ascii::length_if(str, is_ascii_digit);
 }
 
 std::size_t match_whitespace(std::u8string_view str)
 {
-    return ascii::length_if(str, [](char8_t c) { return is_json_whitespace(c); });
+    return ascii::length_if(str, is_json_whitespace);
 }
 Number_Result match_number(std::u8string_view str)
 {

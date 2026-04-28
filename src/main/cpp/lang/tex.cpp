@@ -59,9 +59,7 @@ struct Highlighter : Highlighter_Base {
                     break;
                 }
 
-                const std::size_t name_length = ascii::length_if(
-                    remainder, [](char8_t c) { return is_tex_command_name(c); }, 1
-                );
+                const std::size_t name_length = ascii::length_if(remainder, is_tex_command_name, 1);
                 ULIGHT_ASSERT(name_length >= 1);
                 if (name_length == 1) {
                     // While TeX doesn't really distinguish between '\{' and '\abc'

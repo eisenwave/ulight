@@ -282,8 +282,7 @@ struct Highlighter : Highlighter_Base {
 private:
     void consume_whitespace()
     {
-        const std::size_t space
-            = utf8::length_if(remainder, [](char32_t c) { return is_rust_whitespace(c); });
+        const std::size_t space = utf8::length_if(remainder, is_rust_whitespace);
         advance(space);
     }
 

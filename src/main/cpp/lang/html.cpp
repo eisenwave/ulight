@@ -33,22 +33,19 @@ constexpr std::u8string_view doctype_prefix = u8"<!DOCTYPE";
 bool is_character_reference_content(std::u8string_view str)
 {
     if (str.starts_with(u8"#x")) {
-        return str.length() > 2
-            && std::ranges::all_of(str.substr(2), [](char8_t c) { return is_ascii_hex_digit(c); });
+        return str.length() > 2 && std::ranges::all_of(str.substr(2), is_ascii_hex_digit);
     }
     if (str.starts_with(u8'#')) {
-        return str.length() > 1
-            && std::ranges::all_of(str.substr(1), [](char8_t c) { return is_ascii_digit(c); });
+        return str.length() > 1 && std::ranges::all_of(str.substr(1), is_ascii_digit);
     }
-    return !str.empty()
-        && std::ranges::all_of(str, [](char8_t c) { return is_ascii_alphanumeric(c); });
+    return !str.empty() && std::ranges::all_of(str, is_ascii_alphanumeric);
 }
 
 } // namespace
 
 std::size_t match_whitespace(std::u8string_view str)
 {
-    return ascii::length_if(str, [](char8_t c) { return is_html_whitespace(c); });
+    return ascii::length_if(str, is_html_whitespace);
 }
 
 std::size_t match_character_reference(std::u8string_view str)
@@ -64,17 +61,13 @@ std::size_t match_character_reference(std::u8string_view str)
 
 std::size_t match_tag_name(std::u8string_view str)
 {
-    const std::size_t result = utf8::find_if_not(str, [](char32_t c) { //
-        return is_html_tag_name_character(c);
-    });
+    const std::size_t result = utf8::find_if_not(str, is_html_tag_name_character);
     return result == std::u8string_view::npos ? str.length() : result;
 }
 
 std::size_t match_attribute_name(std::u8string_view str)
 {
-    const std::size_t result = utf8::find_if_not(str, [](char32_t c) { //
-        return is_html_attribute_name_character(c);
-    });
+    const std::size_t result = utf8::find_if_not(str, is_html_attribute_name_character);
     return result == std::u8string_view::npos ? str.length() : result;
 }
 

@@ -77,7 +77,7 @@ std::size_t match_comment(std::u8string_view str)
 
 std::size_t match_blank(std::u8string_view str)
 {
-    return ascii::length_if(str, [](char8_t c) { return is_bash_blank(c); });
+    return ascii::length_if(str, is_bash_blank);
 }
 
 bool starts_with_substitution(std::u8string_view str)
@@ -89,9 +89,7 @@ bool starts_with_substitution(std::u8string_view str)
 
 std::size_t match_identifier(std::u8string_view str)
 {
-    constexpr auto head = [](char8_t c) { return is_bash_identifier_start(c); };
-    constexpr auto tail = [](char8_t c) { return is_bash_identifier(c); };
-    return ascii::length_if_head_tail(str, head, tail);
+    return ascii::length_if_head_tail(str, is_bash_identifier_start, is_bash_identifier);
 }
 
 std::optional<Token_Type> match_operator(std::u8string_view str)
