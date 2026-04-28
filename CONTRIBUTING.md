@@ -140,7 +140,12 @@ Furthermore, follow these guidelines:
 3.  Try to follow the project code style in general.
 
 4.  Do not use any temporary data structures or memory allocation in general, unless necessary.
-    If you do need allocations, use polymorphic containers using the given `std::pmr::memory_resource*` in your highlighter.
+    If you do need allocations,
+    use polymorphic containers using the given `std::pmr::memory_resource*` in your highlighter.
+
+5. Anything that can be `const` should be `const`,
+   except when it interferes with implicit moves on return.
+   This includes function parameters (only on definitions) and `* const` pointer qualifications.
 
 ### Variable style
 
@@ -171,3 +176,63 @@ it makes the few mutable variables in the project stand out and receive the atte
 - The rules above also apply to template parameters.
 - Macros and unscoped enumerations (`enum`, not `enum struct`) should be `SCREAM_CASE`.
 - Never use the `class` keyword, always `typename`, `struct`, `enum struct`, etc.
+
+### Highlighter design
+
+While syntax highlighting in µlight is fully programmatic,
+the individual highlighters follow strict conventions in order to reduce surprises.
+Here is a list of guidelines to follow:
+
+- `match_*` functions perform low-level functionality like tokenization.
+  These are pure, standalone functions usually operating on `std::u8string_view`
+  and returning information about the contents at the start of the string.
+
+- `match_*` functions should always assume that the provided string
+  may comprise the rest of the highlighted code.
+
+- The main part of the highlighter goes into a dedicated `struct *_Highlighter`
+  inheriting from `Highlighter_Base`.
+
+- These highlighter classes provide mostly recursive descent parsing and have member functions
+  `expect_*`, `consume_*`, and `highlight_*`:
+  - `expect_*` functions try to match characters at the current head.
+    If matched, the characters are consumed, the highlighting tokens are emitted,
+    and `true` is returned.
+    Otherwise, no characters are consumed, no highlighting tokens are emitted,
+    and `false` is returned.
+  - `expect_*` functions are transactions, meaning that they don't consume *some* characters
+    but then return `false` anyway.
+  - `consume_*` functions unconditionally consume characters and emit highlighting tokens.
+    These are usually called when the next characters have been checked already.
+  - `highlight_*` functions unconditionally consume characters and emit highlighting tokens,
+    using the information provided via function parameter.
+    This usually works by calling a `match_*` function first to obtain information,
+    then calling `highlight_*` to process that information.
+
+- `match_*`, `expect_*`, `consume_*`, `highlight_*`, and other functions should correspond
+  to a single language construct to be highlighted.
+  If they implement a specification such as a language standard,
+  they should contain a comment with a link to the relevant grammar rule at the top.
+
+- Whitespace should never be parsed at the start of one of these matching functions,
+  unless the language standard specifies whitespace to be at the start of the construct.
+  For example, optional whitespace before a variable name
+  should not be skipped when parsing variable names.
+
+- Superset parsing should be preferred whenever applicable.
+  For example, whole identifiers should be matched first;
+  then, it should be checked via lookup whether that identifier is a keyword.
+
+Furthermore, there are high-level principles:
+
+- Prefer robustness and performance over highlighting detail.
+
+- Only perform Unicode decode when necessary.
+  That is, if highlighting can be performed at the level of UTF-8 code units,
+  do not decode into code points.
+
+- Highlighting should always at least be token-based,
+  even if the higher-level parsing fails.
+  For example, even if C++ construct `struct struct X;` cannot be parsed correctly,
+  `struct` always needs to be highlighted as a keyword and
+  `X` need to be highlighted as an identifier.
