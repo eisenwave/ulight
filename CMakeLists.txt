@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(ULIGHT_BUILD_MODULE "Build C++ module" OFF)
+option(ULIGHT_ENABLE_ASAN "Enable AddressSanitizer (and UBSan where configured)" OFF)
 
 if(ULIGHT_BUILD_MODULE)
     cmake_minimum_required(VERSION 3.28)
@@ -23,35 +24,27 @@ set(LLVM_WARNING_OPTIONS
     -Wno-trigraphs
 )
 
-# Normally, this is OFF,
-# but in rare instances, bugs are very hard to track down,
-# especially in the WASM build.
-#
-# You can temporarily turn ASAN ON though,
-# just don't commit the setting as ON. 
-set(ASAN_ENABLED OFF)
-
 if(DEFINED EMSCRIPTEN)
     set(WARNING_OPTIONS ${LLVM_WARNING_OPTIONS})
-    if (ASAN_ENABLED)
+    if(ULIGHT_ENABLE_ASAN)
         set(SANITIZER_OPTIONS "-fsanitize=address,undefined")
     endif()
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(WARNING_OPTIONS -Wall -Wimplicit-fallthrough -Wpedantic -Wextra -Wconversion -Wmissing-declarations -Wno-trigraphs)
-    if (ASAN_ENABLED)
+    if(ULIGHT_ENABLE_ASAN)
         set(SANITIZER_OPTIONS "-fsanitize=address,undefined")
     endif()
     add_compile_definitions($<$<CONFIG:Debug>:_GLIBCXX_ASSERTIONS>)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(WARNING_OPTIONS ${LLVM_WARNING_OPTIONS})
-    if (ASAN_ENABLED)
+    if(ULIGHT_ENABLE_ASAN)
         set(SANITIZER_OPTIONS "-fsanitize=address,undefined")
     endif()
     # Clang may also use libstdc++, so we would like assertions on debug builds
     add_compile_definitions($<$<CONFIG:Debug>:_GLIBCXX_ASSERTIONS>)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(WARNING_OPTIONS -W4)
-    if (ASAN_ENABLED)
+    if(ULIGHT_ENABLE_ASAN)
         set(SANITIZER_OPTIONS "-fsanitize:address")
     endif()
 endif()
