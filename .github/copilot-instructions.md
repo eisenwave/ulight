@@ -160,6 +160,17 @@ unless task constraints require otherwise.
     (language alias table, API plumbing, state lifecycle, path-to-lang lookup).
   - `src/main/cpp/lang/*.cpp` + `include/ulight/impl/lang/*.hpp`
     (language-specific tokenization/highlighting logic).
+    Each language header also defines character-test predicates
+    at the top of its `namespace ulight::<lang>` block.
+  - `include/ulight/impl/ascii_chars.hpp`
+    (general-purpose ASCII character tests, callable structs and `Charset256` constants,
+    `namespace ulight`).
+  - `include/ulight/impl/unicode_chars.hpp`
+    (general-purpose Unicode/XID character tests,
+    `namespace ulight`).
+  - `include/ulight/impl/charset.hpp`
+    (`Charset<N>` / `Charset256` template with `operator()`, constructors,
+    `from_predicate`, `range_before`, `range_until`).
   - `src/main/cpp/main.cpp` (CLI entrypoint).
   - `src/main/cpp/wasm.cpp`
     (WASI stubs used for emscripten build constraints).
@@ -208,6 +219,16 @@ unless task constraints require otherwise.
 - If you add or modify a language highlighter,
   update language registration and tests together
   (headers, alias/display lists, dispatch, fixtures).
+- Language-specific character predicates go at the top of
+  `include/ulight/impl/lang/<lang>.hpp`
+  inside `namespace ulight::<lang>`,
+  as `inline constexpr Charset256` constants
+  or `inline constexpr struct Is_<Name> { ... } is_<name>` callables.
+  There are no standalone `*_chars.hpp` files for individual languages.
+- General-purpose ASCII/Unicode predicates live in
+  `include/ulight/impl/ascii_chars.hpp`
+  and `include/ulight/impl/unicode_chars.hpp`
+  in `namespace ulight`.
 
 ## Search Policy
 Trust this document first.

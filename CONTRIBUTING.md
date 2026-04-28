@@ -19,7 +19,10 @@ The bare minimum set of changes for any new language includes:
 - Adding short names (such as `cpp`) to `ulight_lang_list` in `ulight.cpp`.
 - Adding a display name (such as `C++`) to `ulight_lang_display_names`.
 - Adding a `highlight_xxx` function in `highlight.hpp`, and dispatching to it in `highlight`.
-- Creating a new set of header and source files for highlighting the language.
+- Creating a new header `include/ulight/impl/lang/<lang>.hpp`
+  and source file `src/main/cpp/lang/<lang>.cpp` for the new language.
+  Language-specific character tests go at the top of the header,
+  inside `namespace ulight::<lang>`.
 - Implementing the syntax highlighting.
   In essence, `std::u8string_view` goes in, `ulight::Token`s come out.
 - Adding highlighting test files under `test/highlight`,
@@ -85,39 +88,30 @@ The same applies to named character references such as `\N{EQUALS SIGN}`.
 
 ### Character testing
 
-As part of writing a new highlighter,
-you will almost always need to test whether characters fall into certain categories,
-like testing if a character is an ASCII digit (`0` through `9`).
-All such tests generally go into `chars.hpp`.
+General-purpose ASCII predicates (e.g. `is_ascii_digit`) live in
+`include/ulight/impl/ascii_chars.hpp` in `namespace ulight`.
+General-purpose Unicode/XID predicates (e.g. `is_xid_start`) live in
+`include/ulight/impl/unicode_chars.hpp` in `namespace ulight`.
+Language-specific predicates live at the top of
+`include/ulight/impl/lang/<lang>.hpp` inside `namespace ulight::<lang>`.
 
-If there already is a general-purpose character test that does what you want,
-like `is_ascii_digit`,
-then use the existing function.
-This only applies to the general-purpose ASCII and Unicode tests.
+Reuse an existing general-purpose predicate when it fits.
+Otherwise add a language-specific one to the language header.
 
-Otherwise, if you need more language-specific tests,
-create a function for each such tests.
-All functions in `chars.hpp` are *total* and *exhaustive*,
-and essentially define a set.
-For example, `is_ascii_digit(char32_t)` defines the set of ASCII digits.
-It is `true` for every ASCII-digit,
-and `false` for every non-digit.
+A predicate is either an `inline constexpr Charset256` (for pure ASCII sets):
+```cpp
+inline constexpr auto is_cpp_whitespace = Charset256(u8"\t\n\f\r \v");
+```
+or an `inline constexpr` callable struct (for Unicode-range tests):
+```cpp
+inline constexpr struct Is_CPP_Identifier_Start {
+    static constexpr bool operator()(const char8_t) = delete;
+    [[nodiscard]] static constexpr bool operator()(const char32_t c) noexcept { ... }
+} is_cpp_identifier_start;
+```
 
-#### Overloads for `char8_t` and `char32_t`
-
-Every character test should have overloads for `char8_t` and `char32_t`,
-although one of these may be deleted.
-
-- If a character test can be performed using just a UTF-8 code unit,
-  like `is_ascii_digit`, then both overloads should exist.
-- Otherwise, if the test is only meaningful for whole code units,
-  the `char8_t` overload should be deleted.
-  For example, there is `is_cpp_identifier_start(char8_t) = delete`
-  because there are non-ASCII code points,
-  so the `char8_t` overload wouldn't be exhaustive.
-
-Yet another variation of this is defining an extra overload set,
-like `is_cpp_ascii_identifier_start(char8_t | char32_t)` which is exhaustive.
+Delete the `char8_t` overload when the test is only meaningful for whole code points.
+A `Charset256` ASCII companion (e.g. `is_cpp_ascii_identifier_start`) can be added alongside.
 
 ### Highlighting
 
