@@ -8,7 +8,6 @@
 #include "ulight/impl/parse_utils.hpp"
 
 #include "ulight/impl/lang/nasm.hpp"
-#include "ulight/impl/lang/nasm_chars.hpp"
 
 namespace ulight {
 namespace nasm {

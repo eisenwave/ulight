@@ -17,7 +17,6 @@
 #include "ulight/impl/unicode.hpp"
 
 #include "ulight/impl/lang/cpp.hpp"
-#include "ulight/impl/lang/cpp_chars.hpp"
 
 namespace ulight {
 

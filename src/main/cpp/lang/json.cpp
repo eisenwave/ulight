@@ -16,7 +16,6 @@
 #include "ulight/impl/unicode.hpp"
 
 #include "ulight/impl/lang/json.hpp"
-#include "ulight/impl/lang/json_chars.hpp"
 
 namespace ulight {
 namespace json {

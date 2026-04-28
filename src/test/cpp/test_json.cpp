@@ -6,7 +6,7 @@
 #include "ulight/json.hpp"
 
 #include "ulight/impl/io.hpp"
-#include "ulight/impl/lang/json_chars.hpp"
+#include "ulight/impl/lang/json.hpp"
 #include "ulight/impl/platform.h"
 #include "ulight/impl/unicode.hpp"
 

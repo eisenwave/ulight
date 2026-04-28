@@ -14,7 +14,6 @@
 #include "ulight/impl/unicode_algorithm.hpp"
 
 #include "ulight/impl/lang/html.hpp"
-#include "ulight/impl/lang/html_chars.hpp"
 
 namespace ulight {
 namespace html {

@@ -9,7 +9,7 @@
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/highlighter.hpp"
 
-#include "ulight/impl/lang/tex_chars.hpp"
+#include "ulight/impl/lang/tex.hpp"
 
 namespace ulight {
 namespace tex {

@@ -17,7 +17,6 @@
 
 #include "ulight/impl/lang/html.hpp"
 #include "ulight/impl/lang/js.hpp"
-#include "ulight/impl/lang/js_chars.hpp"
 
 namespace ulight {
 namespace js {

@@ -7,8 +7,17 @@
 #include "ulight/impl/escapes.hpp"
 #include "ulight/impl/numbers.hpp"
 #include "ulight/impl/platform.h"
+#include "ulight/impl/charset.hpp"
 
 namespace ulight::python {
+
+// https://docs.python.org/3/reference/lexical_analysis.html#whitespace-between-tokens
+inline constexpr auto is_python_whitespace = Charset256(u8" \t\f\n\r");
+
+inline constexpr auto is_python_newline = Charset256(u8"\n\r");
+
+
+
 
 // https://docs.python.org/3/reference/lexical_analysis.html
 #define ULIGHT_PYTHON_TOKEN_ENUM_DATA(F)                                                           \
