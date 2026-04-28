@@ -312,12 +312,12 @@ void suppress_unused_include_algorithm()
 
 } // namespace
 
-bool is_xid_start(char32_t c) noexcept
+bool Is_XID_Start::operator()(const char32_t c) noexcept
 {
     return std::ranges::binary_search(XID_Start_Ranges, c, std::less<void> {});
 }
 
-bool is_xid_continue(char32_t c) noexcept
+bool Is_XID_Continue::operator()(const char32_t c) noexcept
 {
     return is_xid_start(c)
         || std::ranges::binary_search(XID_Continue_Minus_XID_Start, c, std::less<void> {});
