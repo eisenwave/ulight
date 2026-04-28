@@ -7,9 +7,9 @@
 #include <optional>
 #include <string_view>
 
-#include "ulight/ulight.hpp"
 #include "ulight/impl/charset.hpp"
 #include "ulight/impl/unicode_chars.hpp"
+#include "ulight/ulight.hpp"
 
 namespace ulight::lua {
 
@@ -25,9 +25,6 @@ inline constexpr auto is_lua_identifier_start = is_ascii_xid_start | u8'_';
 // Lua identifiers start with a letter or underscore
 // See: https://www.lua.org/manual/5.4/manual.html
 inline constexpr auto is_lua_identifier_continue = is_ascii_xid_continue;
-
-
-
 
 #define ULIGHT_LUA_TOKEN_ENUM_DATA(F)                                                              \
     F(hash, "#", symbol_op, 1)                                                                     \

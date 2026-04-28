@@ -5,8 +5,8 @@
 
 #include "ulight/impl/platform.h"
 
-#include "ulight/impl/lang/js.hpp"
 #include "ulight/impl/charset.hpp"
+#include "ulight/impl/lang/js.hpp"
 
 namespace ulight::json {
 
@@ -24,9 +24,6 @@ inline constexpr auto is_json_escapable = Charset256(u8"\"\\/bfnrtu");
 ///
 /// https://www.json.org/json-en.html
 inline constexpr auto is_json_escaped = Charset256(u8"\"\\/\b\f\n\r\t");
-
-
-
 
 enum struct Identifier_Type : Underlying {
     normal,

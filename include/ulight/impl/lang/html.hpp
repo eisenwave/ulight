@@ -5,8 +5,8 @@
 #include <string_view>
 
 #include "ulight/impl/algorithm/all_of.hpp"
-#include "ulight/impl/unicode.hpp"
 #include "ulight/impl/ascii_chars.hpp"
+#include "ulight/impl/unicode.hpp"
 #include "ulight/impl/unicode_chars.hpp"
 
 namespace ulight::html {
@@ -147,9 +147,6 @@ inline constexpr struct IS_HTML_Min_Raw_Passthrough_Character {
         return c != U'<' && c != U'&';
     }
 } is_html_min_raw_passthrough_character;
-
-
-
 
 struct Match_Result {
     std::size_t length;

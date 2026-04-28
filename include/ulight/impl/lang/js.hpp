@@ -7,9 +7,9 @@
 
 #include "ulight/ulight.hpp"
 
+#include "ulight/impl/ascii_chars.hpp"
 #include "ulight/impl/escapes.hpp"
 #include "ulight/impl/numbers.hpp"
-#include "ulight/impl/ascii_chars.hpp"
 
 namespace ulight::js {
 
@@ -115,9 +115,6 @@ inline constexpr struct Is_JSX_Tag_Name_Part {
         return is_js_identifier_part(c) || c == U'-' || c == U':' || c == U'.';
     }
 } is_jsx_tag_name_part;
-
-
-
 
 enum struct Feature_Source : Underlying {
     /// @brief JavaScript

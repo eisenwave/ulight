@@ -62,9 +62,6 @@ inline constexpr struct Is_XML_Name {
 /// @brief Returns true of `c` is a non name char but is allowed to appear in contentspec.
 inline constexpr auto is_contentspec_non_name_char = Charset256(u8"()|*+?,");
 
-
-
-
 /// @brief matches whitespace at the beginning of str and returns
 /// the length of the matched whitespace. If the start of str
 /// is not whitespace 0 is returned

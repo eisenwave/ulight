@@ -31,9 +31,6 @@ inline constexpr struct Is_Rust_Whitespace {
     }
 } is_rust_whitespace;
 
-
-
-
 // https://doc.rust-lang.org/reference/grammar.html
 #define ULIGHT_RUST_TOKEN_ENUM_DATA(F)                                                             \
     F(exclamation, "!", symbol_op)                                                                 \

@@ -4,8 +4,8 @@
 #include <cstddef>
 #include <string_view>
 
-#include "ulight/impl/numbers.hpp"
 #include "ulight/impl/ascii_chars.hpp"
+#include "ulight/impl/numbers.hpp"
 
 namespace ulight::cowel {
 
@@ -29,9 +29,6 @@ inline constexpr auto is_cowel_identifier = is_cowel_identifier_start | is_ascii
 /// in the name of a cowel directive.
 inline constexpr auto is_cowel_ascii_reserved_escapable
     = is_ascii_set - is_cowel_escapeable - is_cowel_identifier_start - Charset256(u8":*\n\r");
-
-
-
 
 [[nodiscard]]
 std::size_t match_identifier(std::u8string_view str);

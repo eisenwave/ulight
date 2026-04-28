@@ -13,11 +13,6 @@ inline constexpr auto is_tex_command_name = is_ascii_alpha;
 /// For our purposes, we just come up with an arbitrary set of punctuation characters.
 inline constexpr auto is_tex_special = Charset256(u8"~%$\\#$&^_~@");
 
-
-
-
-//...
-
-}
+} // namespace ulight::tex
 
 #endif

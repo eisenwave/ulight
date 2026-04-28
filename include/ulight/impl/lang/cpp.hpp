@@ -5,9 +5,9 @@
 #include <optional>
 #include <string_view>
 
-#include "ulight/ulight.hpp"
 #include "ulight/impl/ascii_chars.hpp"
 #include "ulight/impl/unicode_chars.hpp"
+#include "ulight/ulight.hpp"
 
 namespace ulight::cpp {
 
@@ -48,9 +48,6 @@ inline constexpr auto is_cpp_basic
     = is_ascii_alphanumeric | Charset256(u8"\t\v\f\r\n!\"#$%&'()*+,-./:;<>=?@[]\\^_`{|}~");
 
 inline constexpr auto is_cpp_d_char = (is_ascii_set & ~is_cpp_whitespace) - u8'(' - u8')' - u8'\\';
-
-
-
 
 enum struct Feature_Source : Underlying {
     /// @brief Compiler extensions. Neither standard C nor standard C++.

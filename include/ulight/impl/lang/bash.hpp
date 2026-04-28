@@ -6,9 +6,9 @@
 
 #include "ulight/ulight.hpp"
 
-#include "ulight/impl/platform.h"
 #include "ulight/impl/ascii_chars.hpp"
 #include "ulight/impl/charset.hpp"
+#include "ulight/impl/platform.h"
 
 namespace ulight::bash {
 
@@ -55,9 +55,6 @@ inline constexpr auto is_bash_parameter_substitution_start
 /// and are highlighted as one token.
 inline constexpr auto is_bash_unquoted_terminator
     = Charset256(u8"\\'\"") | is_bash_whitespace | is_bash_metacharacter;
-
-
-
 
 #define ULIGHT_BASH_TOKEN_ENUM_DATA(F)                                                             \
     F(exclamation, "!", symbol_op)                                                                 \
