@@ -32,13 +32,13 @@ std::size_t match_identifier(std::u8string_view str)
     if (!str.starts_with(u8'%') && !str.starts_with(u8'@')) {
         return 0;
     }
-    return ascii::length_if(str, [](char8_t c) { return is_llvm_identifier(c); }, 1);
+    return ascii::length_if(str, is_llvm_identifier, 1);
 }
 
 [[nodiscard]]
 std::size_t match_keyword(std::u8string_view str)
 {
-    return ascii::length_if(str, [](char8_t c) { return is_llvm_keyword(c); });
+    return ascii::length_if(str, is_llvm_keyword);
 }
 
 struct LLVM_Keyword {
@@ -106,9 +106,7 @@ Highlight_Type classify_keyword(std::u8string_view str)
 
     // https://llvm.org/docs/LangRef.html#first-class-types
     const bool is_integer = str[0] == u8'i' && str.length() >= 2
-        && ascii::find_if_not(
-               str, [](char8_t c) { return is_ascii_digit(c); }, 1
-           ) == std::u8string_view::npos;
+        && ascii::find_if_not(str, is_ascii_digit, 1) == std::u8string_view::npos;
     if (is_integer) {
         return Highlight_Type::keyword_type;
     }

@@ -282,8 +282,7 @@ struct Highlighter : Highlighter_Base {
 private:
     void consume_whitespace()
     {
-        const std::size_t space
-            = ascii::length_if(remainder, [](char8_t c) { return is_python_whitespace(c); });
+        const std::size_t space = ascii::length_if(remainder, is_python_whitespace);
         advance(space);
     }
 
@@ -293,8 +292,7 @@ private:
             return false;
         }
         emit_and_advance(1, Highlight_Type::comment_delim);
-        if (const std::size_t length
-            = ascii::length_if_not(remainder, [](char8_t c) { return is_python_newline(c); })) {
+        if (const std::size_t length = ascii::length_if_not(remainder, is_python_newline)) {
             emit_and_advance(length, Highlight_Type::comment);
         }
         return true;

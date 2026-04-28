@@ -70,6 +70,8 @@ inline constexpr auto is_cpp_whitespace = Charset256(u8"\t\n\f\r \v");
 inline constexpr auto is_cpp_basic
     = is_ascii_alphanumeric | Charset256(u8"\t\v\f\r\n!\"#$%&'()*+,-./:;<>=?@[]\\^_`{|}~");
 
+inline constexpr auto is_cpp_d_char = (is_ascii_set & ~is_cpp_whitespace) - u8'(' - u8')' - u8'\\';
+
 } // namespace ulight
 
 #endif

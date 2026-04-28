@@ -88,20 +88,14 @@ std::optional<Token_Type> cpp_token_type_by_code(std::u8string_view code)
     return Token_Type(result - token_type_codes);
 }
 
-namespace {
-
-constexpr auto is_cpp_whitespace_lambda = [](char8_t c) { return is_cpp_whitespace(c); };
-
-} // namespace
-
 std::size_t match_whitespace(std::u8string_view str)
 {
-    return ascii::length_if(str, is_cpp_whitespace_lambda);
+    return ascii::length_if(str, is_cpp_whitespace);
 }
 
 std::size_t match_non_whitespace(std::u8string_view str)
 {
-    return ascii::length_if_not(str, is_cpp_whitespace_lambda);
+    return ascii::length_if_not(str, is_cpp_whitespace);
 }
 
 namespace {
@@ -466,15 +460,9 @@ Escape_Result match_escape_sequence(std::u8string_view str)
 namespace {
 
 [[nodiscard]]
-constexpr bool is_d_char(char8_t c)
-{
-    return is_ascii(c) && !is_cpp_whitespace(c) && c != u8'(' && c != u8')' && c != '\\';
-}
-
-[[nodiscard]]
 std::size_t match_d_char_sequence(std::u8string_view str)
 {
-    return ascii::length_if(str, [](char8_t c) { return is_d_char(c); });
+    return ascii::length_if(str, is_cpp_d_char);
 }
 
 } // namespace

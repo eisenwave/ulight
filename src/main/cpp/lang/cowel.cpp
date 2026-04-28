@@ -22,9 +22,7 @@ namespace cowel {
 
 std::size_t match_identifier(const std::u8string_view str)
 {
-    constexpr auto head = [](char8_t c) { return is_cowel_identifier_start(c); };
-    constexpr auto tail = [](char8_t c) { return is_cowel_identifier(c); };
-    return ascii::length_if_head_tail(str, head, tail);
+    return ascii::length_if_head_tail(str, is_cowel_identifier_start, is_cowel_identifier);
 }
 
 Escape_Result match_escape(const std::u8string_view str)
@@ -64,8 +62,7 @@ std::size_t match_ellipsis(const std::u8string_view str)
 
 std::size_t match_whitespace(const std::u8string_view str)
 {
-    constexpr auto predicate = [](char8_t c) { return is_html_whitespace(c); };
-    return ascii::length_if(str, predicate);
+    return ascii::length_if(str, is_html_whitespace);
 }
 
 std::size_t match_line_comment(const std::u8string_view str)

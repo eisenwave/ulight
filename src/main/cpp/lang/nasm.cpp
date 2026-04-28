@@ -97,9 +97,7 @@ std::size_t match_operator(std::u8string_view str)
 
 std::size_t match_identifier(std::u8string_view str)
 {
-    constexpr auto head = [](char8_t c) { return is_nasm_identifier_start(c); };
-    constexpr auto tail = [](char8_t c) { return is_nasm_identifier(c); };
-    return ascii::length_if_head_tail(str, head, tail);
+    return ascii::length_if_head_tail(str, is_nasm_identifier_start, is_nasm_identifier);
 }
 
 [[nodiscard]]
