@@ -2,94 +2,73 @@
 #define ULIGHT_CPP_CHARS_HPP
 
 #include "ulight/impl/ascii_chars.hpp"
-#include "ulight/impl/chars.hpp"
 #include "ulight/impl/unicode_chars.hpp"
 
 namespace ulight {
 
-inline constexpr Charset256 is_cpp_ascii_identifier_start_set
-    = is_ascii_xid_start_set | detail::to_charset256(u8'_');
+/// @brief Returns `true` iff `c` is in the set `[A-Za-z_]`.
+inline constexpr Charset256 is_cpp_ascii_identifier_start_set = is_ascii_xid_start | u8'_';
 
 /// @brief Returns `true` iff `c` is in the set `[A-Za-z_]`.
 [[nodiscard]]
-constexpr bool is_cpp_ascii_identifier_start(char8_t c) noexcept
+constexpr bool is_cpp_ascii_identifier_start(const char8_t c) noexcept
 {
     return c == u8'_' || is_ascii_xid_start(c);
 }
 
 /// @brief Returns `true` iff `c` is in the set `[A-Za-z_]`.
 [[nodiscard]]
-constexpr bool is_cpp_ascii_identifier_start(char32_t c) noexcept
+constexpr bool is_cpp_ascii_identifier_start(const char32_t c) noexcept
 {
     return c == U'_' || is_ascii_xid_start(c);
 }
 
-constexpr bool is_cpp_identifier_start(char8_t c) = delete;
+inline constexpr struct Is_CPP_Identifier_Start {
+    static constexpr bool operator()(const char8_t c) = delete;
 
-[[nodiscard]]
-constexpr bool is_cpp_identifier_start(char32_t c) noexcept
-{
-    // https://eel.is/c++draft/lex.name#nt:identifier-start
-    return c == U'_' || is_xid_start(c);
-}
+    [[nodiscard]]
+    static constexpr bool operator()(const char32_t c) noexcept
+    {
+        // https://eel.is/c++draft/lex.name#nt:identifier-start
+        return c == U'_' || is_xid_start(c);
+    }
+} is_cpp_identifier_start;
 
-inline constexpr Charset256 is_cpp_ascii_identifier_continue_set = is_ascii_xid_continue_set;
+/// @brief Returns `true` iff `c` is in the set `[A-Za-z0-9_]`.
+inline constexpr Charset256 is_cpp_ascii_identifier_continue_set = is_ascii_xid_continue;
 
 /// @brief Returns `true` iff `c` is in the set `[A-Za-z0-9_]`.
 [[nodiscard]]
-constexpr bool is_cpp_ascii_identifier_continue(char8_t c) noexcept
+constexpr bool is_cpp_ascii_identifier_continue(const char8_t c) noexcept
 {
     return is_ascii_xid_continue(c);
 }
 
 /// @brief Returns `true` iff `c` is in the set `[A-Za-z0-9_]`.
 [[nodiscard]]
-constexpr bool is_cpp_ascii_identifier_continue(char32_t c) noexcept
+constexpr bool is_cpp_ascii_identifier_continue(const char32_t c) noexcept
 {
     return is_ascii_xid_continue(c);
 }
 
-constexpr bool is_cpp_identifier_continue(char8_t c) = delete;
+inline constexpr struct Is_CPP_Identifier_Continue {
+    static constexpr bool operator()(const char8_t c) = delete;
 
-[[nodiscard]]
-constexpr bool is_cpp_identifier_continue(char32_t c) noexcept
-{
-    // https://eel.is/c++draft/lex.name#nt:identifier-start
-    return c == U'_' || is_xid_continue(c);
-}
-
-inline constexpr Charset256 is_cpp_whitespace_set = detail::to_charset256(u8"\t\n\f\r \v");
+    [[nodiscard]]
+    static constexpr bool operator()(const char32_t c) noexcept
+    {
+        // https://eel.is/c++draft/lex.name#nt:identifier-start
+        return c == U'_' || is_xid_continue(c);
+    }
+} is_cpp_identifier_continue;
 
 /// @brief consistent with `isspace` in the C locale.
-[[nodiscard]]
-constexpr bool is_cpp_whitespace(char8_t c) noexcept
-{
-    return is_cpp_whitespace_set.contains(c);
-}
-
-/// @brief Consistent with `isspace` in the C locale.
-[[nodiscard]]
-constexpr bool is_cpp_whitespace(char32_t c) noexcept
-{
-    return is_ascii(c) && is_cpp_whitespace(char8_t(c));
-}
-
-inline constexpr Charset256 is_cpp_basic_set = is_ascii_alphanumeric_set
-    | detail::to_charset256(u8"\t\v\f\r\n!\"#$%&'()*+,-./:;<>=?@[]\\^_`{|}~");
+inline constexpr auto is_cpp_whitespace = Charset256(u8"\t\n\f\r \v");
 
 /// @brief Returns `true` iff `c` is in the
 /// [basic character set](https://eel.is/c++draft/tab:lex.charset.basic).
-[[nodiscard]]
-constexpr bool is_cpp_basic(char8_t c) noexcept
-{
-    return is_cpp_basic_set.contains(c);
-}
-
-[[nodiscard]]
-constexpr bool is_cpp_basic(char32_t c) noexcept
-{
-    return is_ascii(c) && is_cpp_basic(char8_t(c));
-}
+inline constexpr auto is_cpp_basic
+    = is_ascii_alphanumeric | Charset256(u8"\t\v\f\r\n!\"#$%&'()*+,-./:;<>=?@[]\\^_`{|}~");
 
 } // namespace ulight
 

@@ -67,10 +67,9 @@ constexpr bool contains(std::u32string_view str, char32_t c)
 
 /// @brief Returns `true` if `str` is a possibly empty ASCII string.
 [[nodiscard]]
-constexpr bool is_ascii(std::u8string_view str)
+constexpr bool is_all_ascii(const std::u8string_view str)
 {
-    constexpr auto predicate = [](char8_t x) { return is_ascii(x); };
-    return all_of(str, predicate);
+    return all_of(str, is_ascii);
 }
 
 } // namespace ulight
