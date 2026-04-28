@@ -1,0 +1,298 @@
+{
+    "version": 5,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 24,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_COMPILE_WARNING_AS_ERROR": "ON"
+            }
+        },
+        {
+            "name": "gcc-default",
+            "hidden": true,
+            "inherits": [
+                "base"
+            ],
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++"
+            }
+        },
+        {
+            "name": "clang-default",
+            "hidden": true,
+            "inherits": [
+                "base"
+            ],
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++"
+            }
+        },
+        {
+            "name": "clang-19",
+            "hidden": true,
+            "inherits": [
+                "base"
+            ],
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang-19",
+                "CMAKE_CXX_COMPILER": "clang++-19"
+            }
+        },
+        {
+            "name": "emscripten-toolchain",
+            "hidden": true,
+            "inherits": [
+                "base"
+            ],
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+                "CMAKE_COLOR_DIAGNOSTICS": "ON",
+                "CMAKE_CXX_FLAGS": "-fdiagnostics-color=always"
+            }
+        },
+        {
+            "name": "gcc-debug",
+            "inherits": [
+                "gcc-default"
+            ],
+            "binaryDir": "${sourceDir}/build/gcc-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "gcc-release",
+            "inherits": [
+                "gcc-default"
+            ],
+            "binaryDir": "${sourceDir}/build/gcc-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "gcc-relwithdebinfo",
+            "inherits": [
+                "gcc-default"
+            ],
+            "binaryDir": "${sourceDir}/build/gcc-relwithdebinfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "clang-debug",
+            "inherits": [
+                "clang-default"
+            ],
+            "binaryDir": "${sourceDir}/build/clang-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "clang-release",
+            "inherits": [
+                "clang-default"
+            ],
+            "binaryDir": "${sourceDir}/build/clang-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "clang-relwithdebinfo",
+            "inherits": [
+                "clang-default"
+            ],
+            "binaryDir": "${sourceDir}/build/clang-relwithdebinfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "clang19-debug",
+            "inherits": [
+                "clang-19"
+            ],
+            "binaryDir": "${sourceDir}/build/clang19-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "clang19-release",
+            "inherits": [
+                "clang-19"
+            ],
+            "binaryDir": "${sourceDir}/build/clang19-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "clang19-relwithdebinfo",
+            "inherits": [
+                "clang-19"
+            ],
+            "binaryDir": "${sourceDir}/build/clang19-relwithdebinfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "emscripten-debug",
+            "inherits": [
+                "emscripten-toolchain"
+            ],
+            "binaryDir": "${sourceDir}/build/emscripten-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "emscripten-release",
+            "inherits": [
+                "emscripten-toolchain"
+            ],
+            "binaryDir": "${sourceDir}/build/emscripten-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "emscripten-relwithdebinfo",
+            "inherits": [
+                "emscripten-toolchain"
+            ],
+            "binaryDir": "${sourceDir}/build/emscripten-relwithdebinfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "gcc-debug",
+            "configurePreset": "gcc-debug"
+        },
+        {
+            "name": "gcc-release",
+            "configurePreset": "gcc-release"
+        },
+        {
+            "name": "gcc-relwithdebinfo",
+            "configurePreset": "gcc-relwithdebinfo"
+        },
+        {
+            "name": "clang-debug",
+            "configurePreset": "clang-debug"
+        },
+        {
+            "name": "clang-release",
+            "configurePreset": "clang-release"
+        },
+        {
+            "name": "clang-relwithdebinfo",
+            "configurePreset": "clang-relwithdebinfo"
+        },
+        {
+            "name": "clang19-debug",
+            "configurePreset": "clang19-debug"
+        },
+        {
+            "name": "clang19-release",
+            "configurePreset": "clang19-release"
+        },
+        {
+            "name": "clang19-relwithdebinfo",
+            "configurePreset": "clang19-relwithdebinfo"
+        },
+        {
+            "name": "emscripten-debug",
+            "configurePreset": "emscripten-debug"
+        },
+        {
+            "name": "emscripten-release",
+            "configurePreset": "emscripten-release"
+        },
+        {
+            "name": "emscripten-relwithdebinfo",
+            "configurePreset": "emscripten-relwithdebinfo"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "gcc-debug",
+            "configurePreset": "gcc-debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "gcc-release",
+            "configurePreset": "gcc-release",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "gcc-relwithdebinfo",
+            "configurePreset": "gcc-relwithdebinfo",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "clang-debug",
+            "configurePreset": "clang-debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "clang-release",
+            "configurePreset": "clang-release",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "clang-relwithdebinfo",
+            "configurePreset": "clang-relwithdebinfo",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "clang19-debug",
+            "configurePreset": "clang19-debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "clang19-release",
+            "configurePreset": "clang19-release",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "clang19-relwithdebinfo",
+            "configurePreset": "clang19-relwithdebinfo",
+            "output": {
+                "outputOnFailure": true
+            }
+        }
+    ]
+}
