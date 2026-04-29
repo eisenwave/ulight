@@ -199,6 +199,9 @@ inline constexpr auto is_ascii_alphanumeric = is_ascii_alpha | is_ascii_digit_se
 
 inline constexpr auto is_ascii_punctuation = Charset256(u8"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~");
 
+inline constexpr Charset256 is_ascii_printing
+    = is_ascii_alphanumeric | is_ascii_punctuation | u8' ';
+
 } // namespace ulight
 
 #endif
