@@ -28,7 +28,7 @@ inline constexpr auto is_cowel_identifier = is_cowel_identifier_start | is_ascii
 /// @brief Returns `true` iff `c` can legally appear
 /// in the name of a cowel directive.
 inline constexpr auto is_cowel_ascii_reserved_escapable
-    = is_ascii_set - is_cowel_escapeable - is_cowel_identifier_start - Charset256(u8":*\n\r");
+    = is_ascii_set - is_cowel_escapeable - is_cowel_identifier_start - Charset256(u8":*(\n\r");
 
 #define ULIGHT_COWEL_FIXED_TOKEN_ENUM_DATA(F)                                                      \
     F(left_parens, "(", symbol_parens)                                                             \
