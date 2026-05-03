@@ -117,11 +117,14 @@ Common_Number_Result match_number(const std::u8string_view str)
 
 std::size_t match_reserved_number(const std::u8string_view str)
 {
-    if (str.empty() || str.length() < 3) {
+    if (str.empty()) {
         return 0;
     }
     std::size_t length = 0;
     if (str[0] == u8'-') {
+        if (str.length() < 2) {
+            return 0;
+        }
         if (!is_ascii_digit(str[1])) {
             return 0;
         }
@@ -302,6 +305,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         ULIGHT_ASSERT(brace_level >= 0);
         return expect_escape() //
             || expect_directive_splice() //
+            || expect_expression_splice() //
             || expect_line_comment() //
             || expect_block_comment() //
             || expect_text(text_kind, brace_level);
@@ -406,6 +410,49 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         return false;
     }
 
+    bool expect_expression_splice()
+    {
+        if (!remainder.starts_with(u8"\\("sv)) {
+            return false;
+        }
+
+        emit_and_advance(2, Highlight_Type::string_interpolation_delim);
+
+        while (!eof()) {
+            consume_blank();
+            expect_expression();
+            consume_blank();
+            if (eof()) {
+                break;
+            }
+
+            // In the correct case, we close the expression-splice with a parenthesis.
+            if (remainder.starts_with(u8')')) {
+                emit_and_advance(1, Highlight_Type::string_interpolation_delim);
+                return true;
+            }
+            // Everything from here on out is error recovery.
+            // We have already committed to parsing the expression-splice;
+            // at this point we just need parse some token soup.
+            if (remainder.starts_with(u8'}')) {
+                return true;
+            }
+            // This is the same hack as in expect_group_member,
+            // but we seriously need to refactor that into better recovery in both functions.
+            const std::optional<Fixed_Token_Type> token = match_fixed_token(remainder);
+            if (token && is_group_member_token(*token)) {
+                emit_and_advance(
+                    fixed_token_type_length(*token), fixed_token_type_highlight(*token)
+                );
+            }
+            else {
+                emit_and_advance(1, Highlight_Type::error);
+            }
+        }
+
+        return true;
+    }
+
     bool expect_directive_splice()
     {
         if (!remainder.starts_with(u8'\\')) {
@@ -501,7 +548,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
                 ULIGHT_ASSERT(remainder.starts_with(u8'='));
                 emit_and_advance(1, Highlight_Type::symbol_punc); // =
                 consume_blank();
-                expect_member_value();
+                expect_expression();
                 return true;
             }
             // If we matched a name but there is no following "=",
@@ -518,7 +565,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             advance(leading_whitespace);
         }
 
-        if (expect_ellipsis() || expect_member_value()) {
+        if (expect_ellipsis() || expect_expression()) {
             return true;
         }
 
@@ -536,7 +583,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         return false;
     }
 
-    bool expect_member_value()
+    bool expect_expression()
     {
         return expect_directive_call() || expect_primary_value();
     }
