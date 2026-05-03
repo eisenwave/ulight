@@ -30,6 +30,35 @@ inline constexpr auto is_cowel_identifier = is_cowel_identifier_start | is_ascii
 inline constexpr auto is_cowel_ascii_reserved_escapable
     = is_ascii_set - is_cowel_escapeable - is_cowel_identifier_start - Charset256(u8":*\n\r");
 
+#define ULIGHT_COWEL_FIXED_TOKEN_ENUM_DATA(F)                                                      \
+    F(left_parens, "(", symbol_parens)                                                             \
+    F(right_parens, ")", symbol_parens)                                                            \
+    F(left_brace, "{", symbol_brace)                                                               \
+    F(right_brace, "}", symbol_brace)                                                              \
+    F(comma, ",", symbol_punc)                                                                     \
+    F(eq, "=", symbol_punc)                                                                        \
+    F(logical_or, "||", symbol_op)                                                                 \
+    F(logical_and, "&&", symbol_op)                                                                \
+    F(eq_eq, "==", symbol_op)                                                                      \
+    F(exclamation_eq, "!=", symbol_op)                                                             \
+    F(less_eq, "<=", symbol_op)                                                                    \
+    F(greater_eq, ">=", symbol_op)                                                                 \
+    F(plus, "+", symbol_op)                                                                        \
+    F(minus, "-", symbol_op)                                                                       \
+    F(asterisk, "*", symbol_op)                                                                    \
+    F(slash, "/", symbol_op)                                                                       \
+    F(percent, "%", symbol_op)                                                                     \
+    F(less, "<", symbol_op)                                                                        \
+    F(greater, ">", symbol_op)                                                                     \
+    F(tilde, "~", symbol_op)                                                                       \
+    F(exclamation, "!", symbol_op)
+
+#define ULIGHT_COWEL_FIXED_TOKEN_ENUMERATOR(id, code, highlight) id,
+
+enum struct Fixed_Token_Type : Underlying {
+    ULIGHT_COWEL_FIXED_TOKEN_ENUM_DATA(ULIGHT_COWEL_FIXED_TOKEN_ENUMERATOR)
+};
+
 [[nodiscard]]
 std::size_t match_identifier(std::u8string_view str);
 
