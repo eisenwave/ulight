@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <memory_resource>
+#include <optional>
 #include <string_view>
 
 #include "ulight/ulight.hpp"
@@ -200,6 +201,72 @@ std::size_t match_quoted_member_name(const std::u8string_view str)
 
 namespace {
 
+#define ULIGHT_COWEL_FIXED_TOKEN_TYPE_LENGTH(id, code, highlight) (sizeof(u8##code) - 1),
+#define ULIGHT_COWEL_FIXED_TOKEN_HIGHLIGHT(id, code, highlight) (Highlight_Type::highlight),
+
+inline constexpr unsigned char fixed_token_lengths[] {
+    ULIGHT_COWEL_FIXED_TOKEN_ENUM_DATA(ULIGHT_COWEL_FIXED_TOKEN_TYPE_LENGTH)
+};
+
+inline constexpr Highlight_Type fixed_token_highlights[] {
+    ULIGHT_COWEL_FIXED_TOKEN_ENUM_DATA(ULIGHT_COWEL_FIXED_TOKEN_HIGHLIGHT)
+};
+
+[[nodiscard]]
+constexpr std::size_t fixed_token_type_length(const Fixed_Token_Type type)
+{
+    return fixed_token_lengths[std::size_t(type)];
+}
+
+[[nodiscard]]
+constexpr Highlight_Type fixed_token_type_highlight(const Fixed_Token_Type type)
+{
+    return fixed_token_highlights[std::size_t(type)];
+}
+
+[[nodiscard]]
+constexpr bool is_group_member_token(const Fixed_Token_Type type)
+{
+    using enum Fixed_Token_Type;
+    switch (type) {
+    case left_parens:
+    case right_parens:
+    case left_brace:
+    case right_brace:
+    case comma: return false;
+    default: return true;
+    }
+}
+
+[[nodiscard]]
+std::optional<Fixed_Token_Type> match_fixed_token(const std::u8string_view str)
+{
+    using enum Fixed_Token_Type;
+    if (str.empty()) {
+        return {};
+    }
+    switch (str[0]) {
+    case u8'(': return left_parens;
+    case u8')': return right_parens;
+    case u8'{': return left_brace;
+    case u8'}': return right_brace;
+    case u8',': return comma;
+    case u8'=': return str.starts_with(u8"==") ? eq_eq : eq;
+    case u8'|': return str.starts_with(u8"||") ? logical_or : std::optional<Fixed_Token_Type> {};
+    case u8'&': return str.starts_with(u8"&&") ? logical_and : std::optional<Fixed_Token_Type> {};
+    case u8'!': return str.starts_with(u8"!=") ? exclamation_eq : exclamation;
+    case u8'<': return str.starts_with(u8"<=") ? less_eq : less;
+    case u8'>': return str.starts_with(u8">=") ? greater_eq : greater;
+    case u8'+': return plus;
+    case u8'-': return minus;
+    case u8'*': return asterisk;
+    case u8'/': return slash;
+    case u8'%': return percent;
+    case u8'~': return tilde;
+    default: return {};
+    }
+}
+
 enum struct Text_Kind : Underlying {
     document,
     quoted_member_name,
@@ -368,15 +435,20 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             if (eof()) {
                 break;
             }
-            if (remainder[0] == u8')') {
-                emit_and_advance(1, Highlight_Type::symbol_parens);
+            const std::optional<Fixed_Token_Type> token = match_fixed_token(remainder);
+            if (token == Fixed_Token_Type::right_parens) {
+                emit_and_advance(
+                    fixed_token_type_length(*token), fixed_token_type_highlight(*token)
+                );
                 return true;
             }
-            if (remainder[0] == u8',') {
-                emit_and_advance(1, Highlight_Type::symbol_punc);
+            if (token == Fixed_Token_Type::comma) {
+                emit_and_advance(
+                    fixed_token_type_length(*token), fixed_token_type_highlight(*token)
+                );
                 continue;
             }
-            if (remainder[0] == u8'}') {
+            if (token == Fixed_Token_Type::right_brace) {
                 // This is an error, but we don't highlight it as such.
                 // For example, it happens in \x{\y(}).
                 // We highlight this as \y being a regular directive-splice
@@ -419,7 +491,9 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         }();
         if (name_length) {
             const std::size_t space_before_equals = match_blank(remainder.substr(name_length));
-            if (remainder.substr(name_length + space_before_equals).starts_with(u8'=')) {
+            const auto after_name = remainder.substr(name_length + space_before_equals);
+            if (after_name.starts_with(u8'=')
+                && (after_name.length() == 1 || after_name[1] != u8'=')) {
                 if (!expect_quoted_member_name()) {
                     emit_and_advance(name_length, Highlight_Type::markup_attr);
                 }
@@ -444,7 +518,22 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             advance(leading_whitespace);
         }
 
-        return expect_ellipsis() || expect_member_value();
+        if (expect_ellipsis() || expect_member_value()) {
+            return true;
+        }
+
+        // This is a hack to make SOME (but not all) token soup matching
+        // work between parentheses.
+        // It would be better to do something similar to COWEL,
+        // i.e. skip to the next group member upon failing a match.
+        // However, once an opening parenthesis is encountered,
+        // `expect_group` should still commit to highlighting a group.
+        if (const std::optional<Fixed_Token_Type> token = match_fixed_token(remainder);
+            token && is_group_member_token(*token)) {
+            emit_and_advance(fixed_token_type_length(*token), fixed_token_type_highlight(*token));
+            return true;
+        }
+        return false;
     }
 
     bool expect_member_value()
