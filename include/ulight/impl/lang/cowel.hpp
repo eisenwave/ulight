@@ -14,7 +14,7 @@ inline constexpr char8_t cowel_block_comment_char = u8'*';
 
 inline constexpr auto is_cowel_special = Charset256(u8"{}\\(),=");
 
-inline constexpr auto is_cowel_escapeable = Charset256(u8"{}\\\" \r\n");
+inline constexpr auto is_cowel_escapeable = Charset256(u8"{}\\\"+ \r\n");
 
 /// @brief Returns `true` if `c` is an escapable cowel character.
 /// That is, if `\c` would be treated specially,
