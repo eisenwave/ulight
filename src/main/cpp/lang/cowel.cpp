@@ -20,6 +20,47 @@ using namespace std::string_view_literals;
 namespace ulight {
 namespace cowel {
 
+namespace {
+
+[[nodiscard]]
+constexpr std::size_t match_numeric_char_escape(const std::u8string_view str)
+{
+    if (str.length() < 6 || !str.starts_with(u8"\\+")) {
+        return 0;
+    }
+    int case_decision = 0;
+    const auto match_char = [&](const char8_t c) -> bool {
+        if (is_ascii_digit(c)) {
+            return true;
+        }
+        if (is_ascii_upper_hex_digit(c) && case_decision >= 0) {
+            case_decision = 1;
+            return true;
+        }
+        if (is_ascii_lower_hex_digit(c) && case_decision <= 0) {
+            case_decision = -1;
+            return true;
+        }
+        return false;
+    };
+    if (str.size() < 10) [[unlikely]] {
+        for (std::size_t i = 2; i < 6; ++i) {
+            if (!match_char(str[i])) {
+                return 0;
+            }
+        }
+        return 6;
+    }
+    for (std::size_t i = 2; i < 10; ++i) {
+        if (!match_char(str[i])) {
+            return i >= 6 ? 6 : 0;
+        }
+    }
+    return 10;
+}
+
+} // namespace
+
 std::size_t match_identifier(const std::u8string_view str)
 {
     return ascii::length_if_head_tail(str, is_cowel_identifier_start, is_cowel_identifier);
@@ -32,6 +73,12 @@ Escape_Result match_escape(const std::u8string_view str)
     }
     if (str.length() == 1) [[unlikely]] {
         return { .length = 1, .is_reserved = true };
+    }
+    if (str[1] == u8'+') {
+        if (const std::size_t length = match_numeric_char_escape(str)) {
+            return { .length = length };
+        }
+        return { .length = 2, .is_reserved = true };
     }
     if (is_cowel_escapeable(str[1])) {
         if (str.starts_with(u8"\\\r\n")) {

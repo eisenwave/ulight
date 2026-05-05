@@ -100,24 +100,9 @@ inline constexpr struct Is_ASCII_Octal_Digit {
 inline constexpr Charset256 is_ascii_octal_digit_set
     = Charset256::from_predicate(Is_ASCII_Octal_Digit::operator());
 
-/// @brief Returns `true` if `c` is in `[0-9A-Fa-f]`.
-inline constexpr struct Is_ASCII_Hex_Digit {
-    [[nodiscard]]
-    // NOLINTNEXTLINE(bugprone-exception-escape)
-    static constexpr bool operator()(const char8_t c) noexcept
-    {
-        // TODO: remove the C++/Lua-specific versions in favor of this.
-        return is_ascii_digit_base(c, 16);
-    }
-
-    [[nodiscard]]
-    static constexpr bool operator()(const char32_t c) noexcept
-    {
-        return is_ascii(c) && operator()(char8_t(c));
-    }
-} is_ascii_hex_digit;
-inline constexpr Charset256 is_ascii_hex_digit_set
-    = Charset256::from_predicate(Is_ASCII_Hex_Digit::operator());
+inline constexpr auto is_ascii_lower_hex_digit = Charset256(u8"0123456789abcdef");
+inline constexpr auto is_ascii_upper_hex_digit = Charset256(u8"0123456789ABCDEF");
+inline constexpr auto is_ascii_hex_digit = is_ascii_lower_hex_digit | is_ascii_upper_hex_digit;
 
 inline constexpr struct Is_ASCII_Upper_Alpha {
     [[nodiscard]]
