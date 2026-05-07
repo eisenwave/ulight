@@ -43,7 +43,29 @@ Escape_Result match_escape_sequence(std::u8string_view str, Escape_Policy policy
     }
     // Almost all escape sequences are two characters.
     if (str[1] != u8'u') {
-        return { .length = 2, .value = char32_t(str[1]) };
+        if (policy == Escape_Policy::match_only) {
+            return { .length = 2, .value = 0 };
+        }
+        switch (str[1]) {
+        case u8'"':
+            return { .length = 2, .value = U'"' };
+        case u8'\\':
+            return { .length = 2, .value = U'\\' };
+        case u8'/':
+            return { .length = 2, .value = U'/' };
+        case u8'b':
+            return { .length = 2, .value = U'\b' };
+        case u8'f':
+            return { .length = 2, .value = U'\f' };
+        case u8'n':
+            return { .length = 2, .value = U'\n' };
+        case u8'r':
+            return { .length = 2, .value = U'\r' };
+        case u8't':
+            return { .length = 2, .value = U'\t' };
+        default:
+            return { .length = 2 };
+        }
     }
     // "\", "u", hex, hex, hex, hex
     const auto [length, erroneous] = match_common_escape<Common_Escape::hex_4>(str, 2);
