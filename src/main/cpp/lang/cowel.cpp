@@ -62,7 +62,7 @@ constexpr std::size_t match_numeric_char_escape(const std::u8string_view str)
 [[nodiscard]]
 constexpr std::size_t match_named_char_escape(const std::u8string_view str)
 {
-    if (str.length() < 4 || !str.starts_with(u8"\\'")) {
+    if (str.length() < 3 || !str.starts_with(u8"\\'")) {
         return 0;
     }
     const std::size_t closing_quote = str.find(u8'\'', 2);
