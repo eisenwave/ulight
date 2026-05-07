@@ -362,9 +362,12 @@ private:
             { u8"s0x"sv, 16 }, // signed integer
             { u8"u0x"sv, 16 }, // unsigned integer
         };
+        // Signed variants must come before the plain letter so that e.g. "e-3" is matched
+        // as exponent separator "e-" followed by digits "3",
+        // rather than as separator "e" with no following digits (which would be erroneous).
         static constexpr Exponent_Separator exponent_separators[] {
-            { u8"e", 10 }, { u8"e+", 10 }, { u8"e-", 10 }, //
-            { u8"E", 10 }, { u8"E+", 10 }, { u8"E-", 10 }, //
+            { u8"e+", 10 }, { u8"e-", 10 }, { u8"e", 10 }, //
+            { u8"E+", 10 }, { u8"E-", 10 }, { u8"E", 10 }, //
         };
         static constexpr Common_Number_Options options {
             .signs = Matched_Signs::minus_only,
