@@ -59,6 +59,23 @@ constexpr std::size_t match_numeric_char_escape(const std::u8string_view str)
     return 10;
 }
 
+[[nodiscard]]
+constexpr std::size_t match_named_char_escape(const std::u8string_view str)
+{
+    if (str.length() < 4 || !str.starts_with(u8"\\'")) {
+        return 0;
+    }
+    const std::size_t closing_quote = str.find(u8'\'', 2);
+    if (closing_quote == std::string_view::npos || closing_quote == 2) {
+        return 0;
+    }
+    const std::u8string_view name = str.substr(2, closing_quote - 2);
+    if (name.contains(u8'\r') || name.contains(u8'\n')) {
+        return 0;
+    }
+    return closing_quote + 1;
+}
+
 } // namespace
 
 std::size_t match_identifier(const std::u8string_view str)
@@ -76,6 +93,12 @@ Escape_Result match_escape(const std::u8string_view str)
     }
     if (str[1] == u8'+') {
         if (const std::size_t length = match_numeric_char_escape(str)) {
+            return { .length = length };
+        }
+        return { .length = 2, .is_reserved = true };
+    }
+    if (str[1] == u8'\'') {
+        if (const std::size_t length = match_named_char_escape(str)) {
             return { .length = length };
         }
         return { .length = 2, .is_reserved = true };
