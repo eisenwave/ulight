@@ -11,6 +11,7 @@
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/highlighter.hpp"
 #include "ulight/impl/unicode.hpp"
+#include "ulight/impl/unicode_chars.hpp"
 
 #include "ulight/impl/lang/cowel.hpp"
 #include "ulight/impl/lang/html.hpp"
@@ -81,6 +82,26 @@ Escape_Result match_escape(const std::u8string_view str)
         return { .length = 2, .is_reserved = true };
     }
     if (is_cowel_escapeable(str[1])) {
+        if (str[1] == u8'\'') {
+            constexpr auto is_terminator
+                = [](const char8_t c) { return c == u8'\'' || c == u8'\r' || c == u8'\n'; };
+            const std::size_t closing_quote = ascii::find_if(str, is_terminator, 2);
+            if (closing_quote == std::u8string_view::npos) {
+                return { .length = 2, .is_reserved = true };
+            }
+            if (str[closing_quote] != u8'\'') {
+                return { .length = 2, .is_reserved = true };
+            }
+            if (closing_quote == 2) {
+                return { .length = 3, .is_reserved = true };
+            }
+            const std::u8string_view name = str.substr(2, closing_quote - 2);
+            if (name.starts_with(u8' ') || name.ends_with(u8' ')
+                || ascii::find_if_not(name, is_character_name) != std::u8string_view::npos) {
+                return { .length = closing_quote + 1, .is_reserved = true };
+            }
+            return { .length = closing_quote + 1 };
+        }
         if (str.starts_with(u8"\\\r\n")) {
             return { .length = 3 };
         }

@@ -128,6 +128,11 @@ inline constexpr struct Is_XID_Start {
 
 inline constexpr Charset256 is_ascii_xid_continue = is_ascii_alphanumeric | u8'_';
 
+/// @brief Returns `true` iff `c` can occur in a Unicode character name.
+/// This matches the restricted ASCII code unit set used in named escapes.
+inline constexpr Charset256 is_character_name
+    = is_ascii_upper_alpha_set | is_ascii_digit_set | Charset256(u8" -");
+
 /// @brief Returns `true` iff `c` has the XID_Continue Unicode property.
 /// This property indicates whether the character can appear
 /// in a Unicode identifier, such as a C++ *identifier*.
