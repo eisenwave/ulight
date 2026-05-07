@@ -41,26 +41,42 @@ Escape_Result match_escape_sequence(std::u8string_view str, Escape_Policy policy
     if (str.length() < 2 || str[0] != u8'\\' || !is_json_escapable(str[1])) {
         return {};
     }
-    // Almost all escape sequences are two characters.
-    if (str[1] != u8'u') {
-        return { .length = 2, .value = char32_t(str[1]) };
-    }
-    // "\", "u", hex, hex, hex, hex
-    const auto [length, erroneous] = match_common_escape<Common_Escape::hex_4>(str, 2);
-    if (erroneous) {
-        return { .length = length };
-    }
+    const auto simple_escape = [policy](char32_t value) {
+        return policy == Escape_Policy::match_only ? Escape_Result { .length = 2, .value = 0 }
+                                                   : Escape_Result { .length = 2, .value = value };
+    };
 
-    if (policy == Escape_Policy::match_only) {
-        return { .length = length, .value = 0 };
-    }
-    const auto hex_digits = as_string_view(str.substr(2, 4));
-    ULIGHT_DEBUG_ASSERT(hex_digits.length() == 4);
-    std::uint32_t code_point;
-    const auto result = std::from_chars(hex_digits.data(), hex_digits.data() + 4, code_point, 16);
-    ULIGHT_ASSERT(result.ec == std::errc {});
+    switch (str[1]) {
+    case u8'"': return simple_escape(U'"');
+    case u8'\\': return simple_escape(U'\\');
+    case u8'/': return simple_escape(U'/');
+    case u8'b': return simple_escape(U'\b');
+    case u8'f': return simple_escape(U'\f');
+    case u8'n': return simple_escape(U'\n');
+    case u8'r': return simple_escape(U'\r');
+    case u8't': return simple_escape(U'\t');
+    case u8'u': {
+        // "\", "u", hex, hex, hex, hex
+        const auto [length, erroneous] = match_common_escape<Common_Escape::hex_4>(str, 2);
+        if (erroneous) {
+            return { .length = length };
+        }
+        if (policy == Escape_Policy::match_only) {
+            return { .length = length, .value = 0 };
+        }
 
-    return { .length = length, .value = char32_t(code_point) };
+        const auto hex_digits = as_string_view(str.substr(2, 4));
+        ULIGHT_DEBUG_ASSERT(hex_digits.length() == 4);
+        std::uint32_t code_point;
+        const auto result
+            = std::from_chars(hex_digits.data(), hex_digits.data() + 4, code_point, 16);
+        ULIGHT_ASSERT(result.ec == std::errc {});
+
+        return { .length = length, .value = char32_t(code_point) };
+    }
+    default: break;
+    }
+    ULIGHT_ASSERT_UNREACHABLE(u8"All valid escape sequences should be handled above.");
 }
 
 std::size_t match_digits(std::u8string_view str)

@@ -287,6 +287,27 @@ std::optional<Value> parse_file(std::string_view file)
     return parse(source_string);
 }
 
+TEST(JSON, match_escape_sequence)
+{
+    EXPECT_EQ(match_escape_sequence(u8"\\\"", Escape_Policy::parse), (Escape_Result { 2, U'"' }));
+    EXPECT_EQ(match_escape_sequence(u8"\\\\", Escape_Policy::parse), (Escape_Result { 2, U'\\' }));
+    EXPECT_EQ(match_escape_sequence(u8"\\/", Escape_Policy::parse), (Escape_Result { 2, U'/' }));
+    EXPECT_EQ(match_escape_sequence(u8"\\b", Escape_Policy::parse), (Escape_Result { 2, U'\b' }));
+    EXPECT_EQ(match_escape_sequence(u8"\\f", Escape_Policy::parse), (Escape_Result { 2, U'\f' }));
+    EXPECT_EQ(match_escape_sequence(u8"\\n", Escape_Policy::parse), (Escape_Result { 2, U'\n' }));
+    EXPECT_EQ(match_escape_sequence(u8"\\r", Escape_Policy::parse), (Escape_Result { 2, U'\r' }));
+    EXPECT_EQ(match_escape_sequence(u8"\\t", Escape_Policy::parse), (Escape_Result { 2, U'\t' }));
+    EXPECT_EQ(
+        match_escape_sequence(u8"\\u00A0", Escape_Policy::parse), (Escape_Result { 6, U'\u00A0' })
+    );
+
+    EXPECT_EQ(match_escape_sequence(u8"\\n", Escape_Policy::match_only), (Escape_Result { 2, 0 }));
+    EXPECT_EQ(
+        match_escape_sequence(u8"\\u00A0", Escape_Policy::match_only), (Escape_Result { 6, 0 })
+    );
+    EXPECT_EQ(match_escape_sequence(u8"\\a", Escape_Policy::parse), (Escape_Result {}));
+}
+
 TEST(JSON, parse_empty)
 {
     std::optional<Value> value = parse(u8"");
