@@ -536,11 +536,15 @@ private:
             { u8"0d", 10 }, { u8"0D", 10 }, { u8"0t", 10 }, { u8"0T", 10 }, //
             { u8"0x", 16 }, { u8"0X", 16 }, { u8"0h", 16 }, { u8"0H", 16 }, { u8"$", 16 }, //
         };
+        // https://www.nasm.us/xdoc/2.16.03/html/nasmdoc3.html#section-3.4.4
+        // Signed variants must come before the plain letter so that e.g. "e-3" is matched
+        // as exponent separator "e-" followed by digits "3",
+        // rather than as separator "e" with no following digits (which would be erroneous).
         static constexpr Exponent_Separator exponent_separators[] {
-            { u8"e", 10 }, { u8"e+", 10 }, { u8"e-", 10 }, //
-            { u8"E", 10 }, { u8"E+", 10 }, { u8"E-", 10 }, //
-            { u8"p", 16 }, { u8"p+", 16 }, { u8"p-", 16 }, //
-            { u8"P", 16 }, { u8"P+", 16 }, { u8"P", 16 }, //
+            { u8"e+", 10 }, { u8"e-", 10 }, { u8"e", 10 }, //
+            { u8"E+", 10 }, { u8"E-", 10 }, { u8"E", 10 }, //
+            { u8"p+", 16 }, { u8"p-", 16 }, { u8"p", 16 }, //
+            { u8"P+", 16 }, { u8"P-", 16 }, { u8"P", 16 }, //
         };
         static constexpr Common_Number_Options options //
             { .prefixes = prefixes,
