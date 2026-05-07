@@ -176,6 +176,7 @@ else(NOT DEFINED EMSCRIPTEN)
             src/test/cpp/test_js.cpp
             src/test/cpp/test_json.cpp
             src/test/cpp/test_rust.cpp
+            src/test/cpp/test_xml.cpp
             src/test/cpp/test_unicode.cpp
             src/test/cpp/test_unicode_algorithm.cpp
         )
