@@ -521,6 +521,9 @@ private:
     bool expect_number()
     {
         // https://www.nasm.us/xdoc/2.16.03/html/nasmdoc3.html#section-3.4.1
+        if (remainder.starts_with(digit_separator)) {
+            return false;
+        }
         return expect_suffixed_number() || expect_common_number();
     }
 
