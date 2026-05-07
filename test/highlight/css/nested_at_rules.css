@@ -1,0 +1,5 @@
+@media screen and (min-width: 60rem) {
+  @supports (display: grid) {
+    .layout { display: grid !important; }
+  }
+}

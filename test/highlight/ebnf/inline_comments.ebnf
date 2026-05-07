@@ -1,0 +1,2 @@
+rule = identifier , (* optional suffix *) [ "_" , identifier ] ;
+identifier = letter , { letter | digit } ;

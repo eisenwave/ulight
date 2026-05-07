@@ -71,6 +71,7 @@ inline constexpr auto is_python_newline = Charset256(u8"\n\r");
     F(kw_async, "async", keyword)                                                                  \
     F(kw_await, "await", keyword_control)                                                          \
     F(kw_break, "break", keyword_control)                                                          \
+    F(kw_case, "case", keyword_control)                                                            \
     F(kw_class, "class", keyword)                                                                  \
     F(kw_continue, "continue", keyword_control)                                                    \
     F(kw_def, "def", keyword)                                                                      \
@@ -87,6 +88,7 @@ inline constexpr auto is_python_newline = Charset256(u8"\n\r");
     F(kw_in, "in", keyword)                                                                        \
     F(kw_is, "is", keyword)                                                                        \
     F(kw_lambda, "lambda", keyword)                                                                \
+    F(kw_match, "match", keyword_control)                                                          \
     F(kw_nonlocal, "nonlocal", keyword)                                                            \
     F(kw_not, "not", keyword)                                                                      \
     F(kw_or, "or", keyword)                                                                        \
