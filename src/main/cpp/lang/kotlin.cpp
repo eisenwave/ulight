@@ -321,8 +321,10 @@ private:
         std::u8string_view terminator;
         bool is_multiline = false;
 
+        bool is_character = false;
         if (remainder.starts_with(u8'\'')) {
             terminator = u8"'";
+            is_character = true;
         }
         else if (remainder.starts_with(u8'"')) {
             if (remainder.starts_with(triple_quote)) {
@@ -377,7 +379,9 @@ private:
             }
 
             // 2. Check for StrRef or StrExprStart.
-            if (remainder[length] == u8'$') {
+            // Character literals do not support string interpolation;
+            // '$' is an ordinary character inside them.
+            if (!is_character && remainder[length] == u8'$') {
                 flush();
                 if (remainder.starts_with(u8"${")) {
                     emit_and_advance(2, Highlight_Type::string_interpolation_delim);
