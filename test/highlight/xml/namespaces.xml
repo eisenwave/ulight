@@ -1,0 +1,3 @@
+<root xmlns="https://example.com/default" xmlns:cfg="https://example.com/cfg">
+  <cfg:item cfg:id="1">value</cfg:item>
+</root>

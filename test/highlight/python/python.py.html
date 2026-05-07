@@ -173,14 +173,14 @@ Do not use this file as production code — it's deliberately noisy.
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Pattern matching (structural) - Python 3.10+</h->
 <h- data-h=kw>def</h-> <h- data-h=name>pattern_demo</h-><h- data-h=sym_par>(</h-><h- data-h=name>value</h-><h- data-h=sym_punc>:</h-> <h- data-h=name>Any</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=name>str</h-><h- data-h=sym_punc>:</h->
-    <h- data-h=name>match</h-> <h- data-h=name>value</h-><h- data-h=sym_punc>:</h->
-        <h- data-h=name>case</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>:</h->
+    <h- data-h=kw_ctrl>match</h-> <h- data-h=name>value</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>case</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>:</h->
             <h- data-h=kw_ctrl>return</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>zero</h-><h- data-h=str_dlim>'</h->
-        <h- data-h=name>case</h-> <h- data-h=sym_sqr>[</h-><h- data-h=name>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=name>y</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>case</h-> <h- data-h=sym_sqr>[</h-><h- data-h=name>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=name>y</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>:</h->
             <h- data-h=kw_ctrl>return</h-> <h- data-h=str_deco>f</h-><h- data-h=str_dlim>'</h-><h- data-h=str>pair:{x},{y}</h-><h- data-h=str_dlim>'</h->
-        <h- data-h=name>case</h-> <h- data-h=sym_brac>{</h-><h- data-h=str_dlim>'</h-><h- data-h=str>id</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>:</h-> <h- data-h=name>int</h-><h- data-h=sym_par>(</h-><h- data-h=name>id_val</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>case</h-> <h- data-h=sym_brac>{</h-><h- data-h=str_dlim>'</h-><h- data-h=str>id</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>:</h-> <h- data-h=name>int</h-><h- data-h=sym_par>(</h-><h- data-h=name>id_val</h-><h- data-h=sym_par>)</h-><h- data-h=sym_brac>}</h-><h- data-h=sym_punc>:</h->
             <h- data-h=kw_ctrl>return</h-> <h- data-h=str_deco>f</h-><h- data-h=str_dlim>"</h-><h- data-h=str>has-id:{id_val}</h-><h- data-h=str_dlim>"</h->
-        <h- data-h=name>case</h-> <h- data-h=name>_</h-><h- data-h=sym_punc>:</h->
+        <h- data-h=kw_ctrl>case</h-> <h- data-h=name>_</h-><h- data-h=sym_punc>:</h->
             <h- data-h=kw_ctrl>return</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>other</h-><h- data-h=str_dlim>'</h->
 
 

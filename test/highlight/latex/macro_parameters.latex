@@ -1,0 +1,2 @@
+\newcommand{\pair}[2]{(#1,#2)}
+\pair{left}{right}
