@@ -47,22 +47,14 @@ Escape_Result match_escape_sequence(std::u8string_view str, Escape_Policy policy
     };
 
     switch (str[1]) {
-    case u8'"':
-        return simple_escape(U'"');
-    case u8'\\':
-        return simple_escape(U'\\');
-    case u8'/':
-        return simple_escape(U'/');
-    case u8'b':
-        return simple_escape(U'\b');
-    case u8'f':
-        return simple_escape(U'\f');
-    case u8'n':
-        return simple_escape(U'\n');
-    case u8'r':
-        return simple_escape(U'\r');
-    case u8't':
-        return simple_escape(U'\t');
+    case u8'"': return simple_escape(U'"');
+    case u8'\\': return simple_escape(U'\\');
+    case u8'/': return simple_escape(U'/');
+    case u8'b': return simple_escape(U'\b');
+    case u8'f': return simple_escape(U'\f');
+    case u8'n': return simple_escape(U'\n');
+    case u8'r': return simple_escape(U'\r');
+    case u8't': return simple_escape(U'\t');
     case u8'u': {
         // "\", "u", hex, hex, hex, hex
         const auto [length, erroneous] = match_common_escape<Common_Escape::hex_4>(str, 2);
@@ -82,8 +74,7 @@ Escape_Result match_escape_sequence(std::u8string_view str, Escape_Policy policy
 
         return { .length = length, .value = char32_t(code_point) };
     }
-    default:
-        break;
+    default: break;
     }
     ULIGHT_ASSERT_UNREACHABLE(u8"All valid escape sequences should be handled above.");
 }
