@@ -59,23 +59,6 @@ constexpr std::size_t match_numeric_char_escape(const std::u8string_view str)
     return 10;
 }
 
-[[nodiscard]]
-constexpr std::size_t match_named_char_escape(const std::u8string_view str)
-{
-    if (str.length() < 3 || !str.starts_with(u8"\\'")) {
-        return 0;
-    }
-    const std::size_t closing_quote = str.find(u8'\'', 2);
-    if (closing_quote == std::string_view::npos || closing_quote == 2) {
-        return 0;
-    }
-    const std::u8string_view name = str.substr(2, closing_quote - 2);
-    if (name.contains(u8'\r') || name.contains(u8'\n')) {
-        return 0;
-    }
-    return closing_quote + 1;
-}
-
 } // namespace
 
 std::size_t match_identifier(const std::u8string_view str)
@@ -97,13 +80,34 @@ Escape_Result match_escape(const std::u8string_view str)
         }
         return { .length = 2, .is_reserved = true };
     }
-    if (str[1] == u8'\'') {
-        if (const std::size_t length = match_named_char_escape(str)) {
-            return { .length = length };
-        }
-        return { .length = 2, .is_reserved = true };
-    }
     if (is_cowel_escapeable(str[1])) {
+        if (str[1] == u8'\'') {
+            std::size_t closing_quote = std::u8string_view::npos;
+            for (std::size_t i = 2; i < str.length(); ++i) {
+                if (str[i] == u8'\r' || str[i] == u8'\n') {
+                    return { .length = 2, .is_reserved = true };
+                }
+                if (str[i] == u8'\'') {
+                    closing_quote = i;
+                    break;
+                }
+            }
+            if (closing_quote == std::u8string_view::npos) {
+                return { .length = 2, .is_reserved = true };
+            }
+            if (closing_quote == 2) {
+                return { .length = 3, .is_reserved = true };
+            }
+            for (std::size_t i = 2; i < closing_quote; ++i) {
+                const char8_t c = str[i];
+                const bool valid_char
+                    = is_ascii_upper_alpha(c) || is_ascii_digit(c) || c == u8' ' || c == u8'-';
+                if (!valid_char) {
+                    return { .length = closing_quote + 1, .is_reserved = true };
+                }
+            }
+            return { .length = closing_quote + 1 };
+        }
         if (str.starts_with(u8"\\\r\n")) {
             return { .length = 3 };
         }

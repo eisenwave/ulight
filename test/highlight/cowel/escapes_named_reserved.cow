@@ -2,4 +2,7 @@
 \''
 \''x
 \'DIGIT ZERO
+\'DIGIT.ZERO'
+\'DIGIT_ZERO'
+\'DIGIT$ZERO'
 \d("\'DIGIT ZERO")
