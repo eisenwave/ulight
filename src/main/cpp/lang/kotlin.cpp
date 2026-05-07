@@ -83,6 +83,11 @@ Common_Number_Result match_number(std::u8string_view str)
     };
     Common_Number_Result result = match_common_number(str, options);
     result.erroneous |= (result.fractional || result.radix_point) && result.prefix;
+    if (result.radix_point && result.fractional == 0 && result.length < str.length()
+        && str[result.length] == u8'.') {
+        result.radix_point = 0;
+        --result.length;
+    }
     return result;
 }
 
