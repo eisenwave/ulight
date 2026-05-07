@@ -1,0 +1,6 @@
+val a = 'a'
+val b = '$'
+val c = '\n'
+val d = '\''
+val e = '\$'
+val f = '\u0041'
