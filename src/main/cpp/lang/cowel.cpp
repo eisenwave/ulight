@@ -10,6 +10,7 @@
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/highlighter.hpp"
+#include "ulight/impl/unicode_chars.hpp"
 #include "ulight/impl/unicode.hpp"
 
 #include "ulight/impl/lang/cowel.hpp"
@@ -82,29 +83,23 @@ Escape_Result match_escape(const std::u8string_view str)
     }
     if (is_cowel_escapeable(str[1])) {
         if (str[1] == u8'\'') {
-            std::size_t closing_quote = std::u8string_view::npos;
-            for (std::size_t i = 2; i < str.length(); ++i) {
-                if (str[i] == u8'\r' || str[i] == u8'\n') {
-                    return { .length = 2, .is_reserved = true };
-                }
-                if (str[i] == u8'\'') {
-                    closing_quote = i;
-                    break;
-                }
-            }
+            const std::size_t closing_quote = ascii::find_if(
+                str,
+                [](const char8_t c) { return c == u8'\'' || c == u8'\r' || c == u8'\n'; },
+                2);
             if (closing_quote == std::u8string_view::npos) {
+                return { .length = 2, .is_reserved = true };
+            }
+            if (str[closing_quote] != u8'\'') {
                 return { .length = 2, .is_reserved = true };
             }
             if (closing_quote == 2) {
                 return { .length = 3, .is_reserved = true };
             }
-            for (std::size_t i = 2; i < closing_quote; ++i) {
-                const char8_t c = str[i];
-                const bool valid_char
-                    = is_ascii_upper_alpha(c) || is_ascii_digit(c) || c == u8' ' || c == u8'-';
-                if (!valid_char) {
-                    return { .length = closing_quote + 1, .is_reserved = true };
-                }
+            const std::u8string_view name = str.substr(2, closing_quote - 2);
+            if (name.starts_with(u8' ') || name.ends_with(u8' ')
+                || ascii::find_if_not(name, is_character_name) != std::u8string_view::npos) {
+                return { .length = closing_quote + 1, .is_reserved = true };
             }
             return { .length = closing_quote + 1 };
         }
