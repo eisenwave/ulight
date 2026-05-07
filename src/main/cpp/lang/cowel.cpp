@@ -10,8 +10,8 @@
 #include "ulight/impl/buffer.hpp"
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/highlighter.hpp"
-#include "ulight/impl/unicode_chars.hpp"
 #include "ulight/impl/unicode.hpp"
+#include "ulight/impl/unicode_chars.hpp"
 
 #include "ulight/impl/lang/cowel.hpp"
 #include "ulight/impl/lang/html.hpp"
@@ -83,10 +83,9 @@ Escape_Result match_escape(const std::u8string_view str)
     }
     if (is_cowel_escapeable(str[1])) {
         if (str[1] == u8'\'') {
-            const std::size_t closing_quote = ascii::find_if(
-                str,
-                [](const char8_t c) { return c == u8'\'' || c == u8'\r' || c == u8'\n'; },
-                2);
+            constexpr auto is_terminator
+                = [](const char8_t c) { return c == u8'\'' || c == u8'\r' || c == u8'\n'; };
+            const std::size_t closing_quote = ascii::find_if(str, is_terminator, 2);
             if (closing_quote == std::u8string_view::npos) {
                 return { .length = 2, .is_reserved = true };
             }
