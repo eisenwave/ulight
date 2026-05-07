@@ -86,7 +86,6 @@ Escape_Result match_escape_sequence(std::u8string_view str, Escape_Policy policy
         break;
     }
     ULIGHT_ASSERT_UNREACHABLE(u8"Invalid escaped character should have been handled above.");
-    return {};
 }
 
 std::size_t match_digits(std::u8string_view str)
