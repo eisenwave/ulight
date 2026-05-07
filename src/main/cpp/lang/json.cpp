@@ -64,7 +64,8 @@ Escape_Result match_escape_sequence(std::u8string_view str, Escape_Policy policy
         case u8't':
             return { .length = 2, .value = U'\t' };
         default:
-            return { .length = 2 };
+            ULIGHT_ASSERT_UNREACHABLE(u8"Every escapable JSON character must be handled.");
+            return {};
         }
     }
     // "\", "u", hex, hex, hex, hex
