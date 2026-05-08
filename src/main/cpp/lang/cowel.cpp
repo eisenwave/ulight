@@ -621,7 +621,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             }
             // If we matched a name but there is no following "=",
             // the group member may still be valid,
-            // such as as a constant, int-literal or as an unquoted-string.
+            // such as as a constant, int-literal, or as an id-expression.
             //
             // We simply fall out of the if statement because the member name syntax
             // is extremely permissive, so having matched a member name
@@ -733,7 +733,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             emit_and_advance(8, infinity_highlight);
         }
         else {
-            emit_and_advance(length, Highlight_Type::string);
+            emit_and_advance(length, Highlight_Type::name_var);
         }
         return true;
     }
