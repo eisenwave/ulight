@@ -144,9 +144,7 @@ constexpr bool token_type_cannot_precede_regex(Token_Type type)
     case decrement:
     case right_paren:
     case right_bracket:
-    case right_brace:
-    case plus:
-    case minus: return true;
+    case right_brace: return true;
     default: return false;
     }
 }
