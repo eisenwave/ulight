@@ -15,10 +15,10 @@ namespace {
 // NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, const char** argv)
 {
-    const std::span<const char*> args { argv, std::size_t(argc) };
-    if (args.size() < 2) {
+    const std::span<const char*> args{argv,std::size_t(argc)};
+    if(args.size()<2){
         ULIGHT_ASSERT(!args.empty());
-        std::cerr << "Usage: " << args[0] << " INPUT_FILE [OUTPUT_FILE]\n";
+        std::cerr<<"Usage: "<<args[0]<<" INPUT_FILE [OUTPUT_FILE]\n";
         return EXIT_FAILURE;
     }
 
