@@ -82,10 +82,19 @@ export function setLanguageId(id, persist = false) {
     }
 }
 
+function resolveTheme(theme) {
+    if (theme !== 'default') {
+        return theme;
+    }
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light-ulight' : 'dark-ulight';
+}
+
 export function setTheme(theme, persist = false) {
+    const resolvedTheme = resolveTheme(theme);
     themePicker.value = theme;
-    codeInputContainer.setAttribute('data-ulight-theme', theme);
-    outputContainer.setAttribute('data-ulight-theme', theme);
+    document.documentElement.setAttribute('data-ulight-theme', resolvedTheme);
+    codeInputContainer.setAttribute('data-ulight-theme', resolvedTheme);
+    outputContainer.setAttribute('data-ulight-theme', resolvedTheme);
     if (persist) {
         localStorage.setItem(themeItem, theme);
     }
@@ -111,7 +120,5 @@ if (initialLanguageId !== null) {
     setLanguageId(Number(initialLanguageId), false);
 }
 
-const initialTheme = localStorage.getItem(themeItem);
-if (initialTheme !== null) {
-    setTheme(initialTheme, false);
-}
+const initialTheme = localStorage.getItem(themeItem) ?? 'default';
+setTheme(initialTheme, false);

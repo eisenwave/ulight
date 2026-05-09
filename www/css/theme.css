@@ -1,8 +1,8 @@
-[data-ulight-theme=light-eelis].ulight-code-block {
+[data-ulight-theme=light-eelis].ulight-code-block, [data-ulight-theme=light-eelis] .ulight-code-block {
     background-color: #ffffff;
     border-color: #ffffff;
 }
-[data-ulight-theme=light-eelis].ulight-code, [data-ulight-theme=light-eelis].ulight-code-block {
+[data-ulight-theme=light-eelis].ulight-code, [data-ulight-theme=light-eelis].ulight-code-block, [data-ulight-theme=light-eelis] .ulight-code, [data-ulight-theme=light-eelis] .ulight-code-block {
     color: #000000;
 }
 [data-ulight-theme=light-eelis] h-[data-h^=bool] {
@@ -87,11 +87,11 @@
 }
 
 
-[data-ulight-theme=dark-eelis].ulight-code-block {
+[data-ulight-theme=dark-eelis].ulight-code-block, [data-ulight-theme=dark-eelis] .ulight-code-block {
     background-color: #171717;
     border-color: #171717;
 }
-[data-ulight-theme=dark-eelis].ulight-code, [data-ulight-theme=dark-eelis].ulight-code-block {
+[data-ulight-theme=dark-eelis].ulight-code, [data-ulight-theme=dark-eelis].ulight-code-block, [data-ulight-theme=dark-eelis] .ulight-code, [data-ulight-theme=dark-eelis] .ulight-code-block {
     color: #d0d0d0;
 }
 [data-ulight-theme=dark-eelis] h-[data-h^=bool] {
@@ -172,11 +172,11 @@
     color: #dfa837;
 }
 
-[data-ulight-theme=light-ulight].ulight-code-block {
+[data-ulight-theme=light-ulight].ulight-code-block, [data-ulight-theme=light-ulight] .ulight-code-block {
     background-color: #f0f0f0;
     border-color: #f0f0f0;
 }
-[data-ulight-theme=light-ulight].ulight-code, [data-ulight-theme=light-ulight].ulight-code-block {
+[data-ulight-theme=light-ulight].ulight-code, [data-ulight-theme=light-ulight].ulight-code-block, [data-ulight-theme=light-ulight] .ulight-code, [data-ulight-theme=light-ulight] .ulight-code-block {
     color: #000000;
 }
 [data-ulight-theme=light-ulight] h-[data-h^=bool] {
@@ -338,11 +338,11 @@
 }
 
 
-[data-ulight-theme=dark-ulight].ulight-code-block {
+[data-ulight-theme=dark-ulight].ulight-code-block, [data-ulight-theme=dark-ulight] .ulight-code-block {
     background-color: #181818;
     border-color: #181818;
 }
-[data-ulight-theme=dark-ulight].ulight-code, [data-ulight-theme=dark-ulight].ulight-code-block {
+[data-ulight-theme=dark-ulight].ulight-code, [data-ulight-theme=dark-ulight].ulight-code-block, [data-ulight-theme=dark-ulight] .ulight-code, [data-ulight-theme=dark-ulight] .ulight-code-block {
     color: #e7e7e7;
 }
 [data-ulight-theme=dark-ulight] h-[data-h^=bool] {
@@ -503,11 +503,11 @@
     color: #98d48e;
 }
 
-[data-ulight-theme=dark-vs].ulight-code-block {
+[data-ulight-theme=dark-vs].ulight-code-block, [data-ulight-theme=dark-vs] .ulight-code-block {
     background-color: #1e1e1e;
     border-color: #1e1e1e;
 }
-[data-ulight-theme=dark-vs].ulight-code, [data-ulight-theme=dark-vs].ulight-code-block {
+[data-ulight-theme=dark-vs].ulight-code, [data-ulight-theme=dark-vs].ulight-code-block, [data-ulight-theme=dark-vs] .ulight-code, [data-ulight-theme=dark-vs] .ulight-code-block {
     color: #d4d4d4;
 }
 [data-ulight-theme=dark-vs] h-[data-h^=bool] {
@@ -617,11 +617,11 @@
     color: #b5cea8;
 }
 
-[data-ulight-theme=dark-vs-plus].ulight-code-block {
+[data-ulight-theme=dark-vs-plus].ulight-code-block, [data-ulight-theme=dark-vs-plus] .ulight-code-block {
     background-color: #1e1e1e;
     border-color: #1e1e1e;
 }
-[data-ulight-theme=dark-vs-plus].ulight-code, [data-ulight-theme=dark-vs-plus].ulight-code-block {
+[data-ulight-theme=dark-vs-plus].ulight-code, [data-ulight-theme=dark-vs-plus].ulight-code-block, [data-ulight-theme=dark-vs-plus] .ulight-code, [data-ulight-theme=dark-vs-plus] .ulight-code-block {
     color: #d4d4d4;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=bool] {
@@ -773,11 +773,11 @@
     color: #b5cea8;
 }
 
-[data-ulight-theme=light-wg21].ulight-code-block {
+[data-ulight-theme=light-wg21].ulight-code-block, [data-ulight-theme=light-wg21] .ulight-code-block {
     background-color: #ffffff;
     border-color: #ffffff;
 }
-[data-ulight-theme=light-wg21].ulight-code, [data-ulight-theme=light-wg21].ulight-code-block {
+[data-ulight-theme=light-wg21].ulight-code, [data-ulight-theme=light-wg21].ulight-code-block, [data-ulight-theme=light-wg21] .ulight-code, [data-ulight-theme=light-wg21] .ulight-code-block {
     color: #000000;
 }
 [data-ulight-theme=light-wg21] h-[data-h^=bool] {
@@ -937,11 +937,11 @@
 }
 
 
-[data-ulight-theme=dark-wg21].ulight-code-block {
+[data-ulight-theme=dark-wg21].ulight-code-block, [data-ulight-theme=dark-wg21] .ulight-code-block {
     background-color: #171717;
     border-color: #171717;
 }
-[data-ulight-theme=dark-wg21].ulight-code, [data-ulight-theme=dark-wg21].ulight-code-block {
+[data-ulight-theme=dark-wg21].ulight-code, [data-ulight-theme=dark-wg21].ulight-code-block, [data-ulight-theme=dark-wg21] .ulight-code, [data-ulight-theme=dark-wg21] .ulight-code-block {
     color: #f0f0f0;
 }
 [data-ulight-theme=dark-wg21] h-[data-h^=bool] {

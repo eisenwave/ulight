@@ -4,6 +4,17 @@
 <head>
     <meta charset="utf-8">
     <title>µlight Live Editor</title>
+    <script>
+        (() => {
+            try {
+                const savedTheme = localStorage.getItem('theme');
+                const resolvedTheme = savedTheme !== null && savedTheme !== 'default'
+                    ? savedTheme
+                    : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light-ulight' : 'dark-ulight');
+                document.documentElement.setAttribute('data-ulight-theme', resolvedTheme);
+            } catch { }
+        })();
+    </script>
     <link rel=stylesheet href="fonts/fonts.css"/>
     <link rel=stylesheet href="css/main.css"/>
     <link rel=stylesheet href="css/live_edit.css"/>
