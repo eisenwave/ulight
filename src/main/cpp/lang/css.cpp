@@ -256,7 +256,12 @@ public:
                         break;
                     }
                 }
-                emit_and_advance(1, Highlight_Type::error);
+                emit_and_advance(
+                    1,
+                    context == Context::value || context == Context::at_prelude
+                        ? Highlight_Type::symbol_op
+                        : Highlight_Type::error
+                );
                 break;
             }
             case u8',': {
