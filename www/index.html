@@ -7,6 +7,7 @@
     <script>
         (() => {
             try {
+                // Keep in sync with `resolveTheme` in `www/js/live_edit_core.js`.
                 const savedTheme = localStorage.getItem('theme');
                 const resolvedTheme = savedTheme !== null && savedTheme !== 'default'
                     ? savedTheme
