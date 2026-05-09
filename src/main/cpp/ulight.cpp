@@ -495,7 +495,7 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
             const auto& t = tokens[i];
             if (t.begin > previous_end) {
                 const std::string_view source_gap { state->source + previous_end, t.begin - previous_end };
-                buffer.append_range(source_gap);
+                ulight::append_html_escaped(buffer, source_gap);
             }
 
             const std::string_view id
