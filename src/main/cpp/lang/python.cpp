@@ -161,26 +161,23 @@ Escape_Result match_escape_sequence(const std::u8string_view str, const String_P
     case u8'5':
     case u8'6':
     case u8'7': {
-        Escape_Result result = match_common_escape<Common_Escape::octal_3>(str, 1);
-        if (result.erroneous) {
-            return result;
-        }
-
-        unsigned value = 0;
-        for (const char8_t c : str.substr(1, result.length - 1)) {
-            value = (value * 8) + unsigned(c - u8'0');
-        }
-        result.erroneous = value > 0xFF;
-        return result;
+        // https://docs.python.org/3/reference/lexical_analysis.html#string-escape-oct
+        // Note that while octal escapes with a value above 255 produce a `SyntaxWarning`
+        // as of Python 3.12, they do not raise an error yet,
+        // so we don't highlight them as an error.
+        return match_common_escape<Common_Escape::octal_3>(str, 1);
     }
 
     case u8'x': return match_common_escape<Common_Escape::hex_2>(str, 2);
+
     case u8'N': {
+        // https://docs.python.org/3/reference/lexical_analysis.html#named-unicode-character
         Escape_Result result = match_common_escape<Common_Escape::nonempty_braced>(str, 2);
         result.erroneous |= string_prefix_is_byte(prefix);
         return result;
     }
     case u8'u': {
+        // https://docs.python.org/3/reference/lexical_analysis.html#hexadecimal-unicode-characters
         Escape_Result result = match_common_escape<Common_Escape::hex_4>(str, 2);
         result.erroneous |= string_prefix_is_byte(prefix);
         return result;

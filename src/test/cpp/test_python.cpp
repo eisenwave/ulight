@@ -33,8 +33,10 @@ TEST(Python, match_escape_sequence)
     expect_escape_result(u8"\\U12345678", String_Prefix::byte, 10, true);
 
     expect_escape_result(u8"\\377", String_Prefix::unicode, 4);
-    expect_escape_result(u8"\\400", String_Prefix::unicode, 4, true);
-    expect_escape_result(u8"\\777", String_Prefix::byte, 4, true);
+    // Out-of-range octal escapes are deprecated in Python 3.12,
+    // but do not raise an error yet:
+    expect_escape_result(u8"\\400", String_Prefix::unicode, 4);
+    expect_escape_result(u8"\\777", String_Prefix::byte, 4);
 }
 
 } // namespace
