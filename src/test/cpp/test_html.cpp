@@ -77,6 +77,8 @@ TEST(HTML, match_doctype_permissive)
     EXPECT_EQ(match_doctype_permissive(u8"<!DOCTYPE html"), Match_Result(14, false));
     EXPECT_EQ(match_doctype_permissive(u8"<!DOCTYPE html>"), Match_Result(15, true));
     EXPECT_EQ(match_doctype_permissive(u8"<!DOCTYPE   html>"), Match_Result(17, true));
+    EXPECT_EQ(match_doctype_permissive(u8"<!doctype html>"), Match_Result(15, true));
+    EXPECT_EQ(match_doctype_permissive(u8"<!DoCtYpE html>"), Match_Result(15, true));
 }
 
 TEST(HTML, match_cdata)

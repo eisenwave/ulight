@@ -226,7 +226,8 @@ Match_Result match_comment(std::u8string_view str);
 /// @brief Matches a DOCTYPE at the start of `str`.
 ///
 /// This function is more permissive than the actual restrictions for DOCTYPEs
-/// in the HTML standard. Any contents between `<!DOCTYPE` and `>` is accepted.
+/// in the HTML standard. Any contents between `<!DOCTYPE` and `>` is accepted,
+/// with ASCII case-insensitive matching for the `DOCTYPE` keyword.
 [[nodiscard]]
 Match_Result match_doctype_permissive(std::u8string_view str);
 

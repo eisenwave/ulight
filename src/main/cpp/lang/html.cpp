@@ -202,7 +202,7 @@ Match_Result match_comment(std::u8string_view str)
 Match_Result match_doctype_permissive(std::u8string_view str)
 {
     // https://html.spec.whatwg.org/dev/syntax.html#the-doctype
-    if (!str.starts_with(doctype_prefix)) {
+    if (!ascii::starts_with_ignore_case(str, doctype_prefix)) {
         return {};
     }
     const std::size_t result = str.find(u8'>', doctype_prefix.length());
