@@ -319,9 +319,9 @@ private:
             = expect_atx_heading(line.content_length) //
             || expect_thematic_break(line.content_length) //
             || expect_fenced_code_open(line.content_length) //
-            || expect_indented_code(line.content_length) //
+            || expect_list_marker(line.content_length) //
             || expect_blockquote(line.content_length) //
-            || expect_list_marker(line.content_length);
+            || expect_indented_code(line.content_length);
 
         // Each handler advances exactly `line.content_length` chars on success.
         if (block_matched) {
@@ -582,9 +582,9 @@ private:
         const bool nested_block_matched //
             = expect_atx_heading(nested_len) //
             || expect_thematic_break(nested_len) //
-            || expect_indented_code(nested_len) //
+            || expect_list_marker(nested_len) //
             || expect_blockquote(nested_len) //
-            || expect_list_marker(nested_len);
+            || expect_indented_code(nested_len);
 
         if (!nested_block_matched) {
             consume_inline_content(nested_len);
@@ -598,7 +598,13 @@ private:
         // https://spec.commonmark.org/0.31.2/#list-items (§5.2)
         // and https://spec.commonmark.org/0.31.2/#lists (§5.3)
         const std::u8string_view s = remainder.substr(0, content_len);
-        const std::size_t lead = match_lead_spaces(s);
+
+        // Count leading spaces (including beyond 3) to support nested list items
+        // at deeper indentation levels.
+        std::size_t lead = 0;
+        while (lead < s.length() && s[lead] == u8' ') {
+            ++lead;
+        }
 
         if (lead >= s.length()) {
             return false;
