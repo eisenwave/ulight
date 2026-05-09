@@ -94,6 +94,8 @@ const T = {
     text_code: 'text_code',
     text_link: 'text_link',
     str_esc: 'str_esc',
+    cmt_dlim: 'cmt_dlim',
+    cmt: 'cmt',
 };
 
 // ---------------------------------------------------------------------------
@@ -108,6 +110,7 @@ function highlight(source) {
     let inFencedCode = false;
     let fenceChar = '';
     let fenceLength = 0;
+    let inHtmlComment = false;
 
     function emit(length, type) {
         if (length > 0) {
@@ -163,6 +166,10 @@ function highlight(source) {
             processFencedLine();
             return;
         }
+        if (inHtmlComment) {
+            processHtmlCommentLine();
+            return;
+        }
 
         const { contentLength, terminatorLength } = matchLine();
         const lineEnd = pos + contentLength;
@@ -186,6 +193,32 @@ function highlight(source) {
 
         // Paragraph line.
         parseInline(contentLength, 0);
+        advance(terminatorLength);
+    }
+
+    function processHtmlCommentLine() {
+        const { contentLength, terminatorLength } = matchLine();
+        const lineEnd = pos + contentLength;
+        const suffixPos = source.slice(pos, lineEnd).indexOf('-->');
+
+        if (suffixPos < 0) {
+            if (contentLength > 0) {
+                emit(contentLength, T.cmt);
+            }
+            advance(terminatorLength);
+            return;
+        }
+
+        if (suffixPos > 0) {
+            emit(suffixPos, T.cmt);
+        }
+        emit(3, T.cmt_dlim);
+        inHtmlComment = false;
+
+        const tailLength = contentLength - suffixPos - 3;
+        if (tailLength > 0) {
+            parseInline(tailLength, '>');
+        }
         advance(terminatorLength);
     }
 
@@ -421,7 +454,7 @@ function highlight(source) {
                     prevChar = '`';
                 }
             } else if (c === '<') {
-                if (!tryAutolink(avail)) {
+                if (!tryHtmlComment(avail) && !tryAutolink(avail)) {
                     prevChar = c;
                     advance(1);
                 } else {
@@ -510,6 +543,70 @@ function highlight(source) {
         emit(1, T.sym_fmt);           // '<'
         emit(i - 1, T.text_link);    // URL/email
         emit(1, T.sym_fmt);           // '>'
+        return true;
+    }
+
+    function matchHtmlComment(avail) {
+        const str = source.slice(pos, pos + avail);
+        if (!str.startsWith('<!--')) {
+            return { length: 0, terminated: false };
+        }
+
+        let length = 4;
+        let i = 4;
+        if (i < str.length && (str[i] === '>' || str.startsWith('->', i))) {
+            return { length: 0, terminated: false };
+        }
+
+        while (i < str.length) {
+            const plainPrefixLength = str.slice(i).search(/[<-]/);
+            if (plainPrefixLength < 0) {
+                return { length: length + str.length - i, terminated: false };
+            }
+
+            i += plainPrefixLength;
+            length += plainPrefixLength;
+
+            if (str.startsWith('-->', i)) {
+                return { length: length + 3, terminated: true };
+            }
+            if (str.startsWith('<!--', i)) {
+                if (str.startsWith('<!-->', i)) {
+                    return { length: length + 5, terminated: true };
+                }
+                return { length: 0, terminated: false };
+            }
+            if (str.startsWith('--!>', i)) {
+                return { length: 0, terminated: false };
+            }
+
+            i++;
+            length++;
+        }
+
+        return { length, terminated: false };
+    }
+
+    function tryHtmlComment(avail) {
+        const comment = matchHtmlComment(avail);
+        if (comment.length === 0) {
+            return false;
+        }
+
+        emit(4, T.cmt_dlim);
+        if (comment.terminated) {
+            const commentLength = comment.length - 4;
+            if (commentLength > 3) {
+                emit(commentLength - 3, T.cmt);
+            }
+            emit(3, T.cmt_dlim);
+            return true;
+        }
+
+        if (comment.length > 4) {
+            emit(comment.length - 4, T.cmt);
+        }
+        inHtmlComment = true;
         return true;
     }
 

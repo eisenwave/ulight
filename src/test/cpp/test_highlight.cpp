@@ -26,7 +26,7 @@ using ulight::as_string_view;
 
 /// @brief Debugging-only option for running only tests related to a specific language.
 /// This should always be commited as an empty `std::optional`.
-constexpr std::optional<Lang> filter_language;
+constexpr std::optional<Lang> filter_language = Lang::markdown;
 
 [[nodiscard]]
 std::u8string_view as_string_view(std::span<const char8_t> span)

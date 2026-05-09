@@ -11,12 +11,16 @@
 
 #include "ulight/impl/algorithm/all_of.hpp"
 
+#include "ulight/impl/lang/html.hpp"
 #include "ulight/impl/lang/markdown.hpp"
 
 namespace ulight {
 namespace md {
 
 namespace {
+
+constexpr std::u8string_view html_comment_prefix = u8"<!--";
+constexpr std::u8string_view html_comment_suffix = u8"-->";
 
 /// @brief Strips the optional closing sequence from an ATX heading content span.
 /// Returns the length of the content with any trailing ` #+*` sequence removed.
@@ -118,9 +122,18 @@ Code_Span_Match match_code_span(const std::u8string_view str)
 
 /// @brief Result of attempting to match an autolink.
 struct Autolink_Match {
-    std::size_t length; ///< Total characters consumed (0 if no match).
-    std::size_t content_start; ///< Position where URL/email begins.
-    std::size_t content_length; ///< Length of URL/email content.
+    /// Total characters consumed (0 if no match).
+    std::size_t length;
+    /// Position where URL/email begins.
+    std::size_t content_start;
+    /// Length of URL/email content.
+    std::size_t content_length;
+
+    [[nodiscard]]
+    constexpr explicit operator bool() const
+    {
+        return length != 0;
+    }
 };
 
 /// @brief Try to match an autolink from `str`.
@@ -160,18 +173,62 @@ Autolink_Match match_autolink(const std::u8string_view str)
     return { .length = i + 1, .content_start = 1, .content_length = i - 1 };
 }
 
-/// @brief Result of attempting to match an HTML/character entity reference.
-struct Entity_Match {
-    std::size_t length; ///< Total characters consumed (0 if no match).
-};
+/// @brief Find the end of a link URL in a `(...)` destination.
+/// Starts scanning at `start` (just after `(`).
+/// Returns the index at which the URL content ends
+/// (the position of the first whitespace, `)`, or end of available chars).
+[[nodiscard]]
+std::size_t find_link_url_end(const std::u8string_view str, const std::size_t start)
+{
+    /// https://spec.commonmark.org/0.31.2/#links
+    std::size_t i = start;
+    // Handle angle-bracket URL: <url>.
+    if (i < str.length() && str[i] == u8'<') {
+        ++i;
+        while (i < str.length() && str[i] != u8'>' && str[i] != u8'<' && str[i] != u8'\n') {
+            ++i;
+        }
+        if (i < str.length() && str[i] == u8'>') {
+            ++i;
+        }
+        return i;
+    }
+    while (i < str.length() && str[i] != u8')' && !is_md_whitespace(str[i])) {
+        if (str[i] == u8'\\' && i + 1 < str.length()) {
+            ++i;
+        }
+        ++i;
+    }
+    return i;
+}
+
+/// @brief Find the closing `)` for a link destination.
+/// Starts scanning at `start` (just after the URL content ends).
+/// Returns the index of the closing `)`, or `str.length()` if not found.
+[[nodiscard]]
+std::size_t find_link_close(const std::u8string_view str, const std::size_t start)
+{
+    std::size_t i = start;
+    // Skip optional whitespace and title before ')'.
+    while (i < str.length() && str[i] != u8')') {
+        ++i;
+    }
+    return i;
+}
 
 /// @brief Try to match an HTML/character entity reference from `str`.
 [[nodiscard]]
-Entity_Match match_entity_reference(const std::u8string_view str)
+std::size_t match_character_reference(const std::u8string_view str)
 {
+    // TODO: This is slightly different from `html::match_character_reference`
+    //       by being stricter,
+    //       and the CommonMark tests don't pass with `html::match_character_reference`.
+    //       Ideally we would only have one function for all highlighters,
+    //       but this will require some work.
+
     ///  https://spec.commonmark.org/0.31.2/#entity-and-numeric-character-references
     if (str.length() < 2 || str[0] != u8'&') {
-        return { 0 };
+        return 0;
     }
 
     std::size_t i = 1;
@@ -185,9 +242,8 @@ Entity_Match match_entity_reference(const std::u8string_view str)
                 ++i;
             }
             if (i == start || i >= str.length() || str[i] != u8';') {
-                return { 0 };
+                return 0;
             }
-            return { i + 1 };
         }
         else {
             // Decimal numeric entity.
@@ -196,9 +252,8 @@ Entity_Match match_entity_reference(const std::u8string_view str)
                 ++i;
             }
             if (i == start || i >= str.length() || str[i] != u8';') {
-                return { 0 };
+                return 0;
             }
-            return { i + 1 };
         }
     }
     else {
@@ -208,10 +263,10 @@ Entity_Match match_entity_reference(const std::u8string_view str)
             ++i;
         }
         if (i == start || i >= str.length() || str[i] != u8';') {
-            return { 0 };
+            return 0;
         }
-        return { i + 1 };
     }
+    return i + 1;
 }
 
 struct Highlighter : Highlighter_Base {
@@ -220,6 +275,7 @@ private:
     bool in_fenced_code = false;
     char8_t fence_char = u8'`';
     std::size_t fence_length = 0;
+    bool in_html_comment = false;
 
 public:
     Highlighter(
@@ -237,6 +293,9 @@ public:
         while (!eof()) {
             if (in_fenced_code) {
                 consume_fenced_line();
+            }
+            else if (in_html_comment) {
+                consume_html_comment_line();
             }
             else {
                 consume_block_line();
@@ -313,9 +372,37 @@ private:
         advance(line.terminator_length);
     }
 
+    void consume_html_comment_line()
+    {
+        const Line_Result line = match_crlf_line(remainder);
+        const std::size_t content_len = line.content_length;
+        const std::u8string_view s = remainder.substr(0, content_len);
+        const std::size_t suffix_pos = s.find(html_comment_suffix);
+
+        if (suffix_pos == std::u8string_view::npos) {
+            if (content_len > 0) {
+                emit_and_advance(content_len, Highlight_Type::comment);
+            }
+            advance(line.terminator_length);
+            return;
+        }
+
+        if (suffix_pos > 0) {
+            emit_and_advance(suffix_pos, Highlight_Type::comment);
+        }
+        emit_and_advance(html_comment_suffix.length(), Highlight_Type::comment_delim);
+        in_html_comment = false;
+
+        const std::size_t tail_length = content_len - suffix_pos - html_comment_suffix.length();
+        if (tail_length > 0) {
+            consume_inline_content(tail_length, u8'>');
+        }
+        advance(line.terminator_length);
+    }
+
     bool expect_atx_heading(const std::size_t content_len)
     {
-        // https://spec.commonmark.org/0.31.2/#atx-headings (§4.2)
+        // https://spec.commonmark.org/0.31.2/#atx-headings
         const std::u8string_view s = remainder.substr(0, content_len);
         const std::size_t lead = match_lead_spaces(s);
 
@@ -541,9 +628,9 @@ private:
 
     /// @brief Inline-parse `length` code units from the current position.
     /// @param prev_char The character preceding this region, used for `_` opener/closer rules.
-    /// See https://spec.commonmark.org/0.31.2/#inlines (§6)
-    void consume_inline_content(std::size_t length, char8_t prev_char = 0)
+    void consume_inline_content(const std::size_t length, char8_t prev_char = 0)
     {
+        /// https://spec.commonmark.org/0.31.2/#inlines
         if (length == 0) {
             return;
         }
@@ -555,7 +642,6 @@ private:
 
             switch (c) {
             case u8'`': {
-                // Code span: try to match.
                 if (!expect_code_span(avail)) {
                     prev_char = c;
                     advance(1);
@@ -566,8 +652,7 @@ private:
                 break;
             }
             case u8'<': {
-                // Autolink: try to match.
-                if (!expect_autolink(avail)) {
+                if (!expect_html_comment(avail) && !expect_autolink(avail)) {
                     prev_char = c;
                     advance(1);
                 }
@@ -577,7 +662,7 @@ private:
                 break;
             }
             case u8'\\': {
-                // Backslash escape: https://spec.commonmark.org/0.31.2/#backslash-escapes
+                // https://spec.commonmark.org/0.31.2/#backslash-escapes
                 if (avail >= 2 && is_md_ascii_punctuation(remainder[1])) {
                     prev_char = remainder[1];
                     emit_and_advance(2, Highlight_Type::string_escape);
@@ -589,7 +674,6 @@ private:
                 break;
             }
             case u8'&': {
-                // Entity reference: try to match.
                 if (!expect_html_character_reference(avail)) {
                     prev_char = c;
                     advance(1);
@@ -600,7 +684,6 @@ private:
                 break;
             }
             case u8'!': {
-                // Image: try to match `![...](...)`
                 if (avail >= 2 && remainder[1] == u8'[') {
                     if (!expect_image(avail)) {
                         prev_char = c;
@@ -617,7 +700,6 @@ private:
                 break;
             }
             case u8'[': {
-                // Link: try to match `[...](...)`
                 if (!expect_link(avail)) {
                     prev_char = c;
                     advance(1);
@@ -629,7 +711,6 @@ private:
             }
             case u8'*':
             case u8'_': {
-                // Emphasis/strong: try to match.
                 if (!expect_emphasis(avail, prev_char)) {
                     prev_char = c;
                     advance(1);
@@ -650,7 +731,7 @@ private:
 
     /// @brief Try to match a code span starting with backticks.
     /// Emits opening/closing ticks as `string_delim` and content as `text_code`.
-    bool expect_code_span(std::size_t avail)
+    bool expect_code_span(const std::size_t avail)
     {
         const auto match = match_code_span(remainder.substr(0, avail));
         if (match.length == 0) {
@@ -668,8 +749,8 @@ private:
     /// @brief Try to match an autolink: `<scheme:...>` or `<user@host>`.
     bool expect_autolink(const std::size_t avail)
     {
-        const auto match = match_autolink(remainder.substr(0, avail));
-        if (match.length == 0) {
+        const Autolink_Match match = match_autolink(remainder.substr(0, avail));
+        if (!match) {
             return false;
         }
 
@@ -679,28 +760,52 @@ private:
         return true;
     }
 
+    /// @brief Try to match an HTML comment.
+    [[nodiscard]]
+    bool expect_html_comment(const std::size_t avail)
+    {
+        const html::Match_Result comment = html::match_comment(remainder.substr(0, avail));
+        if (!comment) {
+            return false;
+        }
+
+        emit_and_advance(html_comment_prefix.length(), Highlight_Type::comment_delim);
+        if (comment.terminated) {
+            const std::size_t comment_length = comment.length - html_comment_prefix.length();
+            if (comment_length > html_comment_suffix.length()) {
+                emit_and_advance(
+                    comment_length - html_comment_suffix.length(), Highlight_Type::comment
+                );
+            }
+            emit_and_advance(html_comment_suffix.length(), Highlight_Type::comment_delim);
+            return true;
+        }
+
+        emit_and_advance(comment.length - html_comment_prefix.length(), Highlight_Type::comment);
+        in_html_comment = true;
+        return true;
+    }
+
     /// @brief Try to match an HTML/character entity reference.
     /// Emits the whole `&...;` span as `string_escape`.
     [[nodiscard]]
     bool expect_html_character_reference(const std::size_t avail)
     {
-        const auto match = match_entity_reference(remainder.substr(0, avail));
-        if (match.length == 0) {
-            return false;
+        if (const std::size_t match = match_character_reference(remainder.substr(0, avail))) {
+            emit_and_advance(match, Highlight_Type::string_escape);
+            return true;
         }
-
-        emit_and_advance(match.length, Highlight_Type::string_escape);
-        return true;
+        return false;
     }
 
     /// @brief Find the closing `]` matching the `[` at `start_pos` in `remainder`.
     /// Returns the index just past the `]` (i.e. the position of the character
     /// after the closing bracket), or `avail` if not found.
     /// Handles escape sequences and nested brackets.
-    /// See https://spec.commonmark.org/0.31.2/#links (§6.6)
     [[nodiscard]]
-    std::size_t find_bracket_close(std::size_t start_pos, std::size_t avail)
+    std::size_t find_bracket_close(const std::size_t start_pos, const std::size_t avail)
     {
+        /// https://spec.commonmark.org/0.31.2/#links
         std::size_t depth = 1;
         std::size_t i = start_pos;
         while (i < avail && depth > 0) {
@@ -722,55 +827,11 @@ private:
         return (depth == 0) ? i : avail;
     }
 
-    /// @brief Find the end of a link URL in a `(...)` destination.
-    /// Starts scanning at `start` (just after `(`).
-    /// Returns the index at which the URL content ends
-    /// (the position of the first whitespace, `)`, or end of available chars).
-    /// See https://spec.commonmark.org/0.31.2/#links (§6.6)
-    [[nodiscard]]
-    std::size_t find_link_url_end(const std::size_t start, const std::size_t avail) const
-    {
-        std::size_t i = start;
-        // Handle angle-bracket URL: <url>.
-        if (i < avail && remainder[i] == u8'<') {
-            ++i;
-            while (i < avail && remainder[i] != u8'>' && remainder[i] != u8'<'
-                   && remainder[i] != u8'\n') {
-                ++i;
-            }
-            if (i < avail && remainder[i] == u8'>') {
-                ++i;
-            }
-            return i;
-        }
-        while (i < avail && remainder[i] != u8')' && !is_md_whitespace(remainder[i])) {
-            if (remainder[i] == u8'\\' && i + 1 < avail) {
-                ++i;
-            }
-            ++i;
-        }
-        return i;
-    }
-
-    /// @brief Find the closing `)` for a link destination.
-    /// Starts scanning at `start` (just after the URL content ends).
-    /// Returns the index of the closing `)`, or `avail` if not found.
-    [[nodiscard]]
-    std::size_t find_link_close(std::size_t start, std::size_t avail) const
-    {
-        std::size_t i = start;
-        // Skip optional whitespace and title before ')'.
-        while (i < avail && remainder[i] != u8')') {
-            ++i;
-        }
-        return i;
-    }
-
     /// @brief Try to match an image: `![alt](url)`.
-    /// See https://spec.commonmark.org/0.31.2/#images (§6.8)
     [[nodiscard]]
-    bool expect_image(std::size_t avail)
+    bool expect_image(const std::size_t avail)
     {
+        // https://spec.commonmark.org/0.31.2/#images
         // remainder[0]='!', remainder[1]='['
         if (avail < 5) {
             return false;
@@ -791,8 +852,9 @@ private:
 
         // Find URL end and closing ')' for the destination.
         const std::size_t url_start = after_close + 1;
-        const std::size_t url_end = find_link_url_end(url_start, avail);
-        const std::size_t paren_close = find_link_close(url_end, avail);
+        const std::u8string_view inline_view = remainder.substr(0, avail);
+        const std::size_t url_end = find_link_url_end(inline_view, url_start);
+        const std::size_t paren_close = find_link_close(inline_view, url_end);
         if (paren_close >= avail) {
             return false;
         }
@@ -815,9 +877,9 @@ private:
     }
 
     /// @brief Try to match an inline link: `[text](url)`.
-    /// See https://spec.commonmark.org/0.31.2/#links (§6.6)
-    bool expect_link(std::size_t avail)
+    bool expect_link(const std::size_t avail)
     {
+        /// https://spec.commonmark.org/0.31.2/#links
         // remainder[0]='['
         if (avail < 4) {
             return false;
@@ -835,8 +897,9 @@ private:
 
         // Find URL end and closing ')'.
         const std::size_t url_start = after_close + 1;
-        const std::size_t url_end = find_link_url_end(url_start, avail);
-        const std::size_t paren_close = find_link_close(url_end, avail);
+        const std::u8string_view inline_view = remainder.substr(0, avail);
+        const std::size_t url_end = find_link_url_end(inline_view, url_start);
+        const std::size_t paren_close = find_link_close(inline_view, url_end);
         if (paren_close >= avail) {
             return false;
         }
@@ -861,9 +924,9 @@ private:
     /// @brief Try to match emphasis or strong: `*...*`, `**...**`, `_..._`, `__...__`.
     /// @param avail Number of code units available in the current inline context.
     /// @param prev_char The character immediately preceding the current position.
-    /// See https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis (§6.7)
     bool expect_emphasis(std::size_t avail, char8_t prev_char)
     {
+        /// https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis
         const char8_t c = remainder[0];
 
         // Count the delimiter run (1–3 chars).
