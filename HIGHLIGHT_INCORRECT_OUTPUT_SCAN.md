@@ -20,7 +20,7 @@ cat /tmp/doctype-lowercase.out.html
 ### Likely cause
 
 `match_doctype_permissive`
-in `/home/runner/work/ulight/ulight/src/main/cpp/lang/html.cpp`
+in `src/main/cpp/lang/html.cpp`
 checks with `str.starts_with(u8"<!DOCTYPE")`,
 which is case-sensitive.
 HTML doctype matching should be ASCII case-insensitive.
@@ -50,7 +50,7 @@ cat /tmp/python-raw-string.out.html
 ### Likely cause
 
 `consume_string`
-in `/home/runner/work/ulight/ulight/src/main/cpp/lang/python.cpp`
+in `src/main/cpp/lang/python.cpp`
 still emits `Highlight_Type::string_escape`
 for backslash sequences in raw literals.
 The raw-literal branch also decodes from `remainder.substr(1)`
