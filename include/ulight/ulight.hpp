@@ -32,6 +32,7 @@ enum struct Lang : Underlying {
     latex = ULIGHT_LANG_LATEX,
     llvm = ULIGHT_LANG_LLVM,
     lua = ULIGHT_LANG_LUA,
+    markdown = ULIGHT_LANG_MARKDOWN,
     nasm = ULIGHT_LANG_NASM,
     python = ULIGHT_LANG_PYTHON,
     rust = ULIGHT_LANG_RUST,

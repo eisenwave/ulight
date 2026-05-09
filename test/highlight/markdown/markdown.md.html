@@ -1,0 +1,312 @@
+<h- data-h=cmt_dlim>&lt;!--</h-><h- data-h=cmt> Taken from https://github.com/mxstbr/markdown-test-file </h-><h- data-h=cmt_dlim>--&gt;</h->
+<h- data-h=cmt_dlim>&lt;!--</h-><h- data-h=cmt> MIT License: https://github.com/mxstbr/markdown-test-file/blob/master/LICENSE </h-><h- data-h=cmt_dlim>--&gt;</h->
+<h- data-h=sym_fmt>#</h-> <h- data-h=text_head>Markdown: Syntax</h->
+
+<h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Overview<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#overview</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Philosophy<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#philosophy</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Inline HTML<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#html</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Automatic Escaping for Special Characters<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#autoescape</h-><h- data-h=sym_fmt>)</h->
+<h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Block Elements<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#block</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Paragraphs and Line Breaks<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#p</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Headers<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#header</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Blockquotes<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#blockquote</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Lists<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#list</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Code Blocks<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#precode</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Horizontal Rules<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#hr</h-><h- data-h=sym_fmt>)</h->
+<h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Span Elements<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#span</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Links<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#link</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Emphasis<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#em</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Code<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#code</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Images<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#img</h-><h- data-h=sym_fmt>)</h->
+<h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Miscellaneous<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#misc</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Backslash Escapes<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#backslash</h-><h- data-h=sym_fmt>)</h->
+    <h- data-h=sym_fmt>*</h->   <h- data-h=sym_fmt>[</h->Automatic Links<h- data-h=sym_fmt>](</h-><h- data-h=text_link>#autolink</h-><h- data-h=sym_fmt>)</h->
+
+
+<h- data-h=sym_fmt>**</h->Note:<h- data-h=sym_fmt>**</h-> This document is itself written using Markdown; you
+can <h- data-h=sym_fmt>[</h->see the source for it by adding '.text' to the URL<h- data-h=sym_fmt>](</h-><h- data-h=text_link>/projects/markdown/syntax.text</h-><h- data-h=sym_fmt>)</h->.
+
+<h- data-h=sym_fmt>----</h->
+
+<h- data-h=sym_fmt>##</h-> <h- data-h=text_head>Overview</h->
+
+<h- data-h=sym_fmt>###</h-> <h- data-h=text_head>Philosophy</h->
+
+Markdown is intended to be as easy-to-read and easy-to-write as is feasible.
+
+Readability, however, is emphasized above all else. A Markdown-formatted
+document should be publishable as-is, as plain text, without looking
+like it's been marked up with tags or formatting instructions. While
+Markdown's syntax has been influenced by several existing text-to-HTML
+filters -- including <h- data-h=sym_fmt>[</h->Setext<h- data-h=sym_fmt>](</h-><h- data-h=text_link>http://docutils.sourceforge.net/mirror/setext.html</h-><h- data-h=sym_fmt>)</h->, <h- data-h=sym_fmt>[</h->atx<h- data-h=sym_fmt>](</h-><h- data-h=text_link>http://www.aaronsw.com/2002/atx/</h-><h- data-h=sym_fmt>)</h->, <h- data-h=sym_fmt>[</h->Textile<h- data-h=sym_fmt>](</h-><h- data-h=text_link>http://textism.com/tools/textile/</h-><h- data-h=sym_fmt>)</h->, <h- data-h=sym_fmt>[</h->reStructuredText<h- data-h=sym_fmt>](</h-><h- data-h=text_link>http://docutils.sourceforge.net/rst.html</h-><h- data-h=sym_fmt>)</h->,
+<h- data-h=sym_fmt>[</h->Grutatext<h- data-h=sym_fmt>](</h-><h- data-h=text_link>http://www.triptico.com/software/grutatxt.html</h-><h- data-h=sym_fmt>)</h->, and <h- data-h=sym_fmt>[</h->EtText<h- data-h=sym_fmt>](</h-><h- data-h=text_link>http://ettext.taint.org/doc/</h-><h- data-h=sym_fmt>)</h-> -- the single biggest source of
+inspiration for Markdown's syntax is the format of plain text email.
+
+<h- data-h=sym_fmt>##</h-> <h- data-h=text_head>Block Elements</h->
+
+<h- data-h=sym_fmt>###</h-> <h- data-h=text_head>Paragraphs and Line Breaks</h->
+
+A paragraph is simply one or more consecutive lines of text, separated
+by one or more blank lines. (A blank line is any line that looks like a
+blank line -- a line containing nothing but spaces or tabs is considered
+blank.) Normal paragraphs should not be indented with spaces or tabs.
+
+The implication of the "one or more consecutive lines of text" rule is
+that Markdown supports "hard-wrapped" text paragraphs. This differs
+significantly from most other text-to-HTML formatters (including Movable
+Type's "Convert Line Breaks" option) which translate every line break
+character in a paragraph into a <h- data-h=str_dlim>`</h-><h- data-h=text_code>&lt;br /&gt;</h-><h- data-h=str_dlim>`</h-> tag.
+
+When you <h- data-h=sym_fmt>*</h->do<h- data-h=sym_fmt>*</h-> want to insert a <h- data-h=str_dlim>`</h-><h- data-h=text_code>&lt;br /&gt;</h-><h- data-h=str_dlim>`</h-> break tag using Markdown, you
+end a line with two or more spaces, then type return.
+
+<h- data-h=sym_fmt>###</h-> <h- data-h=text_head>Headers</h->
+
+Markdown supports two styles of headers, [Setext] [1] and [atx] [2].
+
+Optionally, you may "close" atx-style headers. This is purely
+cosmetic -- you can use this if you think it looks better. The
+closing hashes don't even need to match the number of hashes
+used to open the header. (The number of opening hashes
+determines the header level.)
+
+
+<h- data-h=sym_fmt>###</h-> <h- data-h=text_head>Blockquotes</h->
+
+Markdown uses email-style <h- data-h=str_dlim>`</h-><h- data-h=text_code>&gt;</h-><h- data-h=str_dlim>`</h-> characters for blockquoting. If you're
+familiar with quoting passages of text in an email message, then you
+know how to create a blockquote in Markdown. It looks best if you hard
+wrap the text and put a <h- data-h=str_dlim>`</h-><h- data-h=text_code>&gt;</h-><h- data-h=str_dlim>`</h-> before every line:
+
+<h- data-h=sym_fmt>&gt;</h-> This is a blockquote with two paragraphs. Lorem ipsum dolor sit amet,
+<h- data-h=sym_fmt>&gt;</h-> consectetuer adipiscing elit. Aliquam hendrerit mi posuere lectus.
+<h- data-h=sym_fmt>&gt;</h-> Vestibulum enim wisi, viverra nec, fringilla in, laoreet vitae, risus.
+<h- data-h=sym_fmt>&gt;</h-> 
+<h- data-h=sym_fmt>&gt;</h-> Donec sit amet nisl. Aliquam semper ipsum sit amet velit. Suspendisse
+<h- data-h=sym_fmt>&gt;</h-> id sem consectetuer libero luctus adipiscing.
+
+Markdown allows you to be lazy and only put the <h- data-h=str_dlim>`</h-><h- data-h=text_code>&gt;</h-><h- data-h=str_dlim>`</h-> before the first
+line of a hard-wrapped paragraph:
+
+<h- data-h=sym_fmt>&gt;</h-> This is a blockquote with two paragraphs. Lorem ipsum dolor sit amet,
+consectetuer adipiscing elit. Aliquam hendrerit mi posuere lectus.
+Vestibulum enim wisi, viverra nec, fringilla in, laoreet vitae, risus.
+
+<h- data-h=sym_fmt>&gt;</h-> Donec sit amet nisl. Aliquam semper ipsum sit amet velit. Suspendisse
+id sem consectetuer libero luctus adipiscing.
+
+Blockquotes can be nested (i.e. a blockquote-in-a-blockquote) by
+adding additional levels of <h- data-h=str_dlim>`</h-><h- data-h=text_code>&gt;</h-><h- data-h=str_dlim>`</h->:
+
+<h- data-h=sym_fmt>&gt;</h-> This is the first level of quoting.
+<h- data-h=sym_fmt>&gt;</h->
+<h- data-h=sym_fmt>&gt;</h-> <h- data-h=sym_fmt>&gt;</h-> This is nested blockquote.
+<h- data-h=sym_fmt>&gt;</h->
+<h- data-h=sym_fmt>&gt;</h-> Back to the first level.
+
+Blockquotes can contain other Markdown elements, including headers, lists,
+and code blocks:
+
+<h- data-h=sym_fmt>&gt;</h-> <h- data-h=sym_fmt>##</h-> <h- data-h=text_head>This is a header.</h->
+<h- data-h=sym_fmt>&gt;</h-> 
+<h- data-h=sym_fmt>&gt;</h-> <h- data-h=sym_fmt>1.</h->   This is the first list item.
+<h- data-h=sym_fmt>&gt;</h-> <h- data-h=sym_fmt>2.</h->   This is the second list item.
+<h- data-h=sym_fmt>&gt;</h-> 
+<h- data-h=sym_fmt>&gt;</h-> Here's some example code:
+<h- data-h=sym_fmt>&gt;</h-> 
+<h- data-h=sym_fmt>&gt;</h->     <h- data-h=text_code>return shell_exec("echo $input | $markdown_script");</h->
+
+Any decent text editor should make email-style quoting easy. For
+example, with BBEdit, you can make a selection and choose Increase
+Quote Level from the Text menu.
+
+
+<h- data-h=sym_fmt>###</h-> <h- data-h=text_head>Lists</h->
+
+Markdown supports ordered (numbered) and unordered (bulleted) lists.
+
+Unordered lists use asterisks, pluses, and hyphens -- interchangably
+-- as list markers:
+
+<h- data-h=sym_fmt>*</h->   Red
+<h- data-h=sym_fmt>*</h->   Green
+<h- data-h=sym_fmt>*</h->   Blue
+
+is equivalent to:
+
+<h- data-h=sym_fmt>+</h->   Red
+<h- data-h=sym_fmt>+</h->   Green
+<h- data-h=sym_fmt>+</h->   Blue
+
+and:
+
+<h- data-h=sym_fmt>-</h->   Red
+<h- data-h=sym_fmt>-</h->   Green
+<h- data-h=sym_fmt>-</h->   Blue
+
+Ordered lists use numbers followed by periods:
+
+<h- data-h=sym_fmt>1.</h->  Bird
+<h- data-h=sym_fmt>2.</h->  McHale
+<h- data-h=sym_fmt>3.</h->  Parish
+
+It's important to note that the actual numbers you use to mark the
+list have no effect on the HTML output Markdown produces. The HTML
+Markdown produces from the above list is:
+
+If you instead wrote the list in Markdown like this:
+
+<h- data-h=sym_fmt>1.</h->  Bird
+<h- data-h=sym_fmt>1.</h->  McHale
+<h- data-h=sym_fmt>1.</h->  Parish
+
+or even:
+
+<h- data-h=sym_fmt>3.</h-> Bird
+<h- data-h=sym_fmt>1.</h-> McHale
+<h- data-h=sym_fmt>8.</h-> Parish
+
+you'd get the exact same HTML output. The point is, if you want to,
+you can use ordinal numbers in your ordered Markdown lists, so that
+the numbers in your source match the numbers in your published HTML.
+But if you want to be lazy, you don't have to.
+
+To make lists look nice, you can wrap items with hanging indents:
+
+<h- data-h=sym_fmt>*</h->   Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+    <h- data-h=text_code>Aliquam hendrerit mi posuere lectus. Vestibulum enim wisi,</h->
+    <h- data-h=text_code>viverra nec, fringilla in, laoreet vitae, risus.</h->
+<h- data-h=sym_fmt>*</h->   Donec sit amet nisl. Aliquam semper ipsum sit amet velit.
+    <h- data-h=text_code>Suspendisse id sem consectetuer libero luctus adipiscing.</h->
+
+But if you want to be lazy, you don't have to:
+
+<h- data-h=sym_fmt>*</h->   Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+Aliquam hendrerit mi posuere lectus. Vestibulum enim wisi,
+viverra nec, fringilla in, laoreet vitae, risus.
+<h- data-h=sym_fmt>*</h->   Donec sit amet nisl. Aliquam semper ipsum sit amet velit.
+Suspendisse id sem consectetuer libero luctus adipiscing.
+
+List items may consist of multiple paragraphs. Each subsequent
+paragraph in a list item must be indented by either 4 spaces
+or one tab:
+
+<h- data-h=sym_fmt>1.</h->  This is a list item with two paragraphs. Lorem ipsum dolor
+    <h- data-h=text_code>sit amet, consectetuer adipiscing elit. Aliquam hendrerit</h->
+    <h- data-h=text_code>mi posuere lectus.</h->
+
+    <h- data-h=text_code>Vestibulum enim wisi, viverra nec, fringilla in, laoreet</h->
+    <h- data-h=text_code>vitae, risus. Donec sit amet nisl. Aliquam semper ipsum</h->
+    <h- data-h=text_code>sit amet velit.</h->
+
+<h- data-h=sym_fmt>2.</h->  Suspendisse id sem consectetuer libero luctus adipiscing.
+
+It looks nice if you indent every line of the subsequent
+paragraphs, but here again, Markdown will allow you to be
+lazy:
+
+<h- data-h=sym_fmt>*</h->   This is a list item with two paragraphs.
+
+    <h- data-h=text_code>This is the second paragraph in the list item. You're</h->
+only required to indent the first line. Lorem ipsum dolor
+sit amet, consectetuer adipiscing elit.
+
+<h- data-h=sym_fmt>*</h->   Another item in the same list.
+
+To put a blockquote within a list item, the blockquote's <h- data-h=str_dlim>`</h-><h- data-h=text_code>&gt;</h-><h- data-h=str_dlim>`</h->
+delimiters need to be indented:
+
+<h- data-h=sym_fmt>*</h->   A list item with a blockquote:
+
+    <h- data-h=text_code>&gt; This is a blockquote</h->
+    <h- data-h=text_code>&gt; inside a list item.</h->
+
+To put a code block within a list item, the code block needs
+to be indented <h- data-h=sym_fmt>*</h->twice<h- data-h=sym_fmt>*</h-> -- 8 spaces or two tabs:
+
+<h- data-h=sym_fmt>*</h->   A list item with a code block:
+
+    <h- data-h=text_code>    &lt;code goes here&gt;</h->
+
+<h- data-h=sym_fmt>###</h-> <h- data-h=text_head>Code Blocks</h->
+
+Pre-formatted code blocks are used for writing about programming or
+markup source code. Rather than forming normal paragraphs, the lines
+of a code block are interpreted literally. Markdown wraps a code block
+in both <h- data-h=str_dlim>`</h-><h- data-h=text_code>&lt;pre&gt;</h-><h- data-h=str_dlim>`</h-> and <h- data-h=str_dlim>`</h-><h- data-h=text_code>&lt;code&gt;</h-><h- data-h=str_dlim>`</h-> tags.
+
+To produce a code block in Markdown, simply indent every line of the
+block by at least 4 spaces or 1 tab.
+
+This is a normal paragraph:
+
+    <h- data-h=text_code>This is a code block.</h->
+
+Here is an example of AppleScript:
+
+    <h- data-h=text_code>tell application "Foo"</h->
+    <h- data-h=text_code>    beep</h->
+    <h- data-h=text_code>end tell</h->
+
+A code block continues until it reaches a line that is not indented
+(or the end of the article).
+
+Within a code block, ampersands (<h- data-h=str_dlim>`</h-><h- data-h=text_code>&amp;</h-><h- data-h=str_dlim>`</h->) and angle brackets (<h- data-h=str_dlim>`</h-><h- data-h=text_code>&lt;</h-><h- data-h=str_dlim>`</h-> and <h- data-h=str_dlim>`</h-><h- data-h=text_code>&gt;</h-><h- data-h=str_dlim>`</h->)
+are automatically converted into HTML entities. This makes it very
+easy to include example HTML source code using Markdown -- just paste
+it and indent it, and Markdown will handle the hassle of encoding the
+ampersands and angle brackets. For example, this:
+
+    <h- data-h=text_code>&lt;div class="footer"&gt;</h->
+    <h- data-h=text_code>    &amp;copy; 2004 Foo Corporation</h->
+    <h- data-h=text_code>&lt;/div&gt;</h->
+
+Regular Markdown syntax is not processed within code blocks. E.g.,
+asterisks are just literal asterisks within a code block. This means
+it's also easy to use Markdown to write about Markdown's own syntax.
+
+<h- data-h=str_dlim>```</h->
+<h- data-h=text_code>tell application "Foo"</h->
+<h- data-h=text_code>    beep</h->
+<h- data-h=text_code>end tell</h->
+<h- data-h=str_dlim>```</h->
+
+<h- data-h=sym_fmt>##</h-> <h- data-h=text_head>Span Elements</h->
+
+<h- data-h=sym_fmt>###</h-> <h- data-h=text_head>Links</h->
+
+Markdown supports two style of links: <h- data-h=sym_fmt>*</h->inline<h- data-h=sym_fmt>*</h-> and <h- data-h=sym_fmt>*</h->reference<h- data-h=sym_fmt>*</h->.
+
+In both styles, the link text is delimited by [square brackets].
+
+To create an inline link, use a set of regular parentheses immediately
+after the link text's closing square bracket. Inside the parentheses,
+put the URL where you want the link to point, along with an <h- data-h=sym_fmt>*</h->optional<h- data-h=sym_fmt>*</h->
+title for the link, surrounded in quotes. For example:
+
+This is <h- data-h=sym_fmt>[</h->an example<h- data-h=sym_fmt>](</h-><h- data-h=text_link>http://example.com/</h-><h- data-h=sym_fmt>)</h-> inline link.
+
+<h- data-h=sym_fmt>[</h->This link<h- data-h=sym_fmt>](</h-><h- data-h=text_link>http://example.net/</h-><h- data-h=sym_fmt>)</h-> has no title attribute.
+
+<h- data-h=sym_fmt>###</h-> <h- data-h=text_head>Emphasis</h->
+
+Markdown treats asterisks (<h- data-h=str_dlim>`</h-><h- data-h=text_code>*</h-><h- data-h=str_dlim>`</h->) and underscores (<h- data-h=str_dlim>`</h-><h- data-h=text_code>_</h-><h- data-h=str_dlim>`</h->) as indicators of
+emphasis. Text wrapped with one <h- data-h=str_dlim>`</h-><h- data-h=text_code>*</h-><h- data-h=str_dlim>`</h-> or <h- data-h=str_dlim>`</h-><h- data-h=text_code>_</h-><h- data-h=str_dlim>`</h-> will be wrapped with an
+HTML <h- data-h=str_dlim>`</h-><h- data-h=text_code>&lt;em&gt;</h-><h- data-h=str_dlim>`</h-> tag; double <h- data-h=str_dlim>`</h-><h- data-h=text_code>*</h-><h- data-h=str_dlim>`</h->'s or <h- data-h=str_dlim>`</h-><h- data-h=text_code>_</h-><h- data-h=str_dlim>`</h->'s will be wrapped with an HTML
+<h- data-h=str_dlim>`</h-><h- data-h=text_code>&lt;strong&gt;</h-><h- data-h=str_dlim>`</h-> tag. E.g., this input:
+
+<h- data-h=sym_fmt>*</h->single asterisks<h- data-h=sym_fmt>*</h->
+
+<h- data-h=sym_fmt>_</h->single underscores<h- data-h=sym_fmt>_</h->
+
+<h- data-h=sym_fmt>**</h->double asterisks<h- data-h=sym_fmt>**</h->
+
+<h- data-h=sym_fmt>__</h->double underscores<h- data-h=sym_fmt>__</h->
+
+<h- data-h=sym_fmt>###</h-> <h- data-h=text_head>Code</h->
+
+To indicate a span of code, wrap it with backtick quotes (<h- data-h=str_dlim>``</h-><h- data-h=text_code> ` </h-><h- data-h=str_dlim>``</h->).
+Unlike a pre-formatted code block, a code span indicates code within a
+normal paragraph. For example:
+
+Use the <h- data-h=str_dlim>`</h-><h- data-h=text_code>printf()</h-><h- data-h=str_dlim>`</h-> function.

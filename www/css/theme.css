@@ -61,6 +61,9 @@
 [data-ulight-theme=light-eelis] h-[data-h^=sym_bket] {
     color: #af1915;
 }
+[data-ulight-theme=light-eelis] h-[data-h^=sym_fmt] {
+    color: #00607c;
+}
 [data-ulight-theme=light-eelis] h-[data-h^=sym_par] {
     color: #af1915;
 }
@@ -69,6 +72,15 @@
 }
 [data-ulight-theme=light-eelis] h-[data-h^=sym_sqr] {
     color: #af1915;
+}
+[data-ulight-theme=light-eelis] h-[data-h^=text_code] {
+    color: #9f6807;
+}
+[data-ulight-theme=light-eelis] h-[data-h^=text_head] {
+    color: #00607c;
+}
+[data-ulight-theme=light-eelis] h-[data-h^=text_link] {
+    text-decoration: underline;
 }
 [data-ulight-theme=light-eelis] h-[data-h^=val] {
     color: #9f6807;
@@ -135,6 +147,9 @@
 [data-ulight-theme=dark-eelis] h-[data-h^=sym_bket] {
     color: #ff1515;
 }
+[data-ulight-theme=dark-eelis] h-[data-h^=sym_fmt] {
+    color: #12cabe;
+}
 [data-ulight-theme=dark-eelis] h-[data-h^=sym_par] {
     color: #ff1515;
 }
@@ -143,6 +158,15 @@
 }
 [data-ulight-theme=dark-eelis] h-[data-h^=sym_sqr] {
     color: #ff1515;
+}
+[data-ulight-theme=dark-eelis] h-[data-h^=text_code] {
+    color: #dfa837;
+}
+[data-ulight-theme=dark-eelis] h-[data-h^=text_head] {
+    color: #12cabe;
+}
+[data-ulight-theme=dark-eelis] h-[data-h^=text_link] {
+    text-decoration: underline;
 }
 [data-ulight-theme=dark-eelis] h-[data-h^=val] {
     color: #dfa837;
@@ -274,8 +298,14 @@
 [data-ulight-theme=light-ulight] h-[data-h^=sym] {
     color: #000000;
 }
+[data-ulight-theme=light-ulight] h-[data-h^=sym_fmt] {
+    color: #c80032;
+}
 [data-ulight-theme=light-ulight] h-[data-h^=sym_punc] {
     color: #646464;
+}
+[data-ulight-theme=light-ulight] h-[data-h^=text_code] {
+    color: #367c2a;
 }
 [data-ulight-theme=light-ulight] h-[data-h^=text_del] {
     color: #ce9178;
@@ -284,8 +314,14 @@
 [data-ulight-theme=light-ulight] h-[data-h^=text_emph] {
     font-style: italic;
 }
+[data-ulight-theme=light-ulight] h-[data-h^=text_head] {
+    color: #c80032;
+}
 [data-ulight-theme=light-ulight] h-[data-h^=text_ins] {
     color: #b5cea8;
+    text-decoration: underline;
+}
+[data-ulight-theme=light-ulight] h-[data-h^=text_link] {
     text-decoration: underline;
 }
 [data-ulight-theme=light-ulight] h-[data-h^=text_strk] {
@@ -428,8 +464,14 @@
 [data-ulight-theme=dark-ulight] h-[data-h^=sym] {
     color: #ffffff;
 }
+[data-ulight-theme=dark-ulight] h-[data-h^=sym_fmt] {
+    color: #ff5a82;
+}
 [data-ulight-theme=dark-ulight] h-[data-h^=sym_punc] {
     color: #a0a0a0;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=text_code] {
+    color: #cf9e7e;
 }
 [data-ulight-theme=dark-ulight] h-[data-h^=text_del] {
     color: #ce9178;
@@ -438,8 +480,14 @@
 [data-ulight-theme=dark-ulight] h-[data-h^=text_emph] {
     font-style: italic;
 }
+[data-ulight-theme=dark-ulight] h-[data-h^=text_head] {
+    color: #ff5a82;
+}
 [data-ulight-theme=dark-ulight] h-[data-h^=text_ins] {
     color: #b5cea8;
+    text-decoration: underline;
+}
+[data-ulight-theme=dark-ulight] h-[data-h^=text_link] {
     text-decoration: underline;
 }
 [data-ulight-theme=dark-ulight] h-[data-h^=text_strk] {
@@ -528,11 +576,17 @@
 [data-ulight-theme=dark-vs] h-[data-h^=sym_brac] {
     color: #ffd700;
 }
+[data-ulight-theme=dark-vs] h-[data-h^=sym_fmt] {
+    color: #569cd6;
+}
 [data-ulight-theme=dark-vs] h-[data-h^=sym_par] {
     color: #ffd700;
 }
 [data-ulight-theme=dark-vs] h-[data-h^=sym_sqr] {
     color: #ffd700;
+}
+[data-ulight-theme=dark-vs] h-[data-h^=text_code] {
+    color: #ce9178;
 }
 [data-ulight-theme=dark-vs] h-[data-h^=text_del] {
     color: #ce9178;
@@ -540,8 +594,14 @@
 [data-ulight-theme=dark-vs] h-[data-h^=text_emph] {
     font-style: italic;
 }
+[data-ulight-theme=dark-vs] h-[data-h^=text_head] {
+    color: #569cd6;
+}
 [data-ulight-theme=dark-vs] h-[data-h^=text_ins] {
     color: #b5cea8;
+}
+[data-ulight-theme=dark-vs] h-[data-h^=text_link] {
+    text-decoration: underline;
 }
 [data-ulight-theme=dark-vs] h-[data-h^=text_strk] {
     text-decoration: line-through;
@@ -672,11 +732,17 @@
 [data-ulight-theme=dark-vs-plus] h-[data-h^=sym_brac] {
     color: #ffd700;
 }
+[data-ulight-theme=dark-vs-plus] h-[data-h^=sym_fmt] {
+    color: #569cd6;
+}
 [data-ulight-theme=dark-vs-plus] h-[data-h^=sym_par] {
     color: #ffd700;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=sym_sqr] {
     color: #ffd700;
+}
+[data-ulight-theme=dark-vs-plus] h-[data-h^=text_code] {
+    color: #ce9178;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=text_del] {
     color: #ce9178;
@@ -684,8 +750,14 @@
 [data-ulight-theme=dark-vs-plus] h-[data-h^=text_emph] {
     font-style: italic;
 }
+[data-ulight-theme=dark-vs-plus] h-[data-h^=text_head] {
+    color: #569cd6;
+}
 [data-ulight-theme=dark-vs-plus] h-[data-h^=text_ins] {
     color: #b5cea8;
+}
+[data-ulight-theme=dark-vs-plus] h-[data-h^=text_link] {
+    text-decoration: underline;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=text_strk] {
     text-decoration: line-through;
@@ -819,6 +891,9 @@
 [data-ulight-theme=light-wg21] h-[data-h^=sym_bket] {
     color: #af1915;
 }
+[data-ulight-theme=light-wg21] h-[data-h^=sym_fmt] {
+    color: #00607c;
+}
 [data-ulight-theme=light-wg21] h-[data-h^=sym_par] {
     color: #af1915;
 }
@@ -828,6 +903,9 @@
 [data-ulight-theme=light-wg21] h-[data-h^=sym_sqr] {
     color: #af1915;
 }
+[data-ulight-theme=light-wg21] h-[data-h^=text_code] {
+    color: #9f6807;
+}
 [data-ulight-theme=light-wg21] h-[data-h^=text_del] {
     color: #ce9178;
     text-decoration: line-through;
@@ -835,8 +913,14 @@
 [data-ulight-theme=light-wg21] h-[data-h^=text_emph] {
     font-style: italic;
 }
+[data-ulight-theme=light-wg21] h-[data-h^=text_head] {
+    color: #00607c;
+}
 [data-ulight-theme=light-wg21] h-[data-h^=text_ins] {
     color: #b5cea8;
+    text-decoration: underline;
+}
+[data-ulight-theme=light-wg21] h-[data-h^=text_link] {
     text-decoration: underline;
 }
 [data-ulight-theme=light-wg21] h-[data-h^=text_strk] {
@@ -983,6 +1067,9 @@
 [data-ulight-theme=dark-wg21] h-[data-h^=sym_bket] {
     color: #fa7878;
 }
+[data-ulight-theme=dark-wg21] h-[data-h^=sym_fmt] {
+    color: #62ded6;
+}
 [data-ulight-theme=dark-wg21] h-[data-h^=sym_par] {
     color: #fa7878;
 }
@@ -992,6 +1079,9 @@
 [data-ulight-theme=dark-wg21] h-[data-h^=sym_sqr] {
     color: #fa7878;
 }
+[data-ulight-theme=dark-wg21] h-[data-h^=text_code] {
+    color: #f2d18d;
+}
 [data-ulight-theme=dark-wg21] h-[data-h^=text_del] {
     color: #ce9178;
     text-decoration: line-through;
@@ -999,8 +1089,14 @@
 [data-ulight-theme=dark-wg21] h-[data-h^=text_emph] {
     font-style: italic;
 }
+[data-ulight-theme=dark-wg21] h-[data-h^=text_head] {
+    color: #62ded6;
+}
 [data-ulight-theme=dark-wg21] h-[data-h^=text_ins] {
     color: #b5cea8;
+    text-decoration: underline;
+}
+[data-ulight-theme=dark-wg21] h-[data-h^=text_link] {
     text-decoration: underline;
 }
 [data-ulight-theme=dark-wg21] h-[data-h^=text_strk] {

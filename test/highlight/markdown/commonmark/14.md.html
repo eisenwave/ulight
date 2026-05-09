@@ -1,0 +1,9 @@
+<h- data-h=str_esc>\*</h->not emphasized*
+<h- data-h=str_esc>\&lt;</h->br/&gt; not a tag
+<h- data-h=str_esc>\[</h->not a link](/foo)
+<h- data-h=str_esc>\`</h->not code`
+1<h- data-h=str_esc>\.</h-> not a list
+<h- data-h=str_esc>\*</h-> not a list
+<h- data-h=str_esc>\#</h-> not a heading
+<h- data-h=str_esc>\[</h->foo]: /url "not a reference"
+<h- data-h=str_esc>\&amp;</h->ouml; not a character entity

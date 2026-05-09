@@ -62,6 +62,12 @@
         "symbol": "d4d4d4",
         "symbol-parens": "#ffd700",
         "symbol-square": "#ffd700",
-        "symbol-brace": "#ffd700"
+        "symbol-brace": "#ffd700",
+        "symbol-formatting": "#569cd6",
+        "text-heading": "#569cd6",
+        "text-code": "#ce9178",
+        "text-link": {
+            "text-decoration": "underline"
+        }
     }
 }
