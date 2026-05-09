@@ -44,6 +44,7 @@ Highlight_Fn highlight_jsonc;
 Highlight_Fn highlight_kotlin;
 Highlight_Fn highlight_llvm;
 Highlight_Fn highlight_lua;
+Highlight_Fn highlight_markdown;
 Highlight_Fn highlight_nasm;
 Highlight_Fn highlight_python;
 Highlight_Fn highlight_rust;
@@ -95,6 +96,7 @@ inline Status highlight(
         result[ULIGHT_LANG_LATEX] = highlight_latex;
         result[ULIGHT_LANG_LLVM] = highlight_llvm;
         result[ULIGHT_LANG_LUA] = highlight_lua;
+        result[ULIGHT_LANG_MARKDOWN] = highlight_markdown;
         result[ULIGHT_LANG_NASM] = highlight_nasm;
         result[ULIGHT_LANG_NONE] = nullptr;
         result[ULIGHT_LANG_PYTHON] = highlight_python;
