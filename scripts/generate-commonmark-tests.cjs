@@ -92,6 +92,7 @@ const T = {
     sym_fmt: 'sym_fmt',
     str_dlim: 'str_dlim',
     text_code: 'text_code',
+    text_head: 'text_head',
     text_link: 'text_link',
     str_esc: 'str_esc',
     cmt_dlim: 'cmt_dlim',
@@ -291,7 +292,7 @@ function highlight(source) {
             const inlineStart = pos;
             const inlineEnd = inlineStart + inlineLen;
             const stripped = stripAtxTrailing(inlineStart, inlineEnd);
-            parseInline(stripped, 0);
+            parseInline(stripped, 0, T.text_head);
             advance(inlineLen - stripped);
         }
         return true;
@@ -438,9 +439,20 @@ function highlight(source) {
 
     // parse `length` characters of inline content starting at `pos`.
     // `prevChar` is the character immediately before the current position.
-    function parseInline(length, prevChar) {
+    function parseInline(length, prevChar, plainType = null) {
         if (length === 0) return;
         const endPos = pos + length;
+
+        function isSpecialInlineChar(ch) {
+            return ch === '`'
+                || ch === '<'
+                || ch === '\\'
+                || ch === '&'
+                || ch === '!'
+                || ch === '['
+                || ch === '*'
+                || ch === '_';
+        }
 
         while (pos < endPos) {
             const avail = endPos - pos;
@@ -497,8 +509,16 @@ function highlight(source) {
                     prevChar = c;
                 }
             } else {
-                prevChar = c;
-                advance(1);
+                let plainLength = 1;
+                while (plainLength < avail && !isSpecialInlineChar(source[pos + plainLength])) {
+                    plainLength++;
+                }
+                prevChar = source[pos + plainLength - 1];
+                if (plainType) {
+                    emit(plainLength, plainType);
+                } else {
+                    advance(plainLength);
+                }
             }
         }
     }

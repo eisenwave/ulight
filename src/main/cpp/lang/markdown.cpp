@@ -439,7 +439,7 @@ private:
         if (inline_len > 0) {
             const std::u8string_view inline_view = remainder.substr(0, inline_len);
             const std::size_t stripped = strip_atx_trailing(inline_view);
-            consume_inline_content(stripped);
+            consume_inline_content(stripped, 0, Highlight_Type::text_heading);
             advance(inline_len - stripped); // skip the closing sequence
         }
         return true;
@@ -628,13 +628,32 @@ private:
 
     /// @brief Inline-parse `length` code units from the current position.
     /// @param prev_char The character preceding this region, used for `_` opener/closer rules.
-    void consume_inline_content(const std::size_t length, char8_t prev_char = 0)
+    /// @param plain_text_highlight Highlight for plain text runs within the region.
+    void consume_inline_content(
+        const std::size_t length,
+        char8_t prev_char = 0,
+        Highlight_Type plain_text_highlight = Highlight_Type::none
+    )
     {
         /// https://spec.commonmark.org/0.31.2/#inlines
         if (length == 0) {
             return;
         }
         const std::size_t end_pos = index + length;
+
+        const auto is_special_inline_char = [](const char8_t c) {
+            switch (c) {
+            case u8'`':
+            case u8'<':
+            case u8'\\':
+            case u8'&':
+            case u8'!':
+            case u8'[':
+            case u8'*':
+            case u8'_': return true;
+            default: return false;
+            }
+        };
 
         while (index < end_pos && !eof()) {
             const char8_t c = remainder[0];
@@ -721,8 +740,17 @@ private:
                 break;
             }
             default: {
-                prev_char = c;
-                advance(1);
+                std::size_t plain_length = 1;
+                while (plain_length < avail && !is_special_inline_char(remainder[plain_length])) {
+                    ++plain_length;
+                }
+                prev_char = remainder[plain_length - 1];
+                if (plain_text_highlight == Highlight_Type::none) {
+                    advance(plain_length);
+                }
+                else {
+                    emit_and_advance(plain_length, plain_text_highlight);
+                }
                 break;
             }
             }
