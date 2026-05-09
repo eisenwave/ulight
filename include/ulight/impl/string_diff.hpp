@@ -151,48 +151,137 @@ print_diff_line(std::ostream& out, std::u8string_view line, std::string_view def
 inline void print_diff(
     std::ostream& out,
     std::span<const std::u8string_view> from_lines,
-    std::span<const std::u8string_view> to_lines
+    std::span<const std::u8string_view> to_lines,
+    std::size_t context_size = 3
 )
 {
     const std::vector<Edit_Type> edits = shortest_edit_script(from_lines, to_lines);
-    std::size_t from_index = 0;
-    std::size_t to_index = 0;
-    for (const auto e : edits) {
-        switch (e) {
-        case Edit_Type::common: {
-            out << ansi::h_black << ' ';
-            print_diff_line(out, from_lines[from_index], ansi::h_black);
-            out << '\n';
-            ++from_index;
-            ++to_index;
-            break;
+    const std::size_t n = edits.size();
+
+    // Precompute prefix line counts so we can compute hunk headers.
+    // from_prefix[i] = number of from_lines consumed by edits[0..i).
+    // to_prefix[i]   = number of to_lines consumed by edits[0..i).
+    std::vector<std::size_t> from_prefix(n + 1, 0);
+    std::vector<std::size_t> to_prefix(n + 1, 0);
+    for (std::size_t i = 0; i < n; ++i) {
+        from_prefix[i + 1] = from_prefix[i] + (edits[i] != Edit_Type::ins ? 1 : 0);
+        to_prefix[i + 1] = to_prefix[i] + (edits[i] != Edit_Type::del ? 1 : 0);
+    }
+
+    // Collect positions of all non-common (changed) edits.
+    std::vector<std::size_t> change_positions;
+    for (std::size_t i = 0; i < n; ++i) {
+        if (edits[i] != Edit_Type::common) {
+            change_positions.push_back(i);
         }
-        case Edit_Type::del: {
-            out << ansi::h_red << '-';
-            print_diff_line(out, from_lines[from_index], ansi::h_red);
-            out << '\n';
-            ++from_index;
-            break;
+    }
+
+    if (change_positions.empty()) {
+        return;
+    }
+
+    // Group changes into hunks.
+    // Each hunk covers a cluster of changes plus up to context_size context
+    // lines on each side.
+    // Two adjacent clusters are merged when the gap of common lines between
+    // them is at most 2 * context_size (their context windows would overlap).
+    struct Hunk {
+        std::size_t begin; // inclusive edit index
+        std::size_t end; // exclusive edit index
+    };
+    std::vector<Hunk> hunks;
+
+    for (std::size_t k = 0; k < change_positions.size();) {
+        const std::size_t first_change = change_positions[k];
+        std::size_t last_change = first_change;
+
+        // Merge with subsequent changes while their gap is small enough.
+        while (k + 1 < change_positions.size()) {
+            // All positions strictly between last_change and the next change
+            // are common edits, so the gap equals their count.
+            const std::size_t gap = change_positions[k + 1] - last_change - 1;
+            if (gap > 2 * context_size) {
+                break;
+            }
+            ++k;
+            last_change = change_positions[k];
         }
-        case Edit_Type::ins: {
-            out << ansi::h_green << '+';
-            print_diff_line(out, to_lines[to_index], ansi::h_green);
-            out << '\n';
-            ++to_index;
-            break;
+
+        const std::size_t begin = first_change >= context_size //
+            ? first_change - context_size
+            : 0;
+
+        // Extend end by up to context_size lines after last_change.
+        // All positions immediately after last_change (until the next
+        // separate hunk or end of edits) are common, so counting positions
+        // is the same as counting common lines.
+        std::size_t end = last_change + 1;
+        std::size_t trailing = 0;
+        while (end < n && trailing < context_size) {
+            ++trailing;
+            ++end;
         }
+
+        hunks.push_back({ begin, end });
+        ++k;
+    }
+
+    // Print each hunk with a unidiff @@ header followed by its lines.
+    for (const Hunk& hunk : hunks) {
+        const std::size_t from_start = from_prefix[hunk.begin] + 1;
+        const std::size_t from_count = from_prefix[hunk.end] - from_prefix[hunk.begin];
+        const std::size_t to_start = to_prefix[hunk.begin] + 1;
+        const std::size_t to_count = to_prefix[hunk.end] - to_prefix[hunk.begin];
+
+        out << ansi::h_cyan //
+            << "@@ -" << from_start << ',' << from_count //
+            << " +" << to_start << ',' << to_count //
+            << " @@" << ansi::reset << '\n';
+
+        std::size_t from_index = from_prefix[hunk.begin];
+        std::size_t to_index = to_prefix[hunk.begin];
+        for (std::size_t i = hunk.begin; i < hunk.end; ++i) {
+            switch (edits[i]) {
+            case Edit_Type::common: {
+                out << ansi::h_black << ' ';
+                print_diff_line(out, from_lines[from_index], ansi::h_black);
+                out << '\n';
+                ++from_index;
+                ++to_index;
+                break;
+            }
+            case Edit_Type::del: {
+                out << ansi::h_red << '-';
+                print_diff_line(out, from_lines[from_index], ansi::h_red);
+                out << '\n';
+                ++from_index;
+                break;
+            }
+            case Edit_Type::ins: {
+                out << ansi::h_green << '+';
+                print_diff_line(out, to_lines[to_index], ansi::h_green);
+                out << '\n';
+                ++to_index;
+                break;
+            }
+            }
         }
     }
 }
 
-inline void print_lines_diff(std::ostream& out, std::u8string_view from, std::u8string_view to)
+inline void print_lines_diff(
+    std::ostream& out,
+    std::u8string_view from,
+    std::u8string_view to,
+    std::size_t context_size = 3
+)
 {
     std::vector<std::u8string_view> from_lines;
     std::vector<std::u8string_view> to_lines;
     split_lines(from_lines, from);
     split_lines(to_lines, to);
 
-    print_diff(out, from_lines, to_lines);
+    print_diff(out, from_lines, to_lines, context_size);
 }
 
 } // namespace ulight
