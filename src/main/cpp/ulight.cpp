@@ -117,6 +117,8 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("ll", ULIGHT_LANG_LLVM),
     make_lang_entry("llvm", ULIGHT_LANG_LLVM),
     make_lang_entry("lua", ULIGHT_LANG_LUA),
+    make_lang_entry("markdown", ULIGHT_LANG_MARKDOWN),
+    make_lang_entry("md", ULIGHT_LANG_MARKDOWN),
     make_lang_entry("nasm", ULIGHT_LANG_NASM),
     make_lang_entry("patch", ULIGHT_LANG_DIFF),
     make_lang_entry("plaintext", ULIGHT_LANG_TXT),
@@ -171,6 +173,7 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("TypeScript"),
     make_sv("Rust"),
     make_sv("LLVM"),
+    make_sv("Markdown"),
 };
 // clang-format on
 
