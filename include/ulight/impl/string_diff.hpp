@@ -120,13 +120,17 @@ inline void split_lines(std::vector<std::u8string_view>& out, std::u8string_view
     out.push_back(str.substr(prev));
 }
 
-inline void
-print_diff_line(std::ostream& out, std::u8string_view line, std::string_view default_formatting)
+inline void print_diff_line(
+    std::ostream& out,
+    std::u8string_view line,
+    std::string_view default_formatting,
+    bool use_color
+)
 {
     bool formatting_dirty = false;
     while (!line.empty()) {
         const std::size_t safe_length = line.find_first_of(u8"\t\r\v");
-        if (safe_length != 0 && formatting_dirty) {
+        if (safe_length != 0 && formatting_dirty && use_color) {
             out << default_formatting;
         }
         if (safe_length == std::u8string_view::npos) {
@@ -136,7 +140,9 @@ print_diff_line(std::ostream& out, std::u8string_view line, std::string_view def
         if (safe_length != 0) {
             out << as_string_view(line.substr(0, safe_length));
         }
-        out << ansi::h_yellow;
+        if (use_color) {
+            out << ansi::h_yellow;
+        }
         switch (line[safe_length]) {
         case u8'\t': out << "\\t"; break;
         case u8'\r': out << "\\r"; break;
@@ -152,7 +158,8 @@ inline void print_diff(
     std::ostream& out,
     std::span<const std::u8string_view> from_lines,
     std::span<const std::u8string_view> to_lines,
-    std::size_t context_size = 3
+    std::size_t context_size = 3,
+    bool use_color = true
 )
 {
     const std::vector<Edit_Type> edits = shortest_edit_script(from_lines, to_lines);
@@ -233,33 +240,48 @@ inline void print_diff(
         const std::size_t to_start = to_prefix[hunk.begin] + 1;
         const std::size_t to_count = to_prefix[hunk.end] - to_prefix[hunk.begin];
 
-        out << ansi::h_cyan //
-            << "@@ -" << from_start << ',' << from_count //
+        if (use_color) {
+            out << ansi::h_cyan;
+        }
+        out << "@@ -" << from_start << ',' << from_count //
             << " +" << to_start << ',' << to_count //
-            << " @@" << ansi::reset << '\n';
+            << " @@";
+        if (use_color) {
+            out << ansi::reset;
+        }
+        out << '\n';
 
         std::size_t from_index = from_prefix[hunk.begin];
         std::size_t to_index = to_prefix[hunk.begin];
         for (std::size_t i = hunk.begin; i < hunk.end; ++i) {
             switch (edits[i]) {
             case Edit_Type::common: {
-                out << ansi::h_black << ' ';
-                print_diff_line(out, from_lines[from_index], ansi::h_black);
+                if (use_color) {
+                    out << ansi::h_black;
+                }
+                out << ' ';
+                print_diff_line(out, from_lines[from_index], ansi::h_black, use_color);
                 out << '\n';
                 ++from_index;
                 ++to_index;
                 break;
             }
             case Edit_Type::del: {
-                out << ansi::h_red << '-';
-                print_diff_line(out, from_lines[from_index], ansi::h_red);
+                if (use_color) {
+                    out << ansi::h_red;
+                }
+                out << '-';
+                print_diff_line(out, from_lines[from_index], ansi::h_red, use_color);
                 out << '\n';
                 ++from_index;
                 break;
             }
             case Edit_Type::ins: {
-                out << ansi::h_green << '+';
-                print_diff_line(out, to_lines[to_index], ansi::h_green);
+                if (use_color) {
+                    out << ansi::h_green;
+                }
+                out << '+';
+                print_diff_line(out, to_lines[to_index], ansi::h_green, use_color);
                 out << '\n';
                 ++to_index;
                 break;
@@ -273,7 +295,8 @@ inline void print_lines_diff(
     std::ostream& out,
     std::u8string_view from,
     std::u8string_view to,
-    std::size_t context_size = 3
+    std::size_t context_size = 3,
+    bool use_color = true
 )
 {
     std::vector<std::u8string_view> from_lines;
@@ -281,7 +304,7 @@ inline void print_lines_diff(
     split_lines(from_lines, from);
     split_lines(to_lines, to);
 
-    print_diff(out, from_lines, to_lines, context_size);
+    print_diff(out, from_lines, to_lines, context_size, use_color);
 }
 
 } // namespace ulight

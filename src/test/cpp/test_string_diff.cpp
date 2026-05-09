@@ -10,37 +10,10 @@
 namespace ulight {
 namespace {
 
-using namespace std::literals;
-
-/// @brief Strips ANSI escape sequences (ESC [ ... m) from a string,
-/// returning only the visible text content.
+/// @brief Splits `from` and `to` into lines, runs `print_diff` without color,
+/// and returns the plain text output.
 [[nodiscard]]
-std::string strip_ansi(std::string_view s)
-{
-    std::string result;
-    result.reserve(s.size());
-    for (std::size_t i = 0; i < s.size();) {
-        if (s[i] == '\x1B' && i + 1 < s.size() && s[i + 1] == '[') {
-            i += 2;
-            while (i < s.size() && s[i] != 'm') {
-                ++i;
-            }
-            if (i < s.size()) {
-                ++i; // skip 'm'
-            }
-        }
-        else {
-            result += s[i++];
-        }
-    }
-    return result;
-}
-
-/// @brief Splits `from` and `to` into lines, runs `print_diff`, and returns
-/// the output with ANSI codes stripped.
-[[nodiscard]]
-std::string
-diff_stripped(std::u8string_view from, std::u8string_view to, std::size_t context_size = 3)
+std::string diff_plain(std::u8string_view from, std::u8string_view to, std::size_t context_size = 3)
 {
     std::vector<std::u8string_view> from_lines;
     std::vector<std::u8string_view> to_lines;
@@ -48,21 +21,21 @@ diff_stripped(std::u8string_view from, std::u8string_view to, std::size_t contex
     split_lines(to_lines, to);
 
     std::ostringstream out;
-    print_diff(out, from_lines, to_lines, context_size);
-    return strip_ansi(out.str());
+    print_diff(out, from_lines, to_lines, context_size, /*use_color=*/false);
+    return out.str();
 }
 
 TEST(StringDiff, identical_produces_no_output)
 {
-    EXPECT_EQ(diff_stripped(u8"line1\nline2\nline3", u8"line1\nline2\nline3"), "");
-    EXPECT_EQ(diff_stripped(u8"", u8""), "");
-    EXPECT_EQ(diff_stripped(u8"single", u8"single"), "");
+    EXPECT_EQ(diff_plain(u8"line1\nline2\nline3", u8"line1\nline2\nline3"), "");
+    EXPECT_EQ(diff_plain(u8"", u8""), "");
+    EXPECT_EQ(diff_plain(u8"single", u8"single"), "");
 }
 
 TEST(StringDiff, single_line_change)
 {
     // "line2" replaced with "LINE2"; all three lines fit in one hunk.
-    const std::string result = diff_stripped(u8"line1\nline2\nline3", u8"line1\nLINE2\nline3");
+    const std::string result = diff_plain(u8"line1\nline2\nline3", u8"line1\nLINE2\nline3");
     EXPECT_EQ(
         result,
         "@@ -1,3 +1,3 @@\n"
@@ -76,7 +49,7 @@ TEST(StringDiff, single_line_change)
 TEST(StringDiff, insertion_at_end)
 {
     // One line added after existing content.
-    const std::string result = diff_stripped(u8"a\nb\nc", u8"a\nb\nc\nd");
+    const std::string result = diff_plain(u8"a\nb\nc", u8"a\nb\nc\nd");
     EXPECT_EQ(
         result,
         "@@ -1,3 +1,4 @@\n"
@@ -90,7 +63,7 @@ TEST(StringDiff, insertion_at_end)
 TEST(StringDiff, deletion_at_start)
 {
     // First line removed.
-    const std::string result = diff_stripped(u8"x\na\nb\nc", u8"a\nb\nc");
+    const std::string result = diff_plain(u8"x\na\nb\nc", u8"a\nb\nc");
     EXPECT_EQ(
         result,
         "@@ -1,4 +1,3 @@\n"
@@ -109,9 +82,8 @@ TEST(StringDiff, distant_changes_produce_two_hunks)
     //
     // from: a  b  c  d  e  f  g  h  i  j  OLD
     // to:   A  b  c  d  e  f  g  h  i  j  NEW
-    const std::string result = diff_stripped(
-        u8"a\nb\nc\nd\ne\nf\ng\nh\ni\nj\nOLD", u8"A\nb\nc\nd\ne\nf\ng\nh\ni\nj\nNEW"
-    );
+    const std::string result
+        = diff_plain(u8"a\nb\nc\nd\ne\nf\ng\nh\ni\nj\nOLD", u8"A\nb\nc\nd\ne\nf\ng\nh\ni\nj\nNEW");
 
     // First hunk: change at line 1 plus three lines of trailing context.
     // from_start=1, from_count=4 (del "a" + common b,c,d)
@@ -148,8 +120,7 @@ TEST(StringDiff, nearby_changes_merge_into_one_hunk)
     //
     // from: OLD1  b  c  d  OLD5  f
     // to:   NEW1  b  c  d  NEW5  f
-    const std::string result
-        = diff_stripped(u8"OLD1\nb\nc\nd\nOLD5\nf", u8"NEW1\nb\nc\nd\nNEW5\nf");
+    const std::string result = diff_plain(u8"OLD1\nb\nc\nd\nOLD5\nf", u8"NEW1\nb\nc\nd\nNEW5\nf");
 
     // Exactly one hunk header line (starting with @@).
     // Count occurrences of "@@ -" which is unique to hunk header lines.
@@ -169,7 +140,7 @@ TEST(StringDiff, nearby_changes_merge_into_one_hunk)
 TEST(StringDiff, context_size_zero_shows_only_changes)
 {
     // With context_size=0, no surrounding common lines are shown.
-    const std::string result = diff_stripped(
+    const std::string result = diff_plain(
         u8"a\nb\nOLD\nd\ne", u8"a\nb\nNEW\nd\ne",
         /*context_size=*/0
     );
@@ -179,6 +150,24 @@ TEST(StringDiff, context_size_zero_shows_only_changes)
         "-OLD\n"
         "+NEW\n"
     );
+}
+
+TEST(StringDiff, with_color_emits_ansi_escapes)
+{
+    // With use_color=true (the default), the output must contain ANSI escape sequences.
+    std::vector<std::u8string_view> from_lines;
+    std::vector<std::u8string_view> to_lines;
+    split_lines(from_lines, u8"old\ncommon");
+    split_lines(to_lines, u8"new\ncommon");
+
+    std::ostringstream out;
+    print_diff(out, from_lines, to_lines);
+    const std::string result = out.str();
+
+    EXPECT_NE(result.find('\x1B'), std::string::npos);
+    // Plain text content is still present.
+    EXPECT_NE(result.find("old"), std::string::npos);
+    EXPECT_NE(result.find("new"), std::string::npos);
 }
 
 } // namespace
