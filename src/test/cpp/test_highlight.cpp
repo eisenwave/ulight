@@ -150,13 +150,15 @@ TEST_F(Highlight_Test, file_tests)
         }
         EXPECT_TRUE(compare_succeeded);
 
-        std::cout << ansi::h_green << "OK: " //
-                  << ansi::reset << input_path.generic_string();
         if (!has_expectations && extension != u8".html") {
-            std::cout << ansi::h_yellow << " (no expectations)" //
-                      << ansi::reset;
+            std::cout << ansi::h_red << "MISSING EXPECTATIONS: " //
+                      << ansi::reset << input_path //
+                      << " (expected file: " << expectations_path << ")\n";
+            EXPECT_TRUE(has_expectations);
+            continue;
         }
-        std::cout << '\n';
+        std::cout << ansi::h_green << "OK: " //
+                  << ansi::reset << input_path.generic_string() << '\n';
     }
 }
 
