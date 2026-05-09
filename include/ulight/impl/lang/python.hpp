@@ -137,7 +137,7 @@ constexpr bool string_prefix_is_byte(String_Prefix prefix)
 std::optional<String_Prefix> classify_string_prefix(std::u8string_view str);
 
 [[nodiscard]]
-Escape_Result match_escape_sequence(std::u8string_view str);
+Escape_Result match_escape_sequence(std::u8string_view str, String_Prefix prefix);
 
 [[nodiscard]]
 Common_Number_Result match_number(std::u8string_view str);

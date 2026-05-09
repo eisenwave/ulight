@@ -143,7 +143,7 @@ Common_Number_Result match_number(std::u8string_view str)
     return match_common_number(str, options);
 }
 
-Escape_Result match_escape_sequence(const std::u8string_view str)
+Escape_Result match_escape_sequence(const std::u8string_view str, const String_Prefix prefix)
 {
     // https://docs.python.org/3/reference/lexical_analysis.html#escape-sequences
     if (str.length() < 2 || str[0] != u8'\\') {
@@ -160,11 +160,33 @@ Escape_Result match_escape_sequence(const std::u8string_view str)
     case u8'4':
     case u8'5':
     case u8'6':
-    case u8'7': return match_common_escape<Common_Escape::octal_3>(str, 1);
+    case u8'7': {
+        // https://docs.python.org/3/reference/lexical_analysis.html#string-escape-oct
+        // Note that while octal escapes with a value above 255 produce a `SyntaxWarning`
+        // as of Python 3.12, they do not raise an error yet,
+        // so we don't highlight them as an error.
+        return match_common_escape<Common_Escape::octal_3>(str, 1);
+    }
 
     case u8'x': return match_common_escape<Common_Escape::hex_2>(str, 2);
-    case u8'u': return match_common_escape<Common_Escape::hex_4>(str, 2);
-    case u8'U': return match_common_escape<Common_Escape::hex_8>(str, 2);
+
+    case u8'N': {
+        // https://docs.python.org/3/reference/lexical_analysis.html#named-unicode-character
+        Escape_Result result = match_common_escape<Common_Escape::nonempty_braced>(str, 2);
+        result.erroneous |= string_prefix_is_byte(prefix);
+        return result;
+    }
+    case u8'u': {
+        // https://docs.python.org/3/reference/lexical_analysis.html#hexadecimal-unicode-characters
+        Escape_Result result = match_common_escape<Common_Escape::hex_4>(str, 2);
+        result.erroneous |= string_prefix_is_byte(prefix);
+        return result;
+    }
+    case u8'U': {
+        Escape_Result result = match_common_escape<Common_Escape::hex_8>(str, 2);
+        result.erroneous |= string_prefix_is_byte(prefix);
+        return result;
+    }
 
     case u8'\\':
     case u8'\'':
@@ -396,22 +418,18 @@ private:
             }
             if (remainder[length] == u8'\\') {
                 flush();
-                // In raw literals,
-                // the "stringescapeseq" and "bytesescapeseq" rules are applied
-                // instead of the usual escape sequences.
                 if (string_prefix_is_raw(prefix)) {
+                    // In raw literals, backslashes remain part of the literal text.
+                    // However, a backslash still prevents the next source character from
+                    // terminating the literal early, so they must be consumed together.
                     const std::u8string_view escaped_units = remainder.substr(1);
-                    const auto [_, length] = utf8::decode_and_length_or_replacement(escaped_units);
-                    // This implements the rule that in a byte literal,
-                    // escapes can only be applied to ASCII characters.
-                    // However, even in a byte literal, we should not split code points,
-                    // so we decode the entire code point and make it an error if it's non-ASCII.
-                    const auto highlight = string_prefix_is_byte(prefix) && length != 1
+                    const auto [_, units] = utf8::decode_and_length_or_replacement(escaped_units);
+                    const auto highlight = string_prefix_is_byte(prefix) && units != 1
                         ? Highlight_Type::error
-                        : Highlight_Type::string_escape;
-                    emit_and_advance(1 + std::size_t(length), highlight);
+                        : Highlight_Type::string;
+                    emit_and_advance(1 + std::size_t(units), highlight);
                 }
-                else if (const Escape_Result escape = match_escape_sequence(remainder)) {
+                else if (const Escape_Result escape = match_escape_sequence(remainder, prefix)) {
                     emit_and_advance(
                         escape.length,
                         escape.erroneous ? Highlight_Type::error : Highlight_Type::string_escape
@@ -422,7 +440,7 @@ private:
                 }
                 continue;
             }
-            if (!is_long && (remainder[length] == u8'\n' || remainder.length() == u8'\r')) {
+            if (!is_long && (remainder[length] == u8'\n' || remainder[length] == u8'\r')) {
                 // Unexpected end of line reached.
                 // Only long strings (""" or ''') can be multi-line.
                 flush();

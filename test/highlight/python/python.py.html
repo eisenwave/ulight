@@ -139,15 +139,15 @@ Do not use this file as production code — it's deliberately noisy.
 
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Regular expressions: raw strings, verbose, backrefs</h->
-<h- data-h=name>RE_NUM</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name>re</h-><h- data-h=sym_punc>.</h-><h- data-h=name>compile</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>r</h-><h- data-h=str_dlim>"</h-><h- data-h=str>(?P&lt;int&gt;</h-><h- data-h=str_esc>\d</h-><h- data-h=str>+)(?:</h-><h- data-h=str_esc>\.</h-><h- data-h=str>(?P&lt;frac&gt;</h-><h- data-h=str_esc>\d</h-><h- data-h=str>+))?</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
-<h- data-h=name>RE_VERBOSE</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name>re</h-><h- data-h=sym_punc>.</h-><h- data-h=name>compile</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>r</h-><h- data-h=str_dlim>"</h-><h- data-h=str>(?x)  # verbose regex</h-><h- data-h=str_esc>\n</h-><h- data-h=str>    (</h-><h- data-h=str_esc>\d</h-><h- data-h=str>{1,3})  # 1-3 digits</h-><h- data-h=str_esc>\n</h-><h- data-h=str>    (?:,</h-><h- data-h=str_esc>\s</h-><h- data-h=str>*</h-><h- data-h=str_esc>\d</h-><h- data-h=str>{3})*  # optional comma groups</h-><h- data-h=str_esc>\"</h-><h- data-h=str>)</h->
+<h- data-h=name>RE_NUM</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name>re</h-><h- data-h=sym_punc>.</h-><h- data-h=name>compile</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>r</h-><h- data-h=str_dlim>"</h-><h- data-h=str>(?P&lt;int&gt;</h-><h- data-h=str>\d</h-><h- data-h=str>+)(?:</h-><h- data-h=str>\.</h-><h- data-h=str>(?P&lt;frac&gt;</h-><h- data-h=str>\d</h-><h- data-h=str>+))?</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h->
+<h- data-h=name>RE_VERBOSE</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name>re</h-><h- data-h=sym_punc>.</h-><h- data-h=name>compile</h-><h- data-h=sym_par>(</h-><h- data-h=str_deco>r</h-><h- data-h=str_dlim>"</h-><h- data-h=str>(?x)  # verbose regex</h-><h- data-h=str>\n</h-><h- data-h=str>    (</h-><h- data-h=str>\d</h-><h- data-h=str>{1,3})  # 1-3 digits</h-><h- data-h=str>\n</h-><h- data-h=str>    (?:,</h-><h- data-h=str>\s</h-><h- data-h=str>*</h-><h- data-h=str>\d</h-><h- data-h=str>{3})*  # optional comma groups</h-><h- data-h=str>\"</h-><h- data-h=str>)</h->
 
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Complex f-strings, raw f-strings (Python f-strings don't accept r before f in older Pythons,</h->
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> but many highlighters should still accept f r combinations as tokens in either order)</h->
 <h- data-h=name>name</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>Alice</h-><h- data-h=str_dlim>'</h->
 <h- data-h=name>msg</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_deco>f</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Hello, {name!s} — value is {COMPLEX_CONST:.2f}</h-><h- data-h=str_dlim>"</h->
-<h- data-h=name>raw_bytes</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_deco>r</h-><h- data-h=str_dlim>"</h-><h- data-h=str_esc>\n</h-><h- data-h=str_esc>\t</h-><h- data-h=str_esc>\\</h-><h- data-h=str_dlim>"</h->
+<h- data-h=name>raw_bytes</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_deco>r</h-><h- data-h=str_dlim>"</h-><h- data-h=str>\n</h-><h- data-h=str>\t</h-><h- data-h=str>\\</h-><h- data-h=str_dlim>"</h->
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Bytes and bytearray</h->
 <h- data-h=name>b</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_deco>b</h-><h- data-h=str_dlim>"</h-><h- data-h=str_esc>\x00</h-><h- data-h=str_esc>\xff</h-><h- data-h=str_dlim>"</h->
@@ -257,7 +257,7 @@ def dyn(x):
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Unicode escapes inside strings and raw f-strings</h->
 <h- data-h=name>unicode_str</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Unicode: </h-><h- data-h=str_esc>\u2603</h-><h- data-h=str_dlim>"</h->
-<h- data-h=name>raw_f</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_deco>fr</h-><h- data-h=str_dlim>"</h-><h- data-h=str>path:</h-><h- data-h=str_esc>\\</h-><h- data-h=str>home</h-><h- data-h=str_esc>\\</h-><h- data-h=str>{name}</h-><h- data-h=str_dlim>"</h->
+<h- data-h=name>raw_f</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_deco>fr</h-><h- data-h=str_dlim>"</h-><h- data-h=str>path:</h-><h- data-h=str>\\</h-><h- data-h=str>home</h-><h- data-h=str>\\</h-><h- data-h=str>{name}</h-><h- data-h=str_dlim>"</h->
 
 <h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Decorators: stacking, classmethod, staticmethod, property</h->
 <h- data-h=kw>def</h-> <h- data-h=name>deco</h-><h- data-h=sym_par>(</h-><h- data-h=name>fn</h-><h- data-h=sym_punc>:</h-> <h- data-h=name>Callable</h-><h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>[</h-><h- data-h=name>T</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>,</h-> <h- data-h=name>T</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>-&gt;</h-> <h- data-h=name>Callable</h-><h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>[</h-><h- data-h=name>T</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>,</h-> <h- data-h=name>T</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>:</h->
