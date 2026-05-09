@@ -982,7 +982,7 @@ private:
             expect_hashbang_comment() || //
             expect_line_comment() || //
             expect_block_comment() || //
-            expect_jsx_in_js() || //
+            (mode == Mode::javascript && expect_jsx_in_js()) || //
             expect_string_literal() || //
             expect_template() || //
             expect_regex() || //
