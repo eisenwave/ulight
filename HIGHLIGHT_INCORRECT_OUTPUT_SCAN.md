@@ -29,7 +29,7 @@ HTML doctype matching should be ASCII case-insensitive.
 
 `<!doctype html>` is valid HTML syntax,
 not plain text.
-Highlighting only `<` as punctuation
+highlighting only `<` as punctuation
 and leaving `!doctype html>` unclassified text
 misrepresents markup structure
 and can mislead readers about whether the declaration was parsed.
@@ -64,5 +64,5 @@ backslashes are treated as literal characters
 (except for delimiter edge cases),
 so `r"\n"` denotes two literal characters,
 not a newline escape sequence.
-Highlighting `\n` as an interpreted escape
+highlighting `\n` as an interpreted escape
 is semantically misleading.
