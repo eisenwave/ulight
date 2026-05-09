@@ -85,7 +85,13 @@
             "text-decoration": "line-through"
         },
         "symbol": "#000000",
-        "symbol-punc": "#646464"
+        "symbol-punc": "#646464",
+        "symbol-formatting": "#c80032",
+        "text-heading": "#c80032",
+        "text-code": "#367c2a",
+        "text-link": {
+            "text-decoration": "underline"
+        }
     },
     "dark": {
         "foreground": "#e7e7e7",
@@ -168,6 +174,12 @@
             "text-decoration": "line-through"
         },
         "symbol": "#ffffff",
-        "symbol-punc": "#a0a0a0"
+        "symbol-punc": "#a0a0a0",
+        "symbol-formatting": "#ff5a82",
+        "text-heading": "#ff5a82",
+        "text-code": "#cf9e7e",
+        "text-link": {
+            "text-decoration": "underline"
+        }
     }
 }

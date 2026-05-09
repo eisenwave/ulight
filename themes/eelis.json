@@ -38,7 +38,13 @@
         "symbol-bracket": "#af1915",
         "symbol-parens": "#af1915",
         "symbol-square": "#af1915",
-        "symbol-brace": "#af1915"
+        "symbol-brace": "#af1915",
+        "symbol-formatting": "#00607c",
+        "text-heading": "#00607c",
+        "text-code": "#9f6807",
+        "text-link": {
+            "text-decoration": "underline"
+        }
     },
     "dark": {
         "background": "#171717",
@@ -73,6 +79,12 @@
         "symbol-bracket": "#ff1515",
         "symbol-parens": "#ff1515",
         "symbol-square": "#ff1515",
-        "symbol-brace": "#ff1515"
+        "symbol-brace": "#ff1515",
+        "symbol-formatting": "#12cabe",
+        "text-heading": "#12cabe",
+        "text-code": "#dfa837",
+        "text-link": {
+            "text-decoration": "underline"
+        }
     }
 }
