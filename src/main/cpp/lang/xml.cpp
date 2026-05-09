@@ -718,8 +718,10 @@ private:
             return true;
         }
 
-        if (remainder.starts_with(u8'&') && !expect_reference()) {
-            emit_and_advance(1, Highlight_Type::error);
+        if (remainder.starts_with(u8'&')) {
+            if (!expect_reference()) {
+                emit_and_advance(1, Highlight_Type::error);
+            }
             return true;
         }
 
