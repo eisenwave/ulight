@@ -100,21 +100,21 @@ adding additional levels of <h- data-h=str_dlim>`</h-><h- data-h=text_code>&gt;<
 
 <h- data-h=sym_fmt>&gt;</h-> This is the first level of quoting.
 <h- data-h=sym_fmt>&gt;</h->
-<h- data-h=sym_fmt>&gt;</h-> &gt; This is nested blockquote.
+<h- data-h=sym_fmt>&gt;</h-> <h- data-h=sym_fmt>&gt;</h-> This is nested blockquote.
 <h- data-h=sym_fmt>&gt;</h->
 <h- data-h=sym_fmt>&gt;</h-> Back to the first level.
 
 Blockquotes can contain other Markdown elements, including headers, lists,
 and code blocks:
 
-<h- data-h=sym_fmt>&gt;</h-> ## This is a header.
+<h- data-h=sym_fmt>&gt;</h-> <h- data-h=sym_fmt>##</h-> <h- data-h=text_head>This is a header.</h->
 <h- data-h=sym_fmt>&gt;</h-> 
-<h- data-h=sym_fmt>&gt;</h-> 1.   This is the first list item.
-<h- data-h=sym_fmt>&gt;</h-> 2.   This is the second list item.
+<h- data-h=sym_fmt>&gt;</h-> <h- data-h=sym_fmt>1.</h->   This is the first list item.
+<h- data-h=sym_fmt>&gt;</h-> <h- data-h=sym_fmt>2.</h->   This is the second list item.
 <h- data-h=sym_fmt>&gt;</h-> 
 <h- data-h=sym_fmt>&gt;</h-> Here's some example code:
 <h- data-h=sym_fmt>&gt;</h-> 
-<h- data-h=sym_fmt>&gt;</h->     return shell_exec("echo $input | $markdown_script");
+<h- data-h=sym_fmt>&gt;</h->     <h- data-h=text_code>return shell_exec("echo $input | $markdown_script");</h->
 
 Any decent text editor should make email-style quoting easy. For
 example, with BBEdit, you can make a selection and choose Increase

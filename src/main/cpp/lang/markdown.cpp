@@ -573,7 +573,22 @@ private:
             ++consumed;
         }
 
-        consume_inline_content(content_len - consumed);
+        const std::size_t nested_len = content_len - consumed;
+        if (nested_len == 0) {
+            return true;
+        }
+
+        // Parse blockquote content as a full nested block line.
+        const bool nested_block_matched //
+            = expect_atx_heading(nested_len) //
+            || expect_thematic_break(nested_len) //
+            || expect_indented_code(nested_len) //
+            || expect_blockquote(nested_len) //
+            || expect_list_marker(nested_len);
+
+        if (!nested_block_matched) {
+            consume_inline_content(nested_len);
+        }
         return true;
     }
 
