@@ -127,6 +127,7 @@ and a stable numeric ID whose value can be found in `include/ulight.h`.
 | Kotlin | `kotlin`, `kt`, `kts` | `ULIGHT_LANG_KOTLIN` |
 | LLVM IR | `ll`, `llvm` | `ULIGHT_LANG_LLVM` |
 | Lua | `lua` | `ULIGHT_LANG_LUA` |
+| Markdown | `markdown`, `md` | `ULIGHT_LANG_MARKDOWN` |
 | NASM | `asm`, `assembler`, `assembly`, `nasm`, `x86asm` | `ULIGHT_LANG_NASM` |
 | Python | `gyp`, `py`, `python` | `ULIGHT_LANG_PYTHON` |
 | TeX | `tex` | `ULIGHT_LANG_TEX` |
