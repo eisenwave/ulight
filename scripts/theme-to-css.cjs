@@ -257,10 +257,14 @@ function compareKeys(x, y) {
 
 function keyToCssSelector(path, key, themePrefix) {
     if (key === "foreground") {
-        return `${themePrefix}.ulight-code, ${themePrefix}.ulight-code-block`;
+        return themePrefix.length === 0
+            ? `.ulight-code, .ulight-code-block`
+            : `${themePrefix}.ulight-code, ${themePrefix}.ulight-code-block, ${themePrefix} .ulight-code, ${themePrefix} .ulight-code-block`;
     }
     if (key === "background") {
-        return `${themePrefix}.ulight-code-block`;
+        return themePrefix.length === 0
+            ? `.ulight-code-block`
+            : `${themePrefix}.ulight-code-block, ${themePrefix} .ulight-code-block`;
     }
 
     const shortName = longNameToShort[key];
