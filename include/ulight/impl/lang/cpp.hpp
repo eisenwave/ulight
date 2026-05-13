@@ -135,6 +135,7 @@ constexpr bool is_cpp_feature(Feature_Source source)
     F(c_decimal128, "_Decimal128", keyword_type, c)                                                \
     F(c_decimal32, "_Decimal32", keyword_type, c)                                                  \
     F(c_decimal64, "_Decimal64", keyword_type, c)                                                  \
+    F(c_extint, "_ExtInt", keyword_type, ext)                                                      \
     F(c_float128, "_Float128", keyword_type, c)                                                    \
     F(c_float128x, "_Float128x", keyword_type, c)                                                  \
     F(c_float16, "_Float16", keyword_type, c)                                                      \
@@ -200,6 +201,7 @@ constexpr bool is_cpp_feature(Feature_Source source)
     F(kw_class, "class", keyword, cpp)                                                             \
     F(kw_co_await, "co_await", keyword_control, cpp)                                               \
     F(kw_co_return, "co_return", keyword_control, cpp)                                             \
+    F(kw_co_yield, "co_yield", keyword_control, cpp)                                               \
     F(kw_compl, "compl", keyword, c_cpp)                                                           \
     F(kw_complex, "complex", keyword, c)                                                           \
     F(kw_concept, "concept", keyword, cpp)                                                         \
