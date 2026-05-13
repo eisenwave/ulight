@@ -8,6 +8,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(ULIGHT_BUILD_MODULE "Build C++ module" OFF)
 option(ULIGHT_ENABLE_ASAN "Enable AddressSanitizer (and UBSan where configured)" OFF)
+set(ULIGHT_TEST_FILTER_LANGUAGE "" CACHE STRING
+    "Optional language enum value (without 'Lang::') to filter highlight tests, e.g. markdown"
+)
 
 if(ULIGHT_BUILD_MODULE)
     cmake_minimum_required(VERSION 3.28)
@@ -184,6 +187,12 @@ else(NOT DEFINED EMSCRIPTEN)
             src/test/cpp/test_unicode_algorithm.cpp
         )
         target_link_libraries(ulight-test ulight gtest gtest_main)
+        if(NOT ULIGHT_TEST_FILTER_LANGUAGE STREQUAL "")
+            target_compile_definitions(
+                ulight-test
+                PRIVATE ULIGHT_TEST_FILTER_LANGUAGE=${ULIGHT_TEST_FILTER_LANGUAGE}
+            )
+        endif()
         gtest_discover_tests(ulight-test
             WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
             DISCOVERY_TIMEOUT 30

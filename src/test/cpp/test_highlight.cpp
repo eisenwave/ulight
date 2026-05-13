@@ -25,8 +25,12 @@ namespace fs = std::filesystem;
 using ulight::as_string_view;
 
 /// @brief Debugging-only option for running only tests related to a specific language.
-/// This should always be commited as an empty `std::optional`.
-constexpr std::optional<Lang> filter_language = Lang::markdown;
+/// Configure with CMake variable ULIGHT_TEST_FILTER_LANGUAGE.
+#if defined(ULIGHT_TEST_FILTER_LANGUAGE)
+constexpr std::optional<Lang> filter_language = Lang::ULIGHT_TEST_FILTER_LANGUAGE;
+#else
+constexpr std::optional<Lang> filter_language = std::nullopt;
+#endif
 
 [[nodiscard]]
 std::u8string_view as_string_view(std::span<const char8_t> span)
