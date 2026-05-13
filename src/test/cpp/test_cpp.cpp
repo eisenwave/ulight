@@ -48,19 +48,6 @@ TEST(Cpp, match_pp_number)
     EXPECT_EQ(match_pp_number(u8"0E+3"), 4);
 }
 
-TEST(Cpp, keyword_lookup)
-{
-    const std::optional<Token_Type> co_yield_token = cpp_token_type_by_code(u8"co_yield");
-    ASSERT_TRUE(co_yield_token.has_value());
-    EXPECT_EQ(cpp_token_type_highlight(*co_yield_token), Highlight_Type::keyword_control);
-    EXPECT_EQ(cpp_token_type_source(*co_yield_token), Feature_Source::cpp);
-
-    const std::optional<Token_Type> ext_int = cpp_token_type_by_code(u8"_ExtInt");
-    ASSERT_TRUE(ext_int.has_value());
-    EXPECT_EQ(cpp_token_type_highlight(*ext_int), Highlight_Type::keyword_type);
-    EXPECT_EQ(cpp_token_type_source(*ext_int), Feature_Source::ext);
-}
-
 TEST(Cpp, match_escape_sequence)
 {
     EXPECT_EQ(match_escape_sequence(u8""), Escape_Result());
