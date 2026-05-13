@@ -51,6 +51,15 @@ struct Highlighter : Highlighter_Base {
                 emit_and_advance(1, Highlight_Type::symbol_brace);
                 break;
             }
+            case u8'%': {
+                flush_text();
+                const std::size_t line_length = ascii::length_until(remainder, u8'\n');
+                emit_and_advance(1, Highlight_Type::comment_delim);
+                if (line_length > 1) {
+                    emit_and_advance(line_length - 1, Highlight_Type::comment);
+                }
+                break;
+            }
             case u8'\\': {
                 flush_text();
                 ULIGHT_ASSERT(remainder.length() >= 1);

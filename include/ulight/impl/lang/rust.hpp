@@ -35,6 +35,7 @@ inline constexpr struct Is_Rust_Whitespace {
 #define ULIGHT_RUST_TOKEN_ENUM_DATA(F)                                                             \
     F(exclamation, "!", symbol_op)                                                                 \
     F(exclamation_eq, "!=", symbol_op)                                                             \
+    F(hash, "#", symbol_op)                                                                        \
     F(percent, "%", symbol_op)                                                                     \
     F(percent_eq, "%=", symbol_op)                                                                 \
     F(amp, "&", symbol_op)                                                                         \

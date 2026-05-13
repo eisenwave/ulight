@@ -11,7 +11,7 @@ inline constexpr auto is_tex_command_name = is_ascii_alpha;
 /// It is actually somewhat difficult to define this correctly because any character can be given
 /// special meaning with `\catcode`.
 /// For our purposes, we just come up with an arbitrary set of punctuation characters.
-inline constexpr auto is_tex_special = Charset256(u8"~%$\\#$&^_~@");
+inline constexpr auto is_tex_special = Charset256(u8"~$\\#$&^_~@");
 
 } // namespace ulight::tex
 

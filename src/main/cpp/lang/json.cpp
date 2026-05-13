@@ -414,6 +414,7 @@ private:
             const auto coalescing
                 = highlight == Highlight_Type::error ? Coalescing::forced : Coalescing::normal;
             emit_and_advance(id.length, highlight, coalescing);
+            return true;
         }
         return false;
     }

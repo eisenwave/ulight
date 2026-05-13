@@ -189,6 +189,7 @@ std::optional<Token_Type> match_punctuation(std::u8string_view str) noexcept
     }
     switch (str[0]) {
     case u8'!': return str.starts_with(u8"!=") ? exclamation_eq : exclamation;
+    case u8'#': return hash;
     case u8'%': return str.starts_with(u8"%=") ? percent_eq : percent;
     case u8'&':
         return str.starts_with(u8"&&") ? amp_amp //

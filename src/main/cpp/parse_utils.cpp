@@ -144,6 +144,11 @@ Digits_Result match_separated_digits(std::u8string_view str, int base, char8_t s
     if (separator == 0) {
         return match_digits_as_result(str, base);
     }
+    // A digit sequence cannot begin with the separator character.
+    // For example, in Rust `_x` is an identifier, not an erroneous number.
+    if (!str.empty() && str[0] == separator) {
+        return {};
+    }
     bool erroneous = false;
 
     char8_t previous = separator;

@@ -260,7 +260,7 @@ public:
                     1,
                     context == Context::value || context == Context::at_prelude
                         ? Highlight_Type::symbol_op
-                        : Highlight_Type::error
+                        : selector_highlight_type
                 );
                 break;
             }
