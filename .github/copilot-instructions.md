@@ -229,6 +229,10 @@ unless task constraints require otherwise.
   `include/ulight/impl/ascii_chars.hpp`
   and `include/ulight/impl/unicode_chars.hpp`
   in `namespace ulight`.
+- When adding new tests for correct highlighting of code snippets,
+  always do this as a file-based test with `.html` expectations.
+- Unit testing with GTest is only for testing highlighter internals,
+  and should not be considered the default.
 
 ## Search Policy
 Trust this document first.
