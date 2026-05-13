@@ -142,6 +142,8 @@ private:
         file,
         parameter_sub,
         command_sub,
+        subshell,
+        arith_sub,
     };
 
     enum struct State : Underlying {
@@ -222,15 +224,10 @@ private:
                 }
                 continue;
             }
-            case u8'|':
-            case u8'&':
-            case u8';':
-            case u8'(':
-            case u8'<':
-            case u8'>': {
-                const std::optional<Token_Type> op = match_operator(remainder);
-                ULIGHT_ASSERT(op);
-                emit_and_advance(token_type_length(*op), Highlight_Type::symbol_op);
+            case u8'(': {
+                emit_and_advance(1, Highlight_Type::symbol_parens);
+                state = State::before_command;
+                consume_commands(Context::subshell);
                 continue;
             }
             case u8')': {
@@ -238,7 +235,29 @@ private:
                     emit_and_advance(1, Highlight_Type::string_interpolation_delim);
                     return;
                 }
+                if (context == Context::subshell) {
+                    emit_and_advance(1, Highlight_Type::symbol_parens);
+                    return;
+                }
+                if (context == Context::arith_sub) {
+                    if (remainder.size() >= 2 && remainder[1] == u8')') {
+                        emit_and_advance(2, Highlight_Type::string_interpolation_delim);
+                        return;
+                    }
+                    emit_and_advance(1, Highlight_Type::symbol_parens);
+                    continue;
+                }
                 emit_and_advance(1, Highlight_Type::symbol_parens);
+                continue;
+            }
+            case u8'|':
+            case u8'&':
+            case u8';':
+            case u8'<':
+            case u8'>': {
+                const std::optional<Token_Type> op = match_operator(remainder);
+                ULIGHT_ASSERT(op);
+                emit_and_advance(token_type_length(*op), Highlight_Type::symbol_op);
                 continue;
             }
             case u8'}': {
@@ -361,6 +380,12 @@ private:
             return;
         }
         if (next == u8'(') {
+            if (remainder.size() >= 3 && remainder[2] == u8'(') {
+                emit_and_advance(3, Highlight_Type::string_interpolation_delim);
+                state = State::before_command;
+                consume_commands(Context::arith_sub);
+                return;
+            }
             emit_and_advance(2, Highlight_Type::string_interpolation_delim);
             state = State::before_command;
             consume_commands(Context::command_sub);
