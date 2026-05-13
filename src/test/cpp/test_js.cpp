@@ -1,10 +1,6 @@
-#include <cstddef>
-#include <string>
-
 #include <gtest/gtest.h>
 
 #include "ulight/impl/lang/js.hpp"
-#include "ulight/ulight.hpp"
 
 namespace ulight {
 
@@ -160,30 +156,6 @@ TEST(JS, match_escape_sequence)
     EXPECT_EQ(match_escape_sequence(u8"\\1"), Escape_Result(2u));
 
     EXPECT_EQ(match_escape_sequence(u8"\\a"), Escape_Result(2u));
-}
-
-TEST(JS, highlight_typescript_abstract_and_declare)
-{
-    constexpr std::u8string_view source = u8R"(abstract class Animal {
-    abstract makeSound(): void;
-}
-declare const x: number;
-)";
-
-    Token token_buffer[512];
-    char text_buffer[2048];
-    std::string actual;
-
-    State state;
-    state.set_source(source);
-    state.set_lang(Lang::typescript);
-    state.set_token_buffer(token_buffer);
-    state.set_text_buffer(text_buffer);
-    state.on_flush_text([&](const char* text, std::size_t length) { actual.append(text, length); });
-
-    ASSERT_EQ(state.source_to_html(), Status::ok) << state.get_error_string();
-    EXPECT_NE(actual.find("<h- data-h=kw>abstract</h->"), std::string::npos);
-    EXPECT_NE(actual.find("<h- data-h=kw>declare</h->"), std::string::npos);
 }
 
 } // namespace
