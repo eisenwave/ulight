@@ -11,4 +11,5 @@ int main()
     // "nullptr" is also C23
     void* p = nullptr;
     _BitInt(32) x = 0;
+    _ExtInt(16) y = 0;
 }
