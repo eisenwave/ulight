@@ -189,16 +189,7 @@ std::size_t match_reserved_number(const std::u8string_view str)
         return 0;
     }
     std::size_t length = 0;
-    if (str[0] == u8'-') {
-        if (str.length() < 2) {
-            return 0;
-        }
-        if (!is_ascii_digit(str[1])) {
-            return 0;
-        }
-        length += 2;
-    }
-    else if (str[0] == u8'.') {
+    if (str[0] == u8'.') {
         length += 1;
     }
     while (length < str.length()) {
