@@ -211,7 +211,7 @@ Literal_Match_Result match_integer_literal(std::u8string_view s)
     if (s.empty() || !is_ascii_digit(s[0])) {
         return { Literal_Match_Status::no_digits, 0, {} };
     }
-    if (s.starts_with(u8"0b")) {
+    if (s.starts_with(u8"0b") || s.starts_with(u8"0B")) {
         const std::size_t digits = match_digits(s.substr(2), 2);
         if (digits == 0) {
             return { Literal_Match_Status::no_digits_following_prefix, 2,
@@ -219,7 +219,7 @@ Literal_Match_Result match_integer_literal(std::u8string_view s)
         }
         return { Literal_Match_Status::ok, digits + 2, Integer_Literal_Type::binary };
     }
-    if (s.starts_with(u8"0x")) {
+    if (s.starts_with(u8"0x") || s.starts_with(u8"0X")) {
         const std::size_t digits = match_digits(s.substr(2), 16);
         if (digits == 0) {
             return { Literal_Match_Status::no_digits_following_prefix, 2,
@@ -893,8 +893,8 @@ public:
     {
         ULIGHT_ASSERT(!pp_number.empty());
 
-        const bool is_hex = pp_number.starts_with(u8"0x");
-        const bool is_binary = pp_number.starts_with(u8"0b");
+        const bool is_hex = pp_number.starts_with(u8"0x") || pp_number.starts_with(u8"0X");
+        const bool is_binary = pp_number.starts_with(u8"0b") || pp_number.starts_with(u8"0B");
 
         if (is_hex || is_binary) {
             emit_and_advance(2, Highlight_Type::number_decor);
