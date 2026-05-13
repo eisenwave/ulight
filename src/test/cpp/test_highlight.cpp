@@ -25,7 +25,7 @@ namespace fs = std::filesystem;
 using ulight::as_string_view;
 
 /// @brief Debugging-only option for running only tests related to a specific language.
-/// Configure with CMake variable ULIGHT_TEST_FILTER_LANGUAGE.
+/// Configure with CMake cache option ULIGHT_TEST_FILTER_LANGUAGE.
 #if defined(ULIGHT_TEST_FILTER_LANGUAGE)
 constexpr std::optional<Lang> filter_language = Lang::ULIGHT_TEST_FILTER_LANGUAGE;
 #else
