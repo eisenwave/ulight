@@ -185,6 +185,7 @@ enum struct Feature_Source : Underlying {
     F(right_bracket, "]", symbol_square, all)                                                      \
     F(bitwise_xor, "^", symbol_op, js_ts)                                                          \
     F(bitwise_xor_equal, "^=", symbol_op, js_ts)                                                   \
+    F(kw_abstract, "abstract", keyword, ts)                                                        \
     F(kw_any, "any", keyword_type, ts)                                                             \
     F(kw_as, "as", keyword, js_ts)                                                                 \
     F(kw_asserts, "asserts", keyword, ts)                                                          \
@@ -199,6 +200,7 @@ enum struct Feature_Source : Underlying {
     F(kw_constructor, "constructor", keyword, ts)                                                  \
     F(kw_continue, "continue", keyword_control, js_ts)                                             \
     F(kw_debugger, "debugger", keyword, js_ts)                                                     \
+    F(kw_declare, "declare", keyword, ts)                                                          \
     F(kw_default, "default", keyword_control, js_ts)                                               \
     F(kw_delete, "delete", keyword, js_ts)                                                         \
     F(kw_do, "do", keyword_control, js_ts)                                                         \
