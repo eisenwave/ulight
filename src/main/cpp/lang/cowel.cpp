@@ -346,6 +346,7 @@ enum struct Text_Kind : Underlying {
 };
 
 struct [[nodiscard]] Highlighter : Highlighter_Base {
+    const std::u8string_view source_text;
 
     Highlighter(
         Non_Owning_Buffer<Token>& out,
@@ -353,6 +354,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         const Highlight_Options& options
     )
         : Highlighter_Base { out, source, options }
+        , source_text { source }
     {
     }
 
@@ -740,6 +742,9 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
 
     bool expect_number()
     {
+        if (remainder.starts_with(u8'-') && !allow_signed_number()) {
+            return false;
+        }
         const std::size_t reserved_length = match_reserved_number(remainder);
         if (!reserved_length) {
             return false;
@@ -752,6 +757,38 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         }
         else {
             highlight_number(number);
+        }
+        return true;
+    }
+
+    [[nodiscard]]
+    bool allow_signed_number() const
+    {
+        std::size_t i = index;
+        while (i != 0) {
+            --i;
+            const char8_t previous = source_text[i];
+            if (html::is_html_whitespace(previous)) {
+                continue;
+            }
+            switch (previous) {
+            case u8'(':
+            case u8'{':
+            case u8',':
+            case u8'=':
+            case u8'|':
+            case u8'&':
+            case u8'!':
+            case u8'<':
+            case u8'>':
+            case u8'+':
+            case u8'-':
+            case u8'*':
+            case u8'/':
+            case u8'%':
+            case u8'~': return true;
+            default: return false;
+            }
         }
         return true;
     }

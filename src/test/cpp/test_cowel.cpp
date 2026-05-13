@@ -1,11 +1,37 @@
 #include <gtest/gtest.h>
 
+#include <string>
+
 #include "ulight/impl/lang/cowel.hpp"
+#include "ulight/ulight.hpp"
 
 namespace ulight::cowel {
 namespace {
 
 using namespace std::string_view_literals;
+
+[[nodiscard]]
+std::u8string highlight_html(const std::u8string_view source)
+{
+    Token token_buffer[64];
+    char text_buffer[256];
+    std::u8string html;
+
+    const auto flush_buffer = [&](const char* text, const std::size_t length) {
+        const std::u8string_view chunk { reinterpret_cast<const char8_t*>(text), length };
+        html.append(chunk);
+    };
+
+    State state;
+    state.set_source(source);
+    state.set_lang(Lang::cowel);
+    state.set_token_buffer(token_buffer);
+    state.set_text_buffer(text_buffer);
+    state.on_flush_text(flush_buffer);
+
+    EXPECT_EQ(state.source_to_html(), Status::ok);
+    return html;
+}
 
 TEST(COWEL, match_number_integer)
 {
@@ -86,6 +112,25 @@ TEST(COWEL, match_number_float)
 
     EXPECT_EQ(match_number(u8"123.456e789$"sv).length, 11);
     EXPECT_EQ(match_number(u8"-123.456e789$"sv).length, 12);
+}
+
+TEST(COWEL, highlight_minus_after_identifier_in_group)
+{
+    EXPECT_EQ(
+        highlight_html(u8"\\tag(a = a-1)"sv),
+        u8"<h- data-h=mk_tag>\\tag</h-><h- data-h=sym_par>(</h-><h- data-h=mk_attr>a</h-> "
+        "<h- data-h=sym_punc>=</h-> <h- data-h=name_var>a</h-><h- data-h=sym_op>-</h->"
+        "<h- data-h=num>1</h-><h- data-h=sym_par>)</h->"sv
+    );
+}
+
+TEST(COWEL, highlight_minus_after_identifier_in_expression_splice)
+{
+    EXPECT_EQ(
+        highlight_html(u8"\\(a-1)"sv),
+        u8"<h- data-h=str_intp_dlim>\\(</h-><h- data-h=name_var>a</h->"
+        "<h- data-h=sym_op>-</h-><h- data-h=num>1</h-><h- data-h=str_intp_dlim>)</h->"sv
+    );
 }
 
 } // namespace
