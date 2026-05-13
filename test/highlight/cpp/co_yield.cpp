@@ -1,0 +1,1 @@
+co_yield value;
