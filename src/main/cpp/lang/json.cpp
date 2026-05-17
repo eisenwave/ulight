@@ -550,6 +550,7 @@ private:
         case u8'{': {
             return consume_object();
         }
+        case u8'-':
         case u8'0':
         case u8'1':
         case u8'2':
