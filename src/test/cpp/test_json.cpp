@@ -350,10 +350,22 @@ TEST(JSON, parse_integer)
     EXPECT_EQ(value, 123.0);
 }
 
+TEST(JSON, parse_negative_integer)
+{
+    std::optional<Value> value = parse(u8"-123");
+    EXPECT_EQ(value, -123.0);
+}
+
 TEST(JSON, parse_float)
 {
     std::optional<Value> value = parse(u8"123.125");
     EXPECT_EQ(value, 123.125);
+}
+
+TEST(JSON, parse_negative_float_with_exponent)
+{
+    std::optional<Value> value = parse(u8"-1.5E2");
+    EXPECT_EQ(value, -150.0);
 }
 
 TEST(JSON, parse_float_with_exponent)
