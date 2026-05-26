@@ -83,8 +83,11 @@ public:
 ///
 /// Returns `0` if `c` is not a valid leading code unit,
 /// such as if it begins with `10` or `111110`.
+/// However, Unicode disallows certain bytes such as `C0` - `C1` and `F5` - `FF`,
+/// and these are not checked for.
+/// @see https://www.unicode.org/versions/Unicode17.0.0/core-spec/chapter-3/#G27288
 ULIGHT_HOT [[nodiscard]]
-constexpr int sequence_length(char8_t c) noexcept
+constexpr int unchecked_sequence_length(const char8_t c) noexcept
 {
     /// @brief `{ 1, 0, 2, 3, 4, 0... }`
     constexpr std::int_fast32_t lookup = 0b100'011'010'000'001;
@@ -92,13 +95,57 @@ constexpr int sequence_length(char8_t c) noexcept
     return int((lookup >> (leading_ones * 3)) & 0b111);
 }
 
-/// @brief Returns the length of the UTF-8 unit sequence (including `c`)
-/// that is encoded when `c` is the first unit in that sequence.
-///
-/// Returns `fallback` if `c` is not a valid leading code unit,
-/// such as if it begins with `10` or `111110`.
+/// @brief Like the other overload of `unchecked_sequence_length`,
+/// but returns a fallback of choice instead of zero on failure.
 ULIGHT_HOT [[nodiscard]]
-constexpr int sequence_length(char8_t c, int fallback) noexcept
+constexpr int unchecked_sequence_length(const char8_t c, const int fallback) noexcept
+{
+    const int result = unchecked_sequence_length(c);
+    return result == 0 ? fallback : result;
+}
+
+namespace detail {
+
+consteval int sequence_length_impl(const char8_t c) noexcept
+{
+    const int len = unchecked_sequence_length(c);
+    // C0..C1 encode U+0000..U+007F in 2 bytes, which is overlong.
+    if (len == 2 && c < char8_t(0xC2)) [[unlikely]] {
+        return 0;
+    }
+    // F5..F7 would encode code points above U+10FFFF.
+    if (len == 4 && c > char8_t(0xF4)) [[unlikely]] {
+        return 0;
+    }
+    return len;
+}
+
+inline constexpr auto sequence_length_table = []() consteval {
+    std::array<unsigned char, 256> result;
+    for (std::size_t i = 0; i < 256; ++i) {
+        result[i] = static_cast<unsigned char>(sequence_length_impl(char8_t(i)));
+    }
+    return result;
+}();
+
+} // namespace detail
+
+/// @brief Returns the expected sequence length
+/// if `c` can be the first byte of a well-formed UTF-8 sequence.
+///
+/// Unlike `unchecked_sequence_length`,
+/// this returns `0` for `C0`–`C1` (which would produce overlong 2-byte encodings)
+/// and for `F5`–`F7` (which would encode code points beyond U+10FFFF).
+[[nodiscard]]
+constexpr int sequence_length(const char8_t c) noexcept
+{
+    return detail::sequence_length_table[c];
+}
+
+/// @brief Like the other overload of `sequence_length`,
+/// but returns a fallback of choice instead of zero on failure.
+ULIGHT_HOT [[nodiscard]]
+constexpr int sequence_length(const char8_t c, const int fallback) noexcept
 {
     const int result = sequence_length(c);
     return result == 0 ? fallback : result;
@@ -213,14 +260,51 @@ alignas(std::uint32_t) inline constexpr char8_t expectation_values[][4] = {
     { 0xF0, 0x80, 0x80, 0x80 },
 };
 
+/// @brief Returns `true` if `b_1` is a valid second byte
+/// of a well-formed UTF-8 sequence whose first byte is `b_0`.
+///
+/// This checks both the generic continuation-byte bit pattern (`10xxxxxx`)
+/// and the leading-byte-specific second-byte range constraints
+/// (for `E0`, `ED`, `F0`, `F4`).
+[[nodiscard]]
+constexpr bool is_valid_second_utf8_byte(const char8_t b_0, const char8_t b_1) noexcept
+{
+    if ((b_1 & char8_t(0xC0)) != char8_t(0x80)) {
+        return false;
+    }
+    // E0: second byte must be A0..BF to avoid overlong 3-byte encodings.
+    if (b_0 == char8_t(0xE0) && b_1 < char8_t(0xA0)) {
+        return false;
+    }
+    // ED: second byte must be 80..9F to avoid surrogate code points.
+    if (b_0 == char8_t(0xED) && b_1 >= char8_t(0xA0)) {
+        return false;
+    }
+    // F0: second byte must be 90..BF to avoid overlong 4-byte encodings.
+    if (b_0 == char8_t(0xF0) && b_1 < char8_t(0x90)) {
+        return false;
+    }
+    // F4: second byte must be 80..8F to avoid code points above U+10FFFF.
+    if (b_0 == char8_t(0xF4) && b_1 > char8_t(0x8F)) {
+        return false;
+    }
+    return true;
+}
+
 } // namespace detail
 
-/// @brief Returns `true` if `str` contains a valid (padded) UTF-8-encoded code point
+/// @brief Returns `true` if `str` contains a fully valid UTF-8-encoded code point
 /// for a known sequence length.
-/// @param str The UTF-8 code units. Paddings bits need not be zero.
+///
+/// "Fully valid" means both structurally correct (continuation bits present)
+/// and semantically correct per Table 3-7 of the Unicode Standard:
+/// no overlong encodings,
+/// no surrogate code points (U+D800–U+DFFF),
+/// and no code points beyond U+10FFFF.
+/// @param str The UTF-8 code units. Padding bits need not be zero.
 /// @param length The length of the code unit sequence, in `[1, 4]`.
 ULIGHT_HOT [[nodiscard]]
-constexpr bool is_valid(std::array<char8_t, 4> str, int length)
+constexpr bool is_valid(const std::array<char8_t, 4> str, const int length)
 {
     ULIGHT_DEBUG_ASSERT(length >= 1 && length <= 4);
 
@@ -229,7 +313,46 @@ constexpr bool is_valid(std::array<char8_t, 4> str, int length)
     const auto expected = std::bit_cast<std::uint32_t>(detail::expectation_values[length - 1]);
 
     // https://nrk.neocities.org/articles/utf8-pext
-    return (str32 & mask) == expected;
+    if ((str32 & mask) != expected) {
+        return false;
+    }
+
+    // Additional semantic validity per Table 3-7:
+    switch (length) {
+    case 2: {
+        // C0..C1 would encode U+0000..U+007F in 2 bytes — overlong.
+        if (str[0] < char8_t(0xC2)) {
+            return false;
+        }
+        break;
+    }
+    case 3: { // E0 + second byte 80..9F encodes U+0000..U+07FF — overlong.
+        if (str[0] == char8_t(0xE0) && str[1] < char8_t(0xA0)) {
+            return false;
+        }
+        // ED + second byte A0..BF encodes U+D800..U+DFFF — surrogate.
+        if (str[0] == char8_t(0xED) && str[1] >= char8_t(0xA0)) {
+            return false;
+        }
+        break;
+    }
+    case 4: { // F0 + second byte 80..8F encodes U+0000..U+FFFF — overlong.
+        if (str[0] == char8_t(0xF0) && str[1] < char8_t(0x90)) {
+            return false;
+        }
+        // F5..F7 would encode code points beyond U+10FFFF.
+        if (str[0] > char8_t(0xF4)) {
+            return false;
+        }
+        // F4 + second byte 90..BF encodes code points beyond U+10FFFF.
+        if (str[0] == char8_t(0xF4) && str[1] > char8_t(0x8F)) {
+            return false;
+        }
+        break;
+    }
+    default: break;
+    }
+    return true;
 }
 
 template <std::size_t size>
@@ -271,7 +394,7 @@ ULIGHT_HOT [[nodiscard]]
 constexpr Code_Point_And_Length decode_and_length_unchecked(const char8_t* str)
 {
     ULIGHT_DEBUG_ASSERT(str != nullptr);
-    const int length = sequence_length(*str);
+    const int length = unchecked_sequence_length(*str);
     const std::array<char8_t, 4> padded = first_n_padded<4>({ str, str + length });
     return { .code_point = decode_unchecked(padded, length), .length = length };
 }
@@ -353,47 +476,82 @@ constexpr Code_Point_And_Length decode_and_length_or_throw(std::u8string_view st
 #endif
 
 /// @brief If `decode_and_length(str)` succeeds, returns the resulting value.
-/// Otherwise, returns a result where the `code_point` is U+FFFD REPLACEMENT CHARACTER,
-/// and where the length is `1` if `str` is nonempty, otherwise `0`.
+/// Otherwise, returns a result where the `code_point` is U+FFFD REPLACEMENT CHARACTER
+/// and `length` is the number of bytes in the maximal subpart
+/// of the ill-formed subsequence at the start of `str`,
+/// as defined by Unicode D93b (U+FFFD Substitution of Maximal Subparts).
+///
+/// If `str` is empty, `length` is `0`.
+/// If `str` is non-empty but starts with an ill-formed sequence,
+/// `length` is at least `1`.
 ///
 /// Note that U+FFFD conventionally indicates that a decoding error has occurred.
 ULIGHT_HOT [[nodiscard]]
-constexpr Code_Point_And_Length decode_and_length_or_replacement(std::u8string_view str) noexcept
+constexpr Code_Point_And_Length decode_and_length_or_replacement(const std::u8string_view str
+) noexcept
 {
     if (str.empty()) [[unlikely]] {
         return { U'\N{REPLACEMENT CHARACTER}', 0 };
     }
     // NOLINTNEXTLINE(readability-simplify-subscript-expr) to avoid hardened bounds checks
-    const int length = sequence_length(str.data()[0]);
-    if (length == 0) [[unlikely]] {
+    const char8_t b_0 = str.data()[0];
+    const int expected = sequence_length(b_0);
+    if (expected == 0) [[unlikely]] {
+        // B0 cannot start any well-formed UTF-8 sequence.
         return { U'\N{REPLACEMENT CHARACTER}', 1 };
     }
-    if (str.size() < std::size_t(length)) [[unlikely]] {
-        return { U'\N{REPLACEMENT CHARACTER}', 1 };
+    // Check each expected continuation byte.
+    // Stop early if a byte is absent or invalid, returning the maximal subpart.
+    const int available = static_cast<int>(str.size());
+    for (int i = 1; i < expected; ++i) {
+        if (i >= available) [[unlikely]] {
+            // Truncated at end of input: bytes [0, i) are a valid prefix.
+            return { U'\N{REPLACEMENT CHARACTER}', i };
+        }
+        // NOLINTNEXTLINE(readability-simplify-subscript-expr) to avoid hardened bounds checks
+        const char8_t b_i = str.data()[i];
+        const bool valid = (i == 1) ? detail::is_valid_second_utf8_byte(b_0, b_i)
+                                    : ((b_i & char8_t(0xC0)) == char8_t(0x80));
+        if (!valid) [[unlikely]] {
+            // Bytes [0, i) are a valid prefix; b_i breaks the sequence.
+            return { U'\N{REPLACEMENT CHARACTER}', i };
+        }
     }
+    // All expected bytes are present and well-formed; decode directly.
     const std::array<char8_t, 4> padded = first_n_padded<4>(str);
-    const char32_t code_point = is_valid(padded, length) ? decode_unchecked(padded, length)
-                                                         : U'\N{REPLACEMENT CHARACTER}';
-    return { code_point, length };
+    return { decode_unchecked(padded, expected), expected };
 }
 
 /// @brief Equivalent to the overload taking `std::u8string_view`,
 /// but may be substantially faster because `str` never has to be checked for emptiness
-/// or insufficient size for the decoded UTF-8 sequence length.
+/// or for having fewer bytes than the expected sequence length.
+///
+/// The caller is responsible for ensuring that `str` holds at least
+/// `sequence_length(str[0])` meaningful bytes.
+/// Remaining bytes (beyond the decoded sequence) are ignored.
+///
+/// The `length` field of the return value is the maximal subpart length
+/// as described for the `std::u8string_view` overload.
 ULIGHT_HOT [[nodiscard]]
 constexpr Code_Point_And_Length // NOLINTNEXTLINE(bugprone-exception-escape)
-decode_and_length_or_replacement(std::array<char8_t, 4> str) noexcept
+decode_and_length_or_replacement(const std::array<char8_t, 4> str) noexcept
 {
     // NOLINTNEXTLINE(readability-simplify-subscript-expr) to avoid hardened bounds checks
-    const int length = sequence_length(str.data()[0]);
-    ULIGHT_DEBUG_ASSERT(length <= 4);
-    if (length == 0) [[unlikely]] {
+    const char8_t b_0 = str.data()[0];
+    const int expected = sequence_length(b_0);
+    if (expected == 0) [[unlikely]] {
         return { U'\N{REPLACEMENT CHARACTER}', 1 };
     }
-    if (!is_valid(str, length)) [[unlikely]] {
-        return { U'\N{REPLACEMENT CHARACTER}', 1 };
+    for (int i = 1; i < expected; ++i) {
+        // NOLINTNEXTLINE(readability-simplify-subscript-expr) to avoid hardened bounds checks
+        const char8_t Bi = str.data()[i];
+        const bool valid = i == 1 ? detail::is_valid_second_utf8_byte(b_0, Bi)
+                                  : ((Bi & char8_t(0xC0)) == char8_t(0x80));
+        if (!valid) [[unlikely]] {
+            return { U'\N{REPLACEMENT CHARACTER}', i };
+        }
     }
-    return { decode_unchecked(str, length), length };
+    return { decode_unchecked(str, expected), expected };
 }
 
 /// @brief Equivalent to `decode_and_length_or_replacement(str).code_point`.
@@ -430,7 +588,7 @@ constexpr std::size_t code_points_unchecked(std::u8string_view str) noexcept
 {
     std::size_t result = 0;
     while (!str.empty()) {
-        const auto unit_length = std::size_t(sequence_length(str.front()));
+        const auto unit_length = std::size_t(unchecked_sequence_length(str.front()));
         str.remove_prefix(unit_length);
         ++result;
     }
