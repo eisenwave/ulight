@@ -302,26 +302,7 @@ export class UlightWasm {
  * @returns {Promise<UlightWasm>}
  */
 export async function loadWasm() {
-    // The implementations of these functions we provide don't actually match the WASI
-    // requirements (https://wasix.org/docs/api-reference).
-    // This is actually okay because we don't expect these functions to ever be called;
-    // they are simply stuff that dead code elimination missed.
-    const importObject = {
-        env: {
-            emscripten_notify_memory_growth() { }
-        },
-        wasi_snapshot_preview1: {
-            clock_time_get() { },
-            proc_exit() { },
-            fd_close() { },
-            fd_write() { },
-            fd_seek() { },
-            fd_read() { },
-            environ_sizes_get() { },
-            environ_get() { }
-        }
-    };
-    const resultWasm = await WebAssembly.instantiateStreaming(fetch("ulight.wasm"), importObject);
+    const resultWasm = await WebAssembly.instantiateStreaming(fetch("ulight.wasm"));
     const result = new UlightWasm(resultWasm);
     await result.init();
     return result;
