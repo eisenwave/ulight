@@ -258,6 +258,7 @@ private:
             || expect_string_or_character() //
             || expect_number() //
             || expect_symbol() //
+            || expect_backtick_identifier() //
             || expect_identifier();
     }
 
@@ -301,6 +302,38 @@ private:
             return true;
         }
         return false;
+    }
+
+    bool expect_backtick_identifier()
+    {
+        // https://kotlinlang.org/spec/syntax-and-grammar.html#grammar-rule-Identifier
+        if (!remainder.starts_with(u8'`')) {
+            return false;
+        }
+        // Find the closing backtick, excluding CR and LF.
+        std::size_t length = 1;
+        while (length < remainder.length()) {
+            const char8_t c = remainder[length];
+            if (c == u8'`') {
+                if (length == 1) {
+                    // Empty backtick identifier (``) is not valid: emit as error.
+                    emit_and_advance(2, Highlight_Type::error);
+                    return true;
+                }
+                // Emit: opening backtick, content, closing backtick.
+                emit_and_advance(1, Highlight_Type::name_delim);
+                emit_and_advance(length - 1, Highlight_Type::name);
+                emit_and_advance(1, Highlight_Type::name_delim);
+                return true;
+            }
+            if (c == u8'\r' || c == u8'\n') {
+                break;
+            }
+            ++length;
+        }
+        // Unterminated backtick identifier: emit as error.
+        emit_and_advance(length, Highlight_Type::error);
+        return true;
     }
 
     bool expect_identifier()
