@@ -54,9 +54,4 @@ void __wasi_proc_exit(int)
 {
     __builtin_trap();
 }
-
-extern "C" [[gnu::used]]
-void emscripten_notify_memory_growth(int)
-{
-}
 // NOLINTEND
