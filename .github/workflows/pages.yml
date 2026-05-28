@@ -3,6 +3,8 @@ name: Emscripten build and deploy to pages
 on:
   push:
     branches: ["main", "pages-action"]
+  pull_request:
+    branches: ["main"]
   workflow_dispatch: {}
 
 permissions:
@@ -10,22 +12,16 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
-  deploy:
+  build:
     timeout-minutes: 15
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
       - name: Setup pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v6
 
       - name: Install emscripten
@@ -51,10 +47,23 @@ jobs:
         run: cmake --build build
 
       - name: Upload artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v5
         with:
           path: "www"
 
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request'
+    timeout-minutes: 15
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
