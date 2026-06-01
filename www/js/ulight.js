@@ -21,20 +21,19 @@ export class UlightWasm {
         const displayNamesAddress = this._exports.ulight_lang_display_names;
         const lengthAddress = this._exports.ulight_lang_list_length;
 
-        const heap32 = new Int32Array(this._memory.buffer);
-        const length = heap32[lengthAddress / 4];
+        const length = this._heap32[lengthAddress / 4];
 
         const result = [];
         for (let i = 0; i < length; ++i) {
             const entrySize = 12;
 
-            const nameAddress = heap32[(baseAddress + i * entrySize + 0) / 4];
-            const nameLength = heap32[(baseAddress + i * entrySize + 4) / 4];
+            const nameAddress = this._heap32[(baseAddress + i * entrySize + 0) / 4];
+            const nameLength = this._heap32[(baseAddress + i * entrySize + 4) / 4];
             const name = this._loadUtf8(nameAddress, nameLength);
 
-            const id = heap32[(baseAddress + i * entrySize + 8) / 4];
-            const displayNameAddress = heap32[(displayNamesAddress + id * 8) / 4];
-            const displayNameLength = heap32[(displayNamesAddress + id * 8 + 4) / 4]
+            const id = this._heap32[(baseAddress + i * entrySize + 8) / 4];
+            const displayNameAddress = this._heap32[(displayNamesAddress + id * 8) / 4];
+            const displayNameLength = this._heap32[(displayNamesAddress + id * 8 + 4) / 4]
             const displayName = this._loadUtf8(displayNameAddress, displayNameLength);
 
             result.push({ name, displayName, id });
@@ -49,8 +48,7 @@ export class UlightWasm {
      */
     getLanguageListLength() {
         const length_address = this._exports.ulight_lang_list_length;
-        const heap32 = new Int32Array(this._memory.buffer);
-        return heap32[length_address / 4];
+        return this._heap32[length_address / 4];
     }
 
     /**
@@ -80,9 +78,8 @@ export class UlightWasm {
         }
 
         const tableAddress = this._exports.ulight_lang_display_names;
-        const heap32 = new Int32Array(this._memory.buffer);
-        const address = heap32[(tableAddress + key * 8) / 4];
-        const length = heap32[(tableAddress + key * 8 + 4) / 4]
+        const address = this._heap32[(tableAddress + key * 8) / 4];
+        const length = this._heap32[(tableAddress + key * 8 + 4) / 4]
 
         return this._loadUtf8(address, length);
     }
@@ -115,7 +112,7 @@ export class UlightWasm {
             textBuffer = this._alloc(bufferByteSize, 1);
             state = this._newState();
 
-            const heap32 = new Int32Array(this._memory.buffer);
+            const heap32 = this._heap32;
             heap32[state / 4 + 0] = u8source;
             heap32[state / 4 + 1] = sourceData.length;
             heap32[state / 4 + 2] = lang;
@@ -165,8 +162,7 @@ export class UlightWasm {
      * @returns {string} The decoded string.
      */
     _loadUtf8(address, length) {
-        const wasmMemoryView = new Uint8Array(this._memory.buffer);
-        const utf8Bytes = wasmMemoryView.slice(address, address + length);
+        const utf8Bytes = this._heap8.slice(address, address + length);
         const decoder = new TextDecoder("utf-8", { fatal: true });
         return decoder.decode(utf8Bytes);
     }
@@ -193,8 +189,7 @@ export class UlightWasm {
      */
     _allocBytes(bytes, align = 1) {
         const address = this._alloc(bytes.length, align);
-        const heap8 = new Uint8Array(this._memory.buffer);
-        heap8.set(bytes, address);
+        this._heap8.set(bytes, address);
         return address;
     }
 
@@ -258,6 +253,7 @@ export class UlightWasm {
     }
 
     async init() {
+        this._invalidateHeapViews();
         if (this._exports._initialize) {
             this._exports._initialize();
         } else {
@@ -281,6 +277,16 @@ export class UlightWasm {
         return this._exports.__indirect_function_table;
     }
 
+    /**
+     * Updates `_heap8` and `_heap32` to reflect the current memory buffer.
+     * Must be called initially and whenever memory grows.
+     */
+    _invalidateHeapViews() {
+        const { buffer } = this._memory;
+        this._heap8 = new Uint8Array(buffer);
+        this._heap32 = new Int32Array(buffer);
+    }
+
     /** @returns {WebAssembly.Memory} */
     get _memory() {
         return this.wasm.instance.exports.memory;
@@ -302,29 +308,22 @@ export class UlightWasm {
  * @returns {Promise<UlightWasm>}
  */
 export async function loadWasm() {
-    // The implementations of these functions we provide don't actually match the WASI
-    // requirements (https://wasix.org/docs/api-reference).
-    // This is actually okay because we don't expect these functions to ever be called;
-    // they are simply stuff that dead code elimination missed.
+    let instance = null;
     const importObject = {
         env: {
-            emscripten_notify_memory_growth() { }
-        },
-        wasi_snapshot_preview1: {
-            clock_time_get() { },
-            proc_exit() { },
-            fd_close() { },
-            fd_write() { },
-            fd_seek() { },
-            fd_read() { },
-            environ_sizes_get() { },
-            environ_get() { }
+            // `instance` is always non-null when this fires:
+            // the module uses `--no-entry` (no WASM start function),
+            // so memory can only grow during explicit WASM calls, which happen
+            // after `instance` is assigned below.
+            emscripten_notify_memory_growth() {
+                instance?._invalidateHeapViews();
+            }
         }
     };
     const resultWasm = await WebAssembly.instantiateStreaming(fetch("ulight.wasm"), importObject);
-    const result = new UlightWasm(resultWasm);
-    await result.init();
-    return result;
+    instance = new UlightWasm(resultWasm);
+    await instance.init();
+    return instance;
 }
 
 /**
