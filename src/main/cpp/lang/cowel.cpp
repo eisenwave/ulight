@@ -75,13 +75,13 @@ Escape_Result match_escape(const std::u8string_view str)
     if (str.length() == 1) [[unlikely]] {
         return { .length = 1, .is_reserved = true };
     }
-    if (str[1] == u8'+') {
-        if (const std::size_t length = match_numeric_char_escape(str)) {
-            return { .length = length };
-        }
-        return { .length = 2, .is_reserved = true };
-    }
     if (is_cowel_escapeable(str[1])) {
+        if (str[1] == u8'+') {
+            if (const std::size_t length = match_numeric_char_escape(str)) {
+                return { .length = length };
+            }
+            return { .length = 2, .is_reserved = true };
+        }
         if (str[1] == u8'\'') {
             constexpr auto is_terminator
                 = [](const char8_t c) { return c == u8'\'' || c == u8'\r' || c == u8'\n'; };
@@ -365,6 +365,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         return expect_escape() //
             || expect_directive_splice() //
             || expect_expression_splice() //
+            || expect_expression_line_splice() //
             || expect_line_comment() //
             || expect_block_comment() //
             || expect_text(text_kind, brace_level);
@@ -425,6 +426,53 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             break;
         }
         }
+        return true;
+    }
+
+    bool expect_expression_line_splice()
+    {
+        if (!remainder.starts_with(u8"\\ "sv)) {
+            return false;
+        }
+        if (const std::size_t newline = remainder.find_first_of(u8"\r\n", 2);
+            newline == std::u8string_view::npos) {
+            return false;
+        }
+
+        emit_and_advance(2, Highlight_Type::string_interpolation_delim);
+
+        while (!eof()) {
+            if (remainder.starts_with(u8"\r\n"sv)) {
+                advance(2);
+                return true;
+            }
+            if (remainder.starts_with(u8'\n') || remainder.starts_with(u8'\r')) {
+                advance(1);
+                return true;
+            }
+
+            if (expect_escape() || expect_line_comment() || expect_block_comment()
+                || expect_expression()) {
+                continue;
+            }
+
+            const std::size_t whitespace = match_whitespace(remainder);
+            if (whitespace) {
+                advance(whitespace);
+                continue;
+            }
+
+            if (const std::optional<Fixed_Token_Type> token = match_fixed_token(remainder);
+                token && is_group_member_token(*token)) {
+                emit_and_advance(
+                    fixed_token_type_length(*token), fixed_token_type_highlight(*token)
+                );
+            }
+            else {
+                emit_and_advance(1, Highlight_Type::error);
+            }
+        }
+
         return true;
     }
 
