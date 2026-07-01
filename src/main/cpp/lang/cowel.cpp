@@ -759,8 +759,8 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         const std::u8string_view str = remainder.substr(0, length);
         ULIGHT_DEBUG_ASSERT(!is_ascii_digit(str[0]));
 
-        if (str == u8"unit"sv || str == u8"null"sv) {
-            emit_and_advance(4, Highlight_Type::keyword);
+        if (str == u8"unit"sv || str == u8"null"sv || str == u8"let"sv) {
+            emit_and_advance(length, Highlight_Type::keyword);
         }
         else if (str == u8"true"sv) {
             emit_and_advance(4, Highlight_Type::bool_);
