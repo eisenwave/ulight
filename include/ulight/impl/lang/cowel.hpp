@@ -16,6 +16,10 @@ inline constexpr auto is_cowel_special = Charset256(u8"{}\\(),=");
 
 inline constexpr auto is_cowel_escapeable = Charset256(u8"{}\\\"'+\r\n");
 
+/// @brief Returns `true` iff `c` is horizontal whitespace (space, tab, form
+/// feed). Unlike `html::is_html_whitespace`, this excludes line terminators.
+inline constexpr auto is_horizontal_whitespace = Charset256(u8" \t\f");
+
 /// @brief Returns `true` if `c` is an escapable cowel character.
 /// That is, if `\c` would be treated specially,
 /// rather than starting a directive or being treated as literal text.
@@ -82,9 +86,9 @@ std::size_t match_ellipsis(std::u8string_view str);
 [[nodiscard]]
 std::size_t match_whitespace(std::u8string_view str);
 
-/// @brief Matches a line comment, starting with `\:` and continuing until the end of the line.
-/// The resulting length includes the `\:` prefix,
-/// but does not include the line terminator.
+/// @brief Matches a line comment, starting with `\:` and continuing until the
+/// end of the line. The resulting length includes the `\:` prefix, but does not
+/// include the line terminator.
 [[nodiscard]]
 std::size_t match_line_comment(std::u8string_view str);
 

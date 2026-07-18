@@ -759,8 +759,15 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         const std::u8string_view str = remainder.substr(0, length);
         ULIGHT_DEBUG_ASSERT(!is_ascii_digit(str[0]));
 
-        if (str == u8"unit"sv || str == u8"null"sv || str == u8"let"sv) {
+        if (str == u8"unit"sv || str == u8"null"sv || str == u8"let"sv || str == u8"fun"sv) {
             emit_and_advance(length, Highlight_Type::keyword);
+            // TODO: Similarly handle let-expressions
+            if (str == u8"fun"sv) {
+                consume_horizontal_blank();
+                if (const std::size_t func_name_len = match_identifier(remainder)) {
+                    emit_and_advance(func_name_len, Highlight_Type::name_function_decl);
+                }
+            }
         }
         else if (str == u8"true"sv) {
             emit_and_advance(4, Highlight_Type::bool_);
@@ -838,6 +845,22 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
     {
         while (!eof()) {
             if (const std::size_t space = match_whitespace(remainder)) {
+                advance(space);
+            }
+            if (!expect_line_comment() && !expect_block_comment()) {
+                break;
+            }
+        }
+    }
+
+    /// Consume horizontal whitespace and comments,
+    /// but NOT line terminators.
+    /// This is used after `fun` to skip to the function name
+    /// without crossing the expression-line-splice boundary.
+    void consume_horizontal_blank()
+    {
+        while (!eof()) {
+            if (const std::size_t space = ascii::length_if(remainder, is_horizontal_whitespace)) {
                 advance(space);
             }
             if (!expect_line_comment() && !expect_block_comment()) {
