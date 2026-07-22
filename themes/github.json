@@ -1,0 +1,139 @@
+{
+    "$schema": "./ulight-theme.schema.json",
+    "meta": {
+        "name": "GitHub",
+        "short_name": "GitHub",
+        "author": "github.com",
+        "url": "https://github.com/highlightjs/highlight.js/tree/main/src/styles",
+        "license": "https://github.com/highlightjs/highlight.js/blob/main/LICENSE"
+    },
+    "palette": {
+        "light_fg": "#24292e",
+        "light_bg": "#ffffff",
+        "light_keyword": "#d73a49",
+        "light_entity": "#6f42c1",
+        "light_constant": "#005cc5",
+        "light_string": "#032f62",
+        "light_variable": "#e36209",
+        "light_comment": "#6a737d",
+        "light_entity_tag": "#22863a",
+        "light_bullet": "#735c0f",
+        "light_diff_ins_color": "#22863a",
+        "light_diff_ins_bg": "#f0fff4",
+        "light_diff_del_color": "#b31d28",
+        "light_diff_del_bg": "#ffeef0",
+        "dark_fg": "#c9d1d9",
+        "dark_bg": "#0d1117",
+        "dark_keyword": "#ff7b72",
+        "dark_entity": "#d2a8ff",
+        "dark_constant": "#79c0ff",
+        "dark_string": "#a5d6ff",
+        "dark_variable": "#ffa657",
+        "dark_comment": "#8b949e",
+        "dark_entity_tag": "#7ee787",
+        "dark_bullet": "#f2cc60",
+        "dark_heading": "#1f6feb",
+        "dark_diff_ins_color": "#aff5b4",
+        "dark_diff_ins_bg": "#033a16",
+        "dark_diff_del_color": "#ffdcd7",
+        "dark_diff_del_bg": "#67060c"
+    },
+    "light": {
+        "background": "$light_bg",
+        "foreground": "$light_fg",
+        "symbol": "$light_fg",
+        "name": "$light_fg",
+        "string": "$light_string",
+        "comment": "$light_comment",
+        "keyword": "$light_keyword",
+        "keyword-this": "$light_keyword",
+        "name-type": "$light_keyword",
+        "name-directive": "$light_keyword",
+        "name-function": "$light_entity",
+        "name-function-decl": "$light_entity",
+        "name-type-decl": "$light_entity",
+        "number": "$light_constant",
+        "value": "$light_constant",
+        "null": "$light_constant",
+        "bool": "$light_constant",
+        "symbol-op": "$light_constant",
+        "string-interpolation": "$light_fg",
+        "name-function-builtin": "$light_variable",
+        "markup-tag": "$light_entity_tag",
+        "text-quote": "$light_entity_tag",
+        "markup-attr": "$light_constant",
+        "text-code": "$light_comment",
+        "text-math": "$light_comment",
+        "text-heading": {
+            "color": "$light_constant",
+            "font-weight": "bold"
+        },
+        "text-emph": {
+            "color": "$light_fg",
+            "font-style": "italic"
+        },
+        "text-strong": {
+            "color": "$light_fg",
+            "font-weight": "bold"
+        },
+        "symbol-formatting": "$light_bullet",
+        "diff-insertion": {
+            "color": "$light_diff_ins_color",
+            "background-color": "$light_diff_ins_bg"
+        },
+        "diff-deletion": {
+            "color": "$light_diff_del_color",
+            "background-color": "$light_diff_del_bg"
+        },
+        "text-link": "$light_fg"
+    },
+    "dark": {
+        "background": "$dark_bg",
+        "foreground": "$dark_fg",
+        "symbol": "$dark_fg",
+        "name": "$dark_fg",
+        "string": "$dark_string",
+        "comment": "$dark_comment",
+        "keyword": "$dark_keyword",
+        "keyword-this": "$dark_keyword",
+        "name-type": "$dark_keyword",
+        "name-directive": "$dark_keyword",
+        "name-function": "$dark_entity",
+        "name-function-decl": "$dark_entity",
+        "name-type-decl": "$dark_entity",
+        "number": "$dark_constant",
+        "value": "$dark_constant",
+        "null": "$dark_constant",
+        "bool": "$dark_constant",
+        "symbol-op": "$dark_constant",
+        "string-interpolation": "$dark_fg",
+        "name-function-builtin": "$dark_variable",
+        "markup-tag": "$dark_entity_tag",
+        "text-quote": "$dark_entity_tag",
+        "markup-attr": "$dark_constant",
+        "text-code": "$dark_comment",
+        "text-math": "$dark_comment",
+        "text-heading": {
+            "color": "$dark_heading",
+            "font-weight": "bold"
+        },
+        "text-emph": {
+            "color": "$dark_fg",
+            "font-style": "italic"
+        },
+        "text-strong": {
+            "color": "$dark_fg",
+            "font-weight": "bold"
+        },
+        "symbol-formatting": "$dark_bullet",
+        "diff-insertion": {
+            "color": "$dark_diff_ins_color",
+            "background-color": "$dark_diff_ins_bg"
+        },
+        "diff-deletion": {
+            "color": "$dark_diff_del_color",
+            "background-color": "$dark_diff_del_bg"
+        },
+        "text-link": "$dark_fg"
+    }
+}
