@@ -1,0 +1,116 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/eisenwave/ulight/main/themes/ulight-theme.schema.json",
+    "title": "ulight Theme",
+    "description": "A color theme definition for the ulight syntax highlighter.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this JSON Schema for IDE validation."
+        },
+        "meta": {
+            "type": "object",
+            "description": "Metadata about the theme.",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "short_name": {
+                    "type": "string"
+                },
+                "author": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "license": {
+                    "type": "string",
+                    "format": "uri"
+                }
+            },
+            "required": [
+                "name"
+            ]
+        },
+        "palette": {
+            "type": "object",
+            "description": "Named color palette. Entries can be referenced in highlight values with $name.",
+            "additionalProperties": {
+                "type": "string",
+                "description": "A CSS color value (hex, rgb(), named color, etc.), or a $reference to another palette entry.",
+                "pattern": "^(\\$[a-zA-Z_][a-zA-Z0-9_]*|[^$].*)$"
+            }
+        },
+        "light": {
+            "$ref": "#/definitions/variant"
+        },
+        "dark": {
+            "$ref": "#/definitions/variant"
+        }
+    },
+    "required": [
+        "meta"
+    ],
+    "anyOf": [
+        {
+            "required": [
+                "light"
+            ]
+        },
+        {
+            "required": [
+                "dark"
+            ]
+        }
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "variant": {
+            "type": "object",
+            "description": "A color variant (light or dark) mapping highlight types to CSS styles.",
+            "properties": {
+                "background": {
+                    "$ref": "#/definitions/colorString",
+                    "description": "Background color of the code block."
+                },
+                "foreground": {
+                    "$ref": "#/definitions/colorString",
+                    "description": "Default text (foreground) color."
+                }
+            },
+            "patternProperties": {
+                "^[a-z][a-z0-9]*(?:-[a-z][a-z0-9]*)*$": {
+                    "$ref": "#/definitions/highlightValue"
+                }
+            },
+            "additionalProperties": false
+        },
+        "colorString": {
+            "type": "string",
+            "description": "A CSS color value, or a $palette_reference.",
+            "pattern": "^(\\$[a-zA-Z_][a-zA-Z0-9_]*|#[0-9a-fA-F]{3,8}|[a-zA-Z]+\\(.*\\)|[a-zA-Z]+.*)$"
+        },
+        "highlightValue": {
+            "description": "A CSS style value for a highlight type. Either a color string or an object of CSS property/value pairs.",
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/colorString"
+                },
+                {
+                    "type": "object",
+                    "description": "CSS property/value pairs for this highlight type.",
+                    "propertyNames": {
+                        "pattern": "^[a-z]+(?:-[a-z]+)*$"
+                    },
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "minProperties": 1
+                }
+            ]
+        }
+    }
+}
