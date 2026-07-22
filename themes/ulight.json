@@ -1,75 +1,125 @@
 {
+    "$schema": "./ulight-theme.schema.json",
     "meta": {
         "name": "ulight",
         "author": "ulight",
         "url": "https://github.com/Eisenwave/ulight"
     },
+    "palette": {
+        "gray": "#777777",
+        "red": "#ff0000",
+        "del_text_fg": "#ce9178",
+        "ins_text_fg": "#b5cea8",
+        "light_fg": "#000000",
+        "light_bg": "#f0f0f0",
+        "light_green": "#367c2a",
+        "light_red": "#c80032",
+        "light_dark_green": "#2b5403",
+        "light_olive": "#94b500",
+        "light_blue": "#1d51a1",
+        "light_dark_blue": "#032354",
+        "light_purple": "#5c477e",
+        "light_magenta": "#853e7a",
+        "light_royal_blue": "#0050c8",
+        "light_indigo": "#3a2986",
+        "light_brown": "#966c1c",
+        "light_dim_gray": "#646464",
+        "light_diff_del_fg": "#b31d28",
+        "light_diff_del_bg": "#ffeef0",
+        "light_diff_ins_fg": "#22863a",
+        "light_diff_ins_bg": "#f0fff4",
+        "light_diff_mod_fg": "#7a680d",
+        "light_diff_mod_bg": "#fffdee",
+        "dark_bg": "#181818",
+        "dark_fg": "#e7e7e7",
+        "dark_pink": "#ff5a82",
+        "dark_peach": "#cf9e7e",
+        "dark_salmon": "#db8d7b",
+        "dark_gold": "#edc385",
+        "dark_light_blue": "#8cbade",
+        "dark_medium_blue": "#669dd9",
+        "dark_light_gray": "#cccccc",
+        "dark_powder_blue": "#a4c4de",
+        "dark_pale_yellow": "#ffdc9c",
+        "dark_bright_blue": "#4fb0ff",
+        "dark_lavender": "#b0a9cf",
+        "dark_pink_magenta": "#ea91d4",
+        "dark_white": "#ffffff",
+        "dark_dim_gray": "#a0a0a0",
+        "dark_green": "#98d48e",
+        "dark_diff_del_fg": "#ffdcd7",
+        "dark_diff_del_bg": "#67060c",
+        "dark_diff_ins_fg": "#aff5b4",
+        "dark_diff_ins_bg": "#033a16",
+        "dark_diff_mod_fg": "#fff4d7",
+        "dark_diff_mod_bg": "#674d06"
+    },
     "light": {
-        "background": "#f0f0f0",
-        "foreground": "#000000",
-        "error": "#ff0000",
+        "background": "$light_bg",
+        "foreground": "$light_fg",
+        "error": "$red",
         "comment": {
-            "color": "#777777",
+            "color": "$gray",
             "font-style": "italic"
         },
         "comment-delim": {
             "font-style": "normal"
         },
         "comment-doc": {
-            "color": "#777777",
+            "color": "$gray",
             "font-style": "italic"
         },
         "comment-doc-delim": {
             "font-style": "normal"
         },
-        "value": "#367c2a",
-        "null": "#c80032",
-        "bool": "#c80032",
-        "string": "#367c2a",
-        "string-delim": "#2b5403",
-        "string-decor": "#2b5403",
-        "string-escape": "#94b500",
-        "number": "#1d51a1",
-        "number-delim": "#032354",
-        "number-decor": "#032354",
-        "name": "#000000",
-        "name-var": "#5c477e",
-        "name-function": "#853e7a",
-        "name-type": "#0050c8",
-        "name-parameter": "#5c477e",
-        "name-nonterminal": "#5c477e",
-        "name-nonterminal-decl": "#c80032",
-        "name-macro": "#3a2986",
-        "name-attr": "#966c1c",
-        "name-command": "#c80032",
-        "name-option": "#5c477e",
-        "name-instruction": "#c80032",
-        "name-instruction-pseudo": "#94b500",
-        "keyword": "#c80032",
-        "keyword-this": "#c80032",
-        "diff-heading": "#777777",
-        "diff-heading-hunk": "#5c477e",
-        "diff-common": "#000000",
+        "value": "$light_green",
+        "null": "$light_red",
+        "bool": "$light_red",
+        "string": "$light_green",
+        "string-delim": "$light_dark_green",
+        "string-decor": "$light_dark_green",
+        "string-escape": "$light_olive",
+        "number": "$light_blue",
+        "number-delim": "$light_dark_blue",
+        "number-decor": "$light_dark_blue",
+        "name": "$light_fg",
+        "name-var": "$light_purple",
+        "name-function": "$light_magenta",
+        "name-type": "$light_royal_blue",
+        "name-parameter": "$light_purple",
+        "name-nonterminal": "$light_purple",
+        "name-nonterminal-decl": "$light_red",
+        "name-macro": "$light_indigo",
+        "name-attr": "$light_brown",
+        "name-command": "$light_red",
+        "name-option": "$light_purple",
+        "name-instruction": "$light_red",
+        "name-instruction-pseudo": "$light_olive",
+        "keyword": "$light_red",
+        "keyword-this": "$light_red",
+        "diff-heading": "$gray",
+        "diff-heading-hunk": "$light_purple",
+        "diff-common": "$light_fg",
         "diff-deletion": {
-            "color": "#b31d28",
-            "background-color": "#ffeef0"
+            "color": "$light_diff_del_fg",
+            "background-color": "$light_diff_del_bg"
         },
         "diff-insertion": {
-            "color": "#22863a",
-            "background-color": "#f0fff4"
+            "color": "$light_diff_ins_fg",
+            "background-color": "$light_diff_ins_bg"
         },
         "diff-modification": {
-            "color": "#7a680d",
-            "background-color": "#fffdee"
+            "color": "$light_diff_mod_fg",
+            "background-color": "$light_diff_mod_bg"
         },
-        "markup-tag": "#c80032",
-        "markup-attr": "#5c477e",
+        "markup-tag": "$light_red",
+        "markup-attr": "$light_purple",
         "text-deletion": {
-            "color": "#ce9178",
+            "color": "$del_text_fg",
             "text-decoration": "line-through"
         },
         "text-insertion": {
-            "color": "#b5cea8",
+            "color": "$ins_text_fg",
             "text-decoration": "underline"
         },
         "text-emph": {
@@ -84,81 +134,81 @@
         "text-strikethrough": {
             "text-decoration": "line-through"
         },
-        "symbol": "#000000",
-        "symbol-punc": "#646464",
-        "symbol-formatting": "#c80032",
-        "text-heading": "#c80032",
-        "text-code": "#367c2a",
+        "symbol": "$light_fg",
+        "symbol-punc": "$light_dim_gray",
+        "symbol-formatting": "$light_red",
+        "text-heading": "$light_red",
+        "text-code": "$light_green",
         "text-link": {
             "text-decoration": "underline"
         }
     },
     "dark": {
-        "foreground": "#e7e7e7",
-        "background": "#181818",
-        "error": "#ff0000",
+        "foreground": "$dark_fg",
+        "background": "$dark_bg",
+        "error": "$red",
         "comment": {
-            "color": "#777777",
+            "color": "$gray",
             "font-style": "italic"
         },
         "comment-delim": {
             "font-style": "normal"
         },
         "comment-doc": {
-            "color": "#777777",
+            "color": "$gray",
             "font-style": "italic"
         },
         "comment-doc-delim": {
             "font-style": "normal"
         },
-        "value": "#98d48e",
-        "null": "#ff5a82",
-        "bool": "#ff5a82",
-        "string": "#cf9e7e",
-        "string-delim": "#db8d7b",
-        "string-decor": "#db8d7b",
-        "string-escape": "#edc385",
-        "number": "#8cbade",
-        "number-delim": "#669dd9",
-        "number-decor": "#669dd9",
-        "name": "#cccccc",
-        "name-var": "#a4c4de",
-        "name-function": "#ffdc9c",
-        "name-type": "#4fb0ff",
-        "name-parameter": "#a4c4de",
-        "name-nonterminal": "#a4c4de",
-        "name-nonterminal-decl": "#ff5a82",
-        "name-macro": "#b0a9cf",
-        "name-attr": "#ea91d4",
-        "name-command": "#ff5a82",
-        "name-option": "#a4c4de",
-        "name-instruction": "#ff5a82",
-        "name-instruction-pseudo": "#edc385",
-        "keyword": "#ff5a82",
-        "keyword-this": "#ff5a82",
-        "diff-heading": "#777777",
-        "diff-heading-hunk": "#edc385",
-        "diff-common": "#e7e7e7",
+        "value": "$dark_green",
+        "null": "$dark_pink",
+        "bool": "$dark_pink",
+        "string": "$dark_peach",
+        "string-delim": "$dark_salmon",
+        "string-decor": "$dark_salmon",
+        "string-escape": "$dark_gold",
+        "number": "$dark_light_blue",
+        "number-delim": "$dark_medium_blue",
+        "number-decor": "$dark_medium_blue",
+        "name": "$dark_light_gray",
+        "name-var": "$dark_powder_blue",
+        "name-function": "$dark_pale_yellow",
+        "name-type": "$dark_bright_blue",
+        "name-parameter": "$dark_powder_blue",
+        "name-nonterminal": "$dark_powder_blue",
+        "name-nonterminal-decl": "$dark_pink",
+        "name-macro": "$dark_lavender",
+        "name-attr": "$dark_pink_magenta",
+        "name-command": "$dark_pink",
+        "name-option": "$dark_powder_blue",
+        "name-instruction": "$dark_pink",
+        "name-instruction-pseudo": "$dark_gold",
+        "keyword": "$dark_pink",
+        "keyword-this": "$dark_pink",
+        "diff-heading": "$gray",
+        "diff-heading-hunk": "$dark_gold",
+        "diff-common": "$dark_fg",
         "diff-deletion": {
-            "color": "#ffdcd7",
-            "background-color": "#67060c"
+            "color": "$dark_diff_del_fg",
+            "background-color": "$dark_diff_del_bg"
         },
         "diff-insertion": {
-            "color": "#aff5b4",
-            "background-color": "#033a16"
+            "color": "$dark_diff_ins_fg",
+            "background-color": "$dark_diff_ins_bg"
         },
         "diff-modification": {
-            "color": "#fff4d7",
-            "background-color": "#674d06"
+            "color": "$dark_diff_mod_fg",
+            "background-color": "$dark_diff_mod_bg"
         },
-        "markup-tag": "#ff5a82",
-        "markup-attr": "#a4c4de",
+        "markup-tag": "$dark_pink",
+        "markup-attr": "$dark_powder_blue",
         "text-deletion": {
-            "color": "#ce9178",
+            "color": "$del_text_fg",
             "text-decoration": "line-through"
         },
         "text-insertion": {
-            "color": "#b5cea8",
+            "color": "$ins_text_fg",
             "text-decoration": "underline"
         },
         "text-emph": {
@@ -173,11 +223,11 @@
         "text-strikethrough": {
             "text-decoration": "line-through"
         },
-        "symbol": "#ffffff",
-        "symbol-punc": "#a0a0a0",
-        "symbol-formatting": "#ff5a82",
-        "text-heading": "#ff5a82",
-        "text-code": "#cf9e7e",
+        "symbol": "$dark_white",
+        "symbol-punc": "$dark_dim_gray",
+        "symbol-formatting": "$dark_pink",
+        "text-heading": "$dark_pink",
+        "text-code": "$dark_peach",
         "text-link": {
             "text-decoration": "underline"
         }

@@ -571,7 +571,7 @@
     color: #ce9178;
 }
 [data-ulight-theme=dark-vs] h-[data-h^=sym] {
-    color: d4d4d4;
+    color: #d4d4d4;
 }
 [data-ulight-theme=dark-vs] h-[data-h^=sym_brac] {
     color: #ffd700;
@@ -727,7 +727,7 @@
     color: #da70d6;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=sym] {
-    color: d4d4d4;
+    color: #d4d4d4;
 }
 [data-ulight-theme=dark-vs-plus] h-[data-h^=sym_brac] {
     color: #ffd700;
