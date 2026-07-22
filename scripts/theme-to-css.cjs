@@ -152,17 +152,19 @@ function generateCss(
     isCowel
 ) {
     const indent = isCowel ? " " : "    ";
+    const palette = theme.palette ?? {};
     if (isCowel) {
-        const systemCss = doGenerateCss(path, theme, themeName, noBlockBackground, noBlockForeground, "cowel-system", indent);
-        const themedCss = doGenerateCss(path, theme, themeName, noBlockBackground, noBlockForeground, "cowel-themed", indent);
+        const systemCss = doGenerateCss(path, theme, palette, themeName, noBlockBackground, noBlockForeground, "cowel-system", indent);
+        const themedCss = doGenerateCss(path, theme, palette, themeName, noBlockBackground, noBlockForeground, "cowel-themed", indent);
         return `${systemCss}\n\n${themedCss}`;
     }
-    return doGenerateCss(path, theme, themeName, noBlockBackground, noBlockForeground, "ulight", indent);
+    return doGenerateCss(path, theme, palette, themeName, noBlockBackground, noBlockForeground, "ulight", indent);
 }
 
 /**
  * @param {string} path
- * @param {string} theme
+ * @param {object} theme
+ * @param {object} palette
  * @param {string} themeName
  * @param {boolean} noBlockBackground
  * @param {boolean} noBlockForeground
@@ -173,6 +175,7 @@ function generateCss(
 function doGenerateCss(
     path,
     theme,
+    palette,
     themeName,
     noBlockBackground,
     noBlockForeground,
@@ -183,7 +186,7 @@ function doGenerateCss(
 
     let firstVariant = true;
     for (const [variant, data] of Object.entries(theme)) {
-        if (variant === "meta") {
+        if (variant === "meta" || variant === "palette" || variant === "$schema") {
             continue;
         }
         if (!variants.includes(variant)) {
@@ -221,7 +224,7 @@ function doGenerateCss(
             }
             const indentLevel = hasMediaQuery ? 1 : 0;
             const cssSelector = `${indent.repeat(indentLevel)}${keyToCssSelector(path, key, themePrefix)}`;
-            const declarations = jsonValueToCssDeclarations(path, key, value);
+            const declarations = jsonValueToCssDeclarations(path, key, value, palette);
             const cssBlock = cssDeclarationsInBlock(declarations, indentLevel, indent);
             css += `${cssSelector} ${cssBlock}\n`;
         }
@@ -277,25 +280,54 @@ function keyToCssSelector(path, key, themePrefix) {
     return `${fullPrefix}h-[data-h^=${shortName}]`;
 }
 
-function jsonValueToCssDeclarations(path, key, value) {
+function jsonValueToCssDeclarations(path, key, value, palette) {
     if (typeof value === "string") {
         if (value.length === 0) {
             console.error(`${path}: Empty string value for key "${key}" is not allowed.`);
             process.exit(1);
         }
+        const resolved = resolvePaletteReference(path, key, value, palette);
         return key === "background" ?
-            [`background-color: ${value};`, `border-color: ${value};`]
-            : [`color: ${value};`];
+            [`background-color: ${resolved};`, `border-color: ${resolved};`]
+            : [`color: ${resolved};`];
     }
     return Object.entries(value)
-        .map(([property, value]) => `${property}: ${value};`);
+        .map(([property, propValue]) => {
+            const resolved = resolvePaletteReference(path, `${key}.${property}`, propValue, palette);
+            return `${property}: ${resolved};`;
+        });
+}
+
+/**
+ * @param {string} path
+ * @param {string} key
+ * @param {string} value
+ * @param {object} palette
+ * @returns {string}
+ */
+function resolvePaletteReference(path, key, value, palette) {
+    if (typeof value !== "string" || !value.startsWith("$")) {
+        return value;
+    }
+    const name = value.slice(1);
+    const resolved = palette[name];
+    if (resolved === undefined) {
+        console.error(`${path}: Unresolved palette reference "${value}" for key "${key}"`);
+        process.exit(1);
+    }
+    if (typeof resolved !== "string") {
+        console.error(`${path}: Palette entry "${name}" must be a string, got ${typeof resolved}`);
+        process.exit(1);
+    }
+    // Recursively resolve in case palette entries reference each other.
+    return resolvePaletteReference(path, key, resolved, palette);
 }
 
 /**
  * @param {string[]} declarations
  * @param {number} indentLevel
  * @param {string} indent
- * @returns 
+ * @returns
  */
 function cssDeclarationsInBlock(declarations, indentLevel, indent = "    ") {
     const joined = declarations
@@ -372,7 +404,10 @@ function main() {
 
     const inputStats = fs.lstatSync(argv.input);
     const files = inputStats.isDirectory() ?
-        fs.readdirSync(argv.input).map(f => `${argv.input}/${f}`) : [argv.input];
+        fs.readdirSync(argv.input)
+            .filter(f => f.endsWith(".json") && f !== "ulight-theme.schema.json")
+            .map(f => `${argv.input}/${f}`)
+        : [argv.input];
 
     try {
         const css = files.map(f => fileToCss(f, isThemed, noBlockBackground, noBlockForeground, isCowel))
