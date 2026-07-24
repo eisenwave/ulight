@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <filesystem>
+#include <iomanip>
 #include <iostream>
 #include <iterator>
 #include <ranges>
@@ -17,6 +18,18 @@
 #include "ulight/impl/string_diff.hpp"
 #include "ulight/impl/strings.hpp"
 #include "ulight/ulight.hpp"
+
+#if __has_include(<unistd.h>)
+#include <csetjmp>
+#include <csignal>
+#include <unistd.h>
+#if defined(SIGALRM)
+#define ULIGHT_HAS_WATCHDOG 1
+#endif
+#endif
+#ifndef ULIGHT_HAS_WATCHDOG
+#define ULIGHT_HAS_WATCHDOG 0
+#endif
 
 namespace ulight {
 namespace {
@@ -224,6 +237,18 @@ TEST_F(Highlight_Test, exhaustive_three_chars)
     Token token_buffer[16];
     char8_t source[3];
 
+#if ULIGHT_HAS_WATCHDOG
+    static volatile std::sig_atomic_t wd_triggered = 0;
+    static sigjmp_buf wd_jmp;
+    std::signal(
+        SIGALRM,
+        +[](int) {
+            wd_triggered = 1;
+            siglongjmp(wd_jmp, 1);
+        }
+    );
+#endif
+
     bool success = true;
     for (int i = 1; i < int(ULIGHT_LANG_COUNT); ++i) {
         bool lang_success = true;
@@ -242,20 +267,42 @@ TEST_F(Highlight_Test, exhaustive_three_chars)
             ULIGHT_ASSERT(amount <= sizeof(source));
         }> {});
 
-        for (std::size_t i = 0; i < 1uz << 21; ++i) {
-            source[0] = (i >> 0) & 0x7f;
-            source[1] = (i >> 7) & 0x7f;
-            source[2] = (i >> 14) & 0x7f;
+#if ULIGHT_HAS_WATCHDOG
+        wd_triggered = false;
+        if (sigsetjmp(wd_jmp, 1) == 0) {
+            alarm(60);
+#endif
+            for (std::size_t i = 0; i < 1uz << 21; ++i) {
+                source[0] = (i >> 0) & 0x7f;
+                source[1] = (i >> 7) & 0x7f;
+                source[2] = (i >> 14) & 0x7f;
 
-            const Status status = state.source_to_tokens();
-            if (status != Status::ok && status != Status::bad_code) {
-                lang_success = false;
-                std::cout << ansi::h_red << "FAIL: " //
-                          << ansi::reset << lang_display_name(Lang(lang)) //
-                          << ": " << state.get_error_string() << "\n";
-                break;
+                const Status status = state.source_to_tokens();
+                if (status != Status::ok && status != Status::bad_code) {
+                    lang_success = false;
+                    std::cout << ansi::h_red << "FAIL: " //
+                              << ansi::reset << lang_display_name(Lang(lang)) //
+                              << ": " << state.get_error_string() << "\n";
+                    break;
+                }
             }
+#if ULIGHT_HAS_WATCHDOG
+            alarm(0); // finished in time
         }
+        if (wd_triggered) {
+            lang_success = false;
+            std::cout << ansi::h_red << "TIMEOUT: " //
+                      << ansi::reset << lang_display_name(Lang(lang)) << " hangs on [U+" << std::hex
+                      << std::setw(4) << std::setfill('0') << int(source[0]) << " U+"
+                      << std::setw(4) << int(source[1]) //
+                      << " U+" << std::setw(4) << int(source[2]) << std::dec;
+            if (!html::is_html_ascii_control(source[0]) && !html::is_html_ascii_control(source[1])
+                && !html::is_html_ascii_control(source[2])) {
+                std::cout << " '" << source_view << '\'';
+            }
+            std::cout << "]\n";
+        }
+#endif
 
         if (lang_success) {
             std::cout << ansi::h_green << "OK: " << ansi::reset << lang_display_name(Lang(lang))
