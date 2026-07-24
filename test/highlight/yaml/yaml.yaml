@@ -1,0 +1,89 @@
+# YAML Syntax Highlighting Stress Test
+# https://yaml.org/spec/1.2.2/
+
+%YAML 1.2
+---
+# This is a comment
+key: value
+integer: 12345
+negative: -42
+float: 3.14159
+exponential: 1.23e+10
+hex: 0xFF
+octal: 0o77
+binary: 0b1010
+infinity: .inf
+negative_infinity: -.inf
+not_a_number: .nan
+null_value: null
+null_tilde: ~
+bool_true: true
+bool_false: false
+bool_yes: yes
+bool_no: 'no'
+bool_on: "on"
+string_plain: hello world
+string_single: 'single quoted'
+string_double: "double quoted with \nescapes \x41\u0042"
+multiline_double: "line1\nline2"
+explicit_tag: !!str 123
+local_tag: !mytag value
+verbatim_tag: !<tag:example.com,2024:test> value
+anchor: &anchor_name This is anchored
+alias: *anchor_name
+...
+
+---
+# Flow collections
+flow_seq: [ one, two, three ]
+flow_map: { key1: value1, key2: value2 }
+nested_flow: [ { a: 1, b: 2 }, { c: 3 } ]
+
+---
+# Block scalars
+literal: |
+  This is a literal
+  block scalar.
+  Line breaks are preserved.
+folded: >
+  This is a folded
+  block scalar.
+  Line breaks become spaces.
+literal_with_chomp: |-
+  No trailing newline
+literal_keep: |+
+  Trailing newlines preserved
+
+...
+---
+# Block sequences
+list:
+  - item one
+  - item two
+  - item three
+
+# Block mappings
+person:
+  name: John Doe
+  age: 30
+  address:
+    street: 123 Main St
+    city: Anytown
+
+# Nested structures
+nested:
+  - name: Alice
+    skills:
+      - Python
+      - YAML
+  - name: Bob
+    skills:
+      - Java
+      - Rust
+
+# Explicit mapping keys
+? complex key
+: complex value
+
+# Sexagesimal (time)
+time: 20:30:15

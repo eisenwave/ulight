@@ -1,0 +1,37 @@
+# YAML Boolean and Null Test
+# https://yaml.org/spec/1.2.2/#1032-tag-resolution
+
+null_lower: null
+null_title: Null
+null_upper: NULL
+null_tilde: ~
+
+bool_true_lower: true
+bool_true_title: True
+bool_true_upper: TRUE
+bool_yes_lower: yes
+bool_yes_title: Yes
+bool_yes_upper: YES
+bool_on_lower: on
+bool_on_title: On
+bool_on_upper: ON
+
+bool_false_lower: false
+bool_false_title: False
+bool_false_upper: FALSE
+bool_no_lower: no
+bool_no_title: No
+bool_no_upper: NO
+bool_off_lower: off
+bool_off_title: Off
+bool_off_upper: OFF
+
+# Quoted versions should not be highlighted as bool/null
+quoted_null: "null"
+quoted_true: 'true'
+quoted_false: "false"
+
+# Mixed case -- should NOT be highlighted as bool/null
+mixed_case_yes: YeS
+mixed_case_no: nO
+mixed_case_null: nuLL

@@ -1,0 +1,36 @@
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> YAML Tags, Anchors, and Aliases Test</h->
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> https://yaml.org/spec/1.2.2/</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Secondary handle</h->
+<h- data-h=mk_attr>tag_str</h-><h- data-h=sym_punc>:</h-> <h- data-h=name_attr_dlim>!!</h-><h- data-h=name_attr>s</h-><h- data-h=name_attr>t</h-><h- data-h=name_attr>r</h-> <h- data-h=num>123</h->
+<h- data-h=mk_attr>tag_int</h-><h- data-h=sym_punc>:</h-> <h- data-h=name_attr_dlim>!!</h-><h- data-h=name_attr>i</h-><h- data-h=name_attr>n</h-><h- data-h=name_attr>t</h-> <h- data-h=num>456</h->
+<h- data-h=mk_attr>tag_map</h-><h- data-h=sym_punc>:</h-> <h- data-h=name_attr_dlim>!!</h-><h- data-h=name_attr>m</h-><h- data-h=name_attr>a</h-><h- data-h=name_attr>p</h->
+<h- data-h=mk_attr>tag_seq</h-><h- data-h=sym_punc>:</h-> <h- data-h=name_attr_dlim>!!</h-><h- data-h=name_attr>s</h-><h- data-h=name_attr>e</h-><h- data-h=name_attr>q</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Primary handle (local)</h->
+<h- data-h=mk_attr>local</h-><h- data-h=sym_punc>:</h-> <h- data-h=name_attr_dlim>!</h-><h- data-h=name_attr>m</h-><h- data-h=name_attr>y</h-><h- data-h=name_attr>t</h-><h- data-h=name_attr>a</h-><h- data-h=name_attr>g</h-> <h- data-h=str>value</h->
+<h- data-h=mk_attr>local_dotted</h-><h- data-h=sym_punc>:</h-> <h- data-h=name_attr_dlim>!</h-><h- data-h=name_attr>c</h-><h- data-h=name_attr>o</h-><h- data-h=name_attr>m</h-><h- data-h=name_attr>.</h-><h- data-h=name_attr>e</h-><h- data-h=name_attr>x</h-><h- data-h=name_attr>a</h-><h- data-h=name_attr>m</h-><h- data-h=name_attr>p</h-><h- data-h=name_attr>l</h-><h- data-h=name_attr>e</h-><h- data-h=name_attr>.</h-><h- data-h=name_attr>t</h-><h- data-h=name_attr>a</h-><h- data-h=name_attr>g</h-> <h- data-h=str>value</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Named handle (requires %TAG directive)</h->
+<h- data-h=sym_punc>...</h->
+<h- data-h=name_mac_dlim>%</h-><h- data-h=name_mac>TAG</h-> <h- data-h=str>!</h-><h- data-h=str>e</h-><h- data-h=str>!</h-> <h- data-h=str>t</h-><h- data-h=str>a</h-><h- data-h=str>g</h-><h- data-h=str>:</h-><h- data-h=str>e</h-><h- data-h=str>x</h-><h- data-h=str>a</h-><h- data-h=str>m</h-><h- data-h=str>p</h-><h- data-h=str>l</h-><h- data-h=str>e</h-><h- data-h=str>.</h-><h- data-h=str>c</h-><h- data-h=str>o</h-><h- data-h=str>m</h-><h- data-h=str>,</h-><h- data-h=str>2</h-><h- data-h=str>0</h-><h- data-h=str>0</h-><h- data-h=str>0</h-><h- data-h=str>:</h-><h- data-h=str>a</h-><h- data-h=str>p</h-><h- data-h=str>p</h-><h- data-h=str>/</h->
+<h- data-h=sym_punc>---</h->
+<h- data-h=mk_attr>named</h-><h- data-h=sym_punc>:</h-> <h- data-h=name_attr_dlim>!</h-><h- data-h=name_attr>e</h-><h- data-h=name_attr_dlim>!</h-><h- data-h=name_attr>f</h-><h- data-h=name_attr>o</h-><h- data-h=name_attr>o</h-> <h- data-h=str>bar</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Verbatim tag</h->
+<h- data-h=mk_attr>verbatim</h-><h- data-h=sym_punc>:</h-> <h- data-h=name_attr_dlim>!&lt;</h-><h- data-h=name_attr>t</h-><h- data-h=name_attr>a</h-><h- data-h=name_attr>g</h-><h- data-h=name_attr>:</h-><h- data-h=name_attr>e</h-><h- data-h=name_attr>x</h-><h- data-h=name_attr>a</h-><h- data-h=name_attr>m</h-><h- data-h=name_attr>p</h-><h- data-h=name_attr>l</h-><h- data-h=name_attr>e</h-><h- data-h=name_attr>.</h-><h- data-h=name_attr>c</h-><h- data-h=name_attr>o</h-><h- data-h=name_attr>m</h-><h- data-h=name_attr>,</h-><h- data-h=name_attr>2</h-><h- data-h=name_attr>0</h-><h- data-h=name_attr>2</h-><h- data-h=name_attr>4</h-><h- data-h=name_attr>:</h-><h- data-h=name_attr>t</h-><h- data-h=name_attr>e</h-><h- data-h=name_attr>s</h-><h- data-h=name_attr>t</h-><h- data-h=name_attr_dlim>&gt;</h-> <h- data-h=str>value</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Anchors and aliases</h->
+<h- data-h=mk_attr>anchor_simple</h-><h- data-h=sym_punc>:</h-> <h- data-h=name_attr_dlim>&amp;</h-><h- data-h=name>anchor1</h-> <h- data-h=str>Simple value</h->
+<h- data-h=mk_attr>alias_simple</h-><h- data-h=sym_punc>:</h-> <h- data-h=name_attr_dlim>*</h-><h- data-h=name>anchor1</h->
+
+<h- data-h=mk_attr>anchor_map</h-><h- data-h=sym_punc>:</h-> <h- data-h=name_attr_dlim>&amp;</h-><h- data-h=name>person</h->
+  <h- data-h=mk_attr>name</h-><h- data-h=sym_punc>:</h-> <h- data-h=str>John</h->
+  <h- data-h=mk_attr>age</h-><h- data-h=sym_punc>:</h-> <h- data-h=num>30</h->
+<h- data-h=mk_attr>alias_map</h-><h- data-h=sym_punc>:</h-> <h- data-h=name_attr_dlim>*</h-><h- data-h=name>person</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Multiple aliases to same anchor</h->
+<h- data-h=mk_attr>sequence</h-><h- data-h=sym_punc>:</h->
+  <h- data-h=sym_punc>-</h-> <h- data-h=name_attr_dlim>&amp;</h-><h- data-h=name>item</h-> <h- data-h=str>one</h->
+  <h- data-h=sym_punc>-</h-> <h- data-h=str>two</h->
+  <h- data-h=sym_punc>-</h-> <h- data-h=name_attr_dlim>*</h-><h- data-h=name>item</h->

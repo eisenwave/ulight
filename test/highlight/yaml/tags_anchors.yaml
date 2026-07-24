@@ -1,0 +1,36 @@
+# YAML Tags, Anchors, and Aliases Test
+# https://yaml.org/spec/1.2.2/
+
+# Secondary handle
+tag_str: !!str 123
+tag_int: !!int 456
+tag_map: !!map
+tag_seq: !!seq
+
+# Primary handle (local)
+local: !mytag value
+local_dotted: !com.example.tag value
+
+# Named handle (requires %TAG directive)
+...
+%TAG !e! tag:example.com,2000:app/
+---
+named: !e!foo bar
+
+# Verbatim tag
+verbatim: !<tag:example.com,2024:test> value
+
+# Anchors and aliases
+anchor_simple: &anchor1 Simple value
+alias_simple: *anchor1
+
+anchor_map: &person
+  name: John
+  age: 30
+alias_map: *person
+
+# Multiple aliases to same anchor
+sequence:
+  - &item one
+  - two
+  - *item

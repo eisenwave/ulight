@@ -52,6 +52,7 @@ Highlight_Fn highlight_rust;
 Highlight_Fn highlight_tex;
 Highlight_Fn highlight_typescript;
 Highlight_Fn highlight_xml;
+Highlight_Fn highlight_yaml;
 
 inline bool highlight_txt(
     Non_Owning_Buffer<Token>&,
@@ -107,6 +108,7 @@ inline Status highlight(
         result[ULIGHT_LANG_TXT] = highlight_txt;
         result[ULIGHT_LANG_TYPESCRIPT] = highlight_typescript;
         result[ULIGHT_LANG_XML] = highlight_xml;
+        result[ULIGHT_LANG_YAML] = highlight_yaml;
         return result;
     }();
 

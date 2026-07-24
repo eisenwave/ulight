@@ -1,0 +1,37 @@
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> YAML Boolean and Null Test</h->
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> https://yaml.org/spec/1.2.2/#1032-tag-resolution</h->
+
+<h- data-h=mk_attr>null_lower</h-><h- data-h=sym_punc>:</h-> <h- data-h=null>null</h->
+<h- data-h=mk_attr>null_title</h-><h- data-h=sym_punc>:</h-> <h- data-h=null>Null</h->
+<h- data-h=mk_attr>null_upper</h-><h- data-h=sym_punc>:</h-> <h- data-h=null>NULL</h->
+<h- data-h=mk_attr>null_tilde</h-><h- data-h=sym_punc>:</h-> <h- data-h=null>~</h->
+
+<h- data-h=mk_attr>bool_true_lower</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>true</h->
+<h- data-h=mk_attr>bool_true_title</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>True</h->
+<h- data-h=mk_attr>bool_true_upper</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>TRUE</h->
+<h- data-h=mk_attr>bool_yes_lower</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>yes</h->
+<h- data-h=mk_attr>bool_yes_title</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>Yes</h->
+<h- data-h=mk_attr>bool_yes_upper</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>YES</h->
+<h- data-h=mk_attr>bool_on_lower</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>on</h->
+<h- data-h=mk_attr>bool_on_title</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>On</h->
+<h- data-h=mk_attr>bool_on_upper</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>ON</h->
+
+<h- data-h=mk_attr>bool_false_lower</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>false</h->
+<h- data-h=mk_attr>bool_false_title</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>False</h->
+<h- data-h=mk_attr>bool_false_upper</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>FALSE</h->
+<h- data-h=mk_attr>bool_no_lower</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>no</h->
+<h- data-h=mk_attr>bool_no_title</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>No</h->
+<h- data-h=mk_attr>bool_no_upper</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>NO</h->
+<h- data-h=mk_attr>bool_off_lower</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>off</h->
+<h- data-h=mk_attr>bool_off_title</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>Off</h->
+<h- data-h=mk_attr>bool_off_upper</h-><h- data-h=sym_punc>:</h-> <h- data-h=bool>OFF</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Quoted versions should not be highlighted as bool/null</h->
+<h- data-h=mk_attr>quoted_null</h-><h- data-h=sym_punc>:</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>null</h-><h- data-h=str_dlim>"</h->
+<h- data-h=mk_attr>quoted_true</h-><h- data-h=sym_punc>:</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>true</h-><h- data-h=str_dlim>'</h->
+<h- data-h=mk_attr>quoted_false</h-><h- data-h=sym_punc>:</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>false</h-><h- data-h=str_dlim>"</h->
+
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> Mixed case -- should NOT be highlighted as bool/null</h->
+<h- data-h=mk_attr>mixed_case_yes</h-><h- data-h=sym_punc>:</h-> <h- data-h=str>YeS</h->
+<h- data-h=mk_attr>mixed_case_no</h-><h- data-h=sym_punc>:</h-> <h- data-h=str>nO</h->
+<h- data-h=mk_attr>mixed_case_null</h-><h- data-h=sym_punc>:</h-> <h- data-h=str>nuLL</h->
