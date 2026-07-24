@@ -238,12 +238,12 @@ TEST_F(Highlight_Test, exhaustive_three_chars)
     char8_t source[3];
 
 #if ULIGHT_HAS_WATCHDOG
-    static volatile bool wd_triggered = false;
+    static volatile std::sig_atomic_t wd_triggered = 0;
     static sigjmp_buf wd_jmp;
     std::signal(
         SIGALRM,
         +[](int) {
-            wd_triggered = true;
+            wd_triggered = 1;
             siglongjmp(wd_jmp, 1);
         }
     );
