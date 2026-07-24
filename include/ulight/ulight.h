@@ -54,7 +54,7 @@ typedef struct ulight_u8string_view {
 enum {
     /// @brief The amount of unique languages supported,
     /// including `ULIGHT_LANG_NONE`.
-    ULIGHT_LANG_COUNT = 24
+    ULIGHT_LANG_COUNT = 25
 };
 
 /// @brief A language supported by ulight for syntax highlighting.
@@ -75,6 +75,8 @@ typedef enum ulight_lang {
     ULIGHT_LANG_EBNF = 17,
     /// @brief HTML.
     ULIGHT_LANG_HTML = 4,
+    /// @brief Java.
+    ULIGHT_LANG_JAVA = 24,
     /// @brief JavaScript.
     ULIGHT_LANG_JAVASCRIPT = 7,
     /// @brief JSON (JavaScript Object Notation).

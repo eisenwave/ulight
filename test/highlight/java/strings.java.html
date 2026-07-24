@@ -1,0 +1,69 @@
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Java String, Character, and Text Block Literals Test</h->
+
+<h- data-h=kw>class</h-> <h- data-h=name>Strings</h-> <h- data-h=sym_brac>{</h->
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Character literals</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>c1</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>a</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>c2</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>Z</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>c3</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>0</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>c4</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>%</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>c5</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str_esc>\t</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>c6</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str_esc>\n</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>c7</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str_esc>\\</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>c8</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str_esc>\'</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>c9</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str_esc>\u03a9</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>c10</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str_esc>\uFFFF</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>c11</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str_esc>\177</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> String literals</h->
+    <h- data-h=name>String</h-> <h- data-h=name>s1</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>String</h-> <h- data-h=name>s2</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Hello</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>String</h-> <h- data-h=name>s3</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Hello, World!</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>String</h-> <h- data-h=name>s4</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Tab:</h-><h- data-h=str_esc>\t</h-><h- data-h=str> here</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>String</h-> <h- data-h=name>s5</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Newline:</h-><h- data-h=str_esc>\n</h-><h- data-h=str> here</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>String</h-> <h- data-h=name>s6</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Quote:</h-><h- data-h=str_esc>\"</h-><h- data-h=str> here</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>String</h-> <h- data-h=name>s7</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Backslash:</h-><h- data-h=str_esc>\\</h-><h- data-h=str> here</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>String</h-> <h- data-h=name>s8</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Single quote:</h-><h- data-h=str_esc>\'</h-><h- data-h=str> here</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>String</h-> <h- data-h=name>s9</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Form feed:</h-><h- data-h=str_esc>\f</h-><h- data-h=str> here</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>String</h-> <h- data-h=name>s10</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Carriage return:</h-><h- data-h=str_esc>\r</h-><h- data-h=str> here</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>String</h-> <h- data-h=name>s11</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_esc>\"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>String</h-> <h- data-h=name>s12</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_esc>\\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>String</h-> <h- data-h=name>s13</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_esc>\u0048</h-><h- data-h=str_esc>\u0065</h-><h- data-h=str_esc>\u006c</h-><h- data-h=str_esc>\u006c</h-><h- data-h=str_esc>\u006f</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>String</h-> <h- data-h=name>s14</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_esc>\101</h-><h- data-h=str_esc>\102</h-><h- data-h=str_esc>\103</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Text blocks</h->
+    <h- data-h=name>String</h-> <h- data-h=name>tb1</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"""</h->
+<h- data-h=str>            </h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=name>String</h-> <h- data-h=name>tb2</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"""</h->
+<h- data-h=str>            Hello, World!
+            </h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=name>String</h-> <h- data-h=name>tb3</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"""</h->
+<h- data-h=str>            This is a text block.
+            It can span multiple lines.
+            </h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=name>String</h-> <h- data-h=name>tb4</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"""</h->
+<h- data-h=str>            "Quotes" are fine in text blocks.
+            </h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=name>String</h-> <h- data-h=name>tb5</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"""</h->
+<h- data-h=str>            Text blocks can contain </h-><h- data-h=str_esc>\n</h-><h- data-h=str> escape sequences too.
+            </h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=name>String</h-> <h- data-h=name>tb6</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"""</h->
+<h- data-h=str>            Backslashes like </h-><h- data-h=str_esc>\\</h-><h- data-h=str> are also escapes.
+            </h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=name>String</h-> <h- data-h=name>tb7</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"""</h->
+<h- data-h=str>            Three quotes: </h-><h- data-h=str_esc>\"</h-><h- data-h=str>""
+            </h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=name>String</h-> <h- data-h=name>tb8</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"""</h->
+<h- data-h=str>            &lt;html&gt;
+                &lt;body&gt;
+                    &lt;p&gt;Hello, world&lt;/p&gt;
+                &lt;/body&gt;
+            &lt;/html&gt;
+            </h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
+<h- data-h=sym_brac>}</h->

@@ -60,6 +60,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/lang/diff.cpp
     src/main/cpp/lang/ebnf.cpp
     src/main/cpp/lang/html.cpp
+    src/main/cpp/lang/java.cpp
     src/main/cpp/lang/js.cpp
     src/main/cpp/lang/json.cpp
     src/main/cpp/lang/kotlin.cpp
