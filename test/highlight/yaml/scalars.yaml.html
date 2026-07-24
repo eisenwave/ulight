@@ -1,0 +1,18 @@
+<h- data-h=cmt_dlim>#</h-><h- data-h=cmt> YAML Scalar Styles Test</h->
+<h- data-h=mk_attr>plain</h-><h- data-h=sym_punc>:</h-> <h- data-h=str>hello world</h->
+<h- data-h=mk_attr>single</h-><h- data-h=sym_punc>:</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>single quoted</h-><h- data-h=str_dlim>'</h->
+<h- data-h=mk_attr>double</h-><h- data-h=sym_punc>:</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>double quoted with </h-><h- data-h=str_esc>\n</h-><h- data-h=str>escapes </h-><h- data-h=str_esc>\x41</h-><h- data-h=str_esc>\u0042</h-><h- data-h=str_dlim>"</h->
+<h- data-h=mk_attr>literal</h-><h- data-h=sym_punc>:</h-> <h- data-h=str_dlim>|</h->
+  <h- data-h=str>line one</h->
+  <h- data-h=str>line two</h->
+<h- data-h=mk_attr>folded</h-><h- data-h=sym_punc>:</h-> <h- data-h=str_dlim>&gt;</h->
+  <h- data-h=str>folded line one</h->
+  <h- data-h=str>folded line two</h->
+<h- data-h=mk_attr>literal_strip</h-><h- data-h=sym_punc>:</h-> <h- data-h=str_dlim>|</h-><h- data-h=num_deco>-</h->
+  <h- data-h=str>no trailing newline</h->
+<h- data-h=mk_attr>literal_keep</h-><h- data-h=sym_punc>:</h-> <h- data-h=str_dlim>|</h-><h- data-h=num_deco>+</h->
+  <h- data-h=str>trailing newlines preserved</h->
+
+<h- data-h=mk_attr>folded_with_indent</h-><h- data-h=sym_punc>:</h-> <h- data-h=str_dlim>&gt;</h-><h- data-h=num_deco>2</h->
+    <h- data-h=str>content starts here</h->
+    <h- data-h=str>more content</h->

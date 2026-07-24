@@ -145,6 +145,8 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("xml", ULIGHT_LANG_XML),
     make_lang_entry("xsd", ULIGHT_LANG_XML),
     make_lang_entry("xsl", ULIGHT_LANG_XML),
+    make_lang_entry("yaml", ULIGHT_LANG_YAML),
+    make_lang_entry("yml", ULIGHT_LANG_YAML),
     make_lang_entry("zsh", ULIGHT_LANG_BASH),
 };
 
@@ -178,6 +180,7 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("LLVM"),
     make_sv("Markdown"),
     make_sv("Java"),
+    make_sv("YAML"),
 };
 // clang-format on
 

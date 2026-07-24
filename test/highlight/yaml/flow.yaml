@@ -1,0 +1,7 @@
+# YAML Flow Style Test
+flow_sequence: [ one, two, three ]
+flow_mapping: { key: value, num: 42 }
+nested_flow: [ { a: 1 }, { b: 2 } ]
+empty_seq: []
+empty_map: {}
+mixed: [ plain, "double", 'single', { map: in_seq }, [ nested, seq ] ]

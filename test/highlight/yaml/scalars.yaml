@@ -1,0 +1,18 @@
+# YAML Scalar Styles Test
+plain: hello world
+single: 'single quoted'
+double: "double quoted with \nescapes \x41\u0042"
+literal: |
+  line one
+  line two
+folded: >
+  folded line one
+  folded line two
+literal_strip: |-
+  no trailing newline
+literal_keep: |+
+  trailing newlines preserved
+
+folded_with_indent: >2
+    content starts here
+    more content

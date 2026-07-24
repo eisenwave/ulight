@@ -72,6 +72,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/lang/rust.cpp
     src/main/cpp/lang/tex.cpp
     src/main/cpp/lang/xml.cpp
+    src/main/cpp/lang/yaml.cpp
 
     src/main/cpp/chars.cpp
     src/main/cpp/io.cpp

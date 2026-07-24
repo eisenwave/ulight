@@ -41,6 +41,7 @@ enum struct Lang : Underlying {
     txt = ULIGHT_LANG_TXT,
     typescript = ULIGHT_LANG_TYPESCRIPT,
     xml = ULIGHT_LANG_XML,
+    yaml = ULIGHT_LANG_YAML,
     none = ULIGHT_LANG_NONE,
 };
 
