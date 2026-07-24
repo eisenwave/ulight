@@ -38,6 +38,7 @@ Highlight_Fn highlight_css;
 Highlight_Fn highlight_diff;
 Highlight_Fn highlight_ebnf;
 Highlight_Fn highlight_html;
+Highlight_Fn highlight_java;
 Highlight_Fn highlight_javascript;
 Highlight_Fn highlight_json;
 Highlight_Fn highlight_jsonc;
@@ -89,6 +90,7 @@ inline Status highlight(
         result[ULIGHT_LANG_DIFF] = highlight_diff;
         result[ULIGHT_LANG_EBNF] = highlight_ebnf;
         result[ULIGHT_LANG_HTML] = highlight_html;
+        result[ULIGHT_LANG_JAVA] = highlight_java;
         result[ULIGHT_LANG_JAVASCRIPT] = highlight_javascript;
         result[ULIGHT_LANG_JSON] = highlight_json;
         result[ULIGHT_LANG_JSONC] = highlight_jsonc;

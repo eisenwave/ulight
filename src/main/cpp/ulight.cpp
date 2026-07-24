@@ -105,6 +105,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("htm", ULIGHT_LANG_HTML),
     make_lang_entry("html", ULIGHT_LANG_HTML),
     make_lang_entry("hxx", ULIGHT_LANG_CPP),
+    make_lang_entry("java", ULIGHT_LANG_JAVA),
     make_lang_entry("javascript", ULIGHT_LANG_JAVASCRIPT),
     make_lang_entry("js", ULIGHT_LANG_JAVASCRIPT),
     make_lang_entry("json", ULIGHT_LANG_JSON),
@@ -176,6 +177,7 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("Rust"),
     make_sv("LLVM"),
     make_sv("Markdown"),
+    make_sv("Java"),
 };
 // clang-format on
 
