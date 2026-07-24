@@ -257,6 +257,7 @@ private:
             || expect_block_comment() //
             || expect_string_or_character() //
             || expect_number() //
+            || expect_annotation() //
             || expect_symbol() //
             || expect_backtick_identifier() //
             || expect_identifier();
@@ -466,6 +467,82 @@ private:
             return true;
         }
         return false;
+    }
+
+    void consume_dotted_annotation_name()
+    {
+        while (true) {
+            const std::size_t seg_len = match_identifier(remainder);
+            if (seg_len == 0) {
+                break;
+            }
+            emit_and_advance(seg_len, Highlight_Type::name_attr);
+            if (remainder.empty() || remainder[0] != u8'.') {
+                break;
+            }
+            emit_and_advance(1, Highlight_Type::name_attr_delim);
+        }
+    }
+
+    void consume_multi_annotation()
+    {
+        ULIGHT_ASSERT(remainder.starts_with(u8'['));
+        emit_and_advance(1, Highlight_Type::symbol_square);
+        while (!remainder.empty() && remainder[0] != u8']') {
+            consume_whitespace();
+            if (remainder.empty() || remainder[0] == u8']') {
+                break;
+            }
+            if (match_identifier(remainder)) {
+                consume_dotted_annotation_name();
+            }
+            else {
+                emit_and_advance(1, Highlight_Type::error);
+            }
+        }
+        if (!remainder.empty() && remainder[0] == u8']') {
+            emit_and_advance(1, Highlight_Type::symbol_square);
+        }
+    }
+
+    bool expect_annotation()
+    {
+        // https://kotlinlang.org/spec/syntax-and-grammar.html#grammar-rule-annotation
+        if (remainder.empty() || remainder[0] != u8'@') {
+            return false;
+        }
+        const std::u8string_view after_at = remainder.substr(1);
+
+        // @[...]
+        if (!after_at.empty() && after_at[0] == u8'[') {
+            emit_and_advance(1, Highlight_Type::name_attr_delim);
+            consume_multi_annotation();
+            return true;
+        }
+
+        const std::size_t id_len = match_identifier(after_at);
+        if (id_len == 0) {
+            return false;
+        }
+
+        // @identifier...
+        emit_and_advance(1, Highlight_Type::name_attr_delim);
+        consume_dotted_annotation_name();
+
+        // @identifier:
+        if (!remainder.empty() && remainder[0] == u8':') {
+            emit_and_advance(1, Highlight_Type::name_attr_delim);
+
+            // @identifier:[...]
+            if (!remainder.empty() && remainder[0] == u8'[') {
+                consume_multi_annotation();
+            }
+            else {
+                // @identifier:AnnotationName
+                consume_dotted_annotation_name();
+            }
+        }
+        return true;
     }
 
     bool expect_symbol()
