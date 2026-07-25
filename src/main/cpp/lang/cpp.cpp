@@ -654,6 +654,7 @@ public:
             const bool any_matched = expect_whitespace() //
                 || expect_line_comment() //
                 || expect_block_comment() //
+                || expect_directive() //
                 || expect_string_literal() //
                 || expect_character_literal() //
                 || expect_pp_number() //
@@ -1009,15 +1010,7 @@ public:
     {
         if (const std::optional<Token_Type> op
             = match_preprocessing_op_or_punc(remainder(), c_or_cpp)) {
-            const bool possible_directive = op == Token_Type::pound || op == Token_Type::pound_alt;
-            if (fresh_line && possible_directive) {
-                if (const std::size_t directive_length
-                    = match_preprocessing_directive(remainder(), c_or_cpp)) {
-                    emit_and_advance(directive_length, Highlight_Type::name_macro);
-                    fresh_line = true;
-                    return true;
-                }
-            }
+            ULIGHT_ASSERT(!fresh_line || (op != Token_Type::pound && op != Token_Type::pound_alt));
             const std::size_t op_length = cpp_token_type_length(*op);
             const Highlight_Type op_highlight = cpp_token_type_highlight(*op);
             emit_and_advance(op_length, op_highlight);
@@ -1025,6 +1018,60 @@ public:
             return true;
         }
         return false;
+    }
+
+    bool expect_directive()
+    {
+        if (!fresh_line) {
+            return false;
+        }
+        const std::optional<Token_Type> op = match_preprocessing_op_or_punc(remainder(), c_or_cpp);
+        if (op != Token_Type::pound && op != Token_Type::pound_alt) {
+            return false;
+        }
+
+        const std::size_t op_length = cpp_token_type_length(*op);
+        emit_and_advance(op_length, Highlight_Type::name_macro_delim);
+
+        // Consume whitespace between `#` and the directive name.
+        const std::size_t white = match_whitespace(remainder());
+        advance(white);
+
+        const std::size_t id_length = match_identifier(remainder());
+        if (id_length == 0) {
+            return true;
+        }
+        const std::u8string_view directive_name = remainder().substr(0, id_length);
+        emit_and_advance(id_length, Highlight_Type::name_macro);
+
+        // For #include, highlight a `<...>` header name as a string.
+        if (directive_name == u8"include") {
+            const std::size_t w2 = match_whitespace(remainder());
+            advance(w2);
+            if (remainder().starts_with(u8'<')) {
+                emit_and_advance(1, Highlight_Type::string_delim);
+                const std::u8string_view rem = remainder();
+                const std::size_t end = rem.find_first_of(u8">\r\n");
+                if (end == std::u8string_view::npos) {
+                    if (!rem.empty()) {
+                        emit_and_advance(rem.length(), Highlight_Type::string);
+                    }
+                }
+                else if (rem[end] == u8'>') {
+                    if (end != 0) {
+                        emit_and_advance(end, Highlight_Type::string);
+                    }
+                    emit_and_advance(1, Highlight_Type::string_delim);
+                }
+                else {
+                    if (end != 0) {
+                        emit_and_advance(end, Highlight_Type::string);
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     bool expect_non_whitespace()
