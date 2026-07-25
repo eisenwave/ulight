@@ -121,7 +121,7 @@ and a stable numeric ID whose value can be found in `include/ulight.h`.
 | EBNF | `ebnf` | `ULIGHT_LANG_EBNF` |
 | HTML | `htm`, `html` | `ULIGHT_LANG_HTML` |
 | Java | `java` | `ULIGHT_LANG_JAVA` |
-| JavaScript | `javascript`, `js`, `jsx` | `ULIGHT_LANG_JAVASCRIPT` |
+| JavaScript | `cjs`, `javascript`, `js`, `jsx`, `mjs` | `ULIGHT_LANG_JAVASCRIPT` |
 | JSON | `json` | `ULIGHT_LANG_JSON` |
 | JSON with Comments | `jsonc` | `ULIGHT_LANG_JSONC` |
 | LaTeX | `latex` | `ULIGHT_LANG_LATEX` |
