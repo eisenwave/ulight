@@ -135,7 +135,7 @@ and a stable numeric ID whose value can be found in `include/ulight.h`.
 | Plaintext | `plaintext`, `text`, `txt` | `ULIGHT_LANG_TXT` |
 | TypeScript | `ts`, `tsx`, `typescript` | `ULIGHT_LANG_TYPESCRIPT` |
 | XML | `atom`, `mathml`, `mml`, `plist`, `rss`, `svg`, `xbj`, `xhtml`, `xml`, `xsd`, `xsl` | `ULIGHT_LANG_XML` |
-| YAML | `yaml` | `ULIGHT_LANG_YAML` |
+| YAML | `yaml`, `yml` | `ULIGHT_LANG_YAML` |
 
 The long-term plan is to get support for at least 100 languages.
 This may sound like a lot, but considering that many are similar to one another
