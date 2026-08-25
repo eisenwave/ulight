@@ -54,7 +54,7 @@ typedef struct ulight_u8string_view {
 enum {
     /// @brief The amount of unique languages supported,
     /// including `ULIGHT_LANG_NONE`.
-    ULIGHT_LANG_COUNT = 26
+    ULIGHT_LANG_COUNT = 27
 };
 
 /// @brief A language supported by ulight for syntax highlighting.
@@ -67,6 +67,8 @@ typedef enum ulight_lang {
     ULIGHT_LANG_COWEL = 1,
     /// @brief C++.
     ULIGHT_LANG_CPP = 2,
+    /// @brief C#.
+    ULIGHT_LANG_CSHARP = 26,
     /// @brief CSS.
     ULIGHT_LANG_CSS = 5,
     /// @brief Unidiff, i.e. GNU `diff` output in Unified Format.

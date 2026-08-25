@@ -56,6 +56,7 @@ set(LIBRARY_SOURCES
     src/main/cpp/lang/bash.cpp
     src/main/cpp/lang/cowel.cpp
     src/main/cpp/lang/cpp.cpp
+    src/main/cpp/lang/csharp.cpp
     src/main/cpp/lang/css.cpp
     src/main/cpp/lang/diff.cpp
     src/main/cpp/lang/ebnf.cpp

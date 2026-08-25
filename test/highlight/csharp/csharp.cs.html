@@ -1,0 +1,286 @@
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> C# Syntax Highlighting Stress Test</h->
+
+<h- data-h=kw>using</h-> <h- data-h=name>System</h-><h- data-h=sym_punc>;</h->
+<h- data-h=kw>using</h-> <h- data-h=name>System</h-><h- data-h=sym_punc>.</h-><h- data-h=name>Collections</h-><h- data-h=sym_punc>.</h-><h- data-h=name>Generic</h-><h- data-h=sym_punc>;</h->
+<h- data-h=kw>using</h-> <h- data-h=name>System</h-><h- data-h=sym_punc>.</h-><h- data-h=name>Linq</h-><h- data-h=sym_punc>;</h->
+<h- data-h=kw>using</h-> <h- data-h=kw>static</h-> <h- data-h=name>System</h-><h- data-h=sym_punc>.</h-><h- data-h=name>Math</h-><h- data-h=sym_punc>;</h->
+
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>/ &lt;summary&gt;</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>/ A comprehensive test of C# syntax highlighting.</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>/ This XML doc comment tests documentation comments.</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>/ &lt;/summary&gt;</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>/ &lt;typeparam name="T"&gt;A type parameter&lt;/typeparam&gt;</h->
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt>/ &lt;seealso cref="List{T}"/&gt;</h->
+<h- data-h=kw>public</h-> <h- data-h=kw>class</h-> <h- data-h=name>CSharp</h-><h- data-h=sym_op>&lt;</h-><h- data-h=name>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>where</h-> <h- data-h=name>T</h-> <h- data-h=sym_punc>:</h-> <h- data-h=name>IComparable</h-><h- data-h=sym_op>&lt;</h-><h- data-h=name>T</h-><h- data-h=sym_op>&gt;</h->
+<h- data-h=sym_brac>{</h->
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Primitive declarations and literals</h->
+    <h- data-h=kw>private</h-> <h- data-h=kw_type>bool</h-> <h- data-h=name>flag</h-> <h- data-h=sym_punc>=</h-> <h- data-h=bool>true</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>protected</h-> <h- data-h=kw_type>byte</h-> <h- data-h=name>b</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>255</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>short</h-> <h- data-h=name>s</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>32767</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>int</h-> <h- data-h=name>i</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>2147483647</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>long</h-> <h- data-h=name>l</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>9223372036854775807</h-><h- data-h=num_deco>L</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>float</h-> <h- data-h=name>f</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>3</h-><h- data-h=num_dlim>.</h-><h- data-h=num>14</h-><h- data-h=num_deco>f</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>double</h-> <h- data-h=name>d</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>2</h-><h- data-h=num_dlim>.</h-><h- data-h=num>718281828</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>decimal</h-> <h- data-h=name>m</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-><h- data-h=num_dlim>.</h-><h- data-h=num>2345</h-><h- data-h=num_deco>m</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>c</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str>A</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>escaped</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str_esc>\n</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>hex_escaped</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str_esc>\x41</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>char</h-> <h- data-h=name>unicode_escaped</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str_esc>\u0048</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>str</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Hello, World!</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>object</h-> <h- data-h=name>obj</h-> <h- data-h=sym_punc>=</h-> <h- data-h=null>null</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Unsigned integer types</h->
+    <h- data-h=kw_type>byte</h-> <h- data-h=name>ub</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>255</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>sbyte</h-> <h- data-h=name>sb</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_op>-</h-><h- data-h=num>128</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>ushort</h-> <h- data-h=name>us</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>65535</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>uint</h-> <h- data-h=name>ui</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>4294967295</h-><h- data-h=num_deco>u</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>ulong</h-> <h- data-h=name>ul</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>18446744073709551615</h-><h- data-h=num_deco>UL</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>nint</h-> <h- data-h=name>ni</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>42</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>nuint</h-> <h- data-h=name>nu</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>42</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> String literals</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>empty</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>hello</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Hello, World!</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>escaped_str</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Tab:</h-><h- data-h=str_esc>\t</h-><h- data-h=str> Newline:</h-><h- data-h=str_esc>\n</h-><h- data-h=str> Quote:</h-><h- data-h=str_esc>\"</h-><h- data-h=str> Backslash:</h-><h- data-h=str_esc>\\</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>unicode_escape</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_esc>\u0048</h-><h- data-h=str_esc>\u0065</h-><h- data-h=str_esc>\u006c</h-><h- data-h=str_esc>\u006c</h-><h- data-h=str_esc>\u006f</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>hex_escape</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str_esc>\x48</h-><h- data-h=str_esc>\x65</h-><h- data-h=str_esc>\x6c</h-><h- data-h=str_esc>\x6c</h-><h- data-h=str_esc>\x6f</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Verbatim strings</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>verbatim</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>@"</h-><h- data-h=str>C:\Users\name\file.txt</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>verbatim_multiline</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>@"</h-><h- data-h=str>Line 1
+Line 2
+</h-><h- data-h=str_esc>""</h-><h- data-h=str>Quoted</h-><h- data-h=str_esc>""</h-><h- data-h=str> text</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Raw string literals</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>raw_single</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"""</h-><h- data-h=str>This is a raw string</h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>raw_multi</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"""</h->
+<h- data-h=str>        This is a multi-line
+        raw string literal.
+        "Quotes" are fine.
+        </h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Interpolated strings</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>interpolated</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Hello, </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=str>name</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str>!</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>interpolated_verbatim</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$@</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Path: </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=str>path</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str>\file</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>interpolated_at_dollar</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>@$</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Path: </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=str>path</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str>\file</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>interpolated_escaped</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str_esc>{{</h-><h- data-h=str>Not an expression</h-><h- data-h=str_esc>}}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> UTF-8 string literals</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>utf8_str</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Hello</h-><h- data-h=str_dlim>"</h-><h- data-h=str_deco>u8</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>utf8_verbatim</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>@"</h-><h- data-h=str>Hello</h-><h- data-h=str_dlim>"</h-><h- data-h=str_deco>u8</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Numeric literals</h->
+    <h- data-h=kw_type>int</h-> <h- data-h=name>dec</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1234567890</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>int</h-> <h- data-h=name>dec_underscore</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-><h- data-h=num_dlim>_</h-><h- data-h=num>000</h-><h- data-h=num_dlim>_</h-><h- data-h=num>000</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>int</h-> <h- data-h=name>hex</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0x</h-><h- data-h=num>ff</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>int</h-> <h- data-h=name>hex_underscore</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0x</h-><h- data-h=num>Dead</h-><h- data-h=num_dlim>_</h-><h- data-h=num>Cafe</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>int</h-> <h- data-h=name>binary</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0b</h-><h- data-h=num>1010</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>int</h-> <h- data-h=name>binary_underscore</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0b</h-><h- data-h=num>1010</h-><h- data-h=num_dlim>_</h-><h- data-h=num>0101</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>long</h-> <h- data-h=name>long_val</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>100</h-><h- data-h=num_deco>L</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>long</h-> <h- data-h=name>hex_long</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0x</h-><h- data-h=num>FFFF</h-><h- data-h=num_dlim>_</h-><h- data-h=num>FFFF</h-><h- data-h=num_dlim>_</h-><h- data-h=num>FFFF</h-><h- data-h=num_dlim>_</h-><h- data-h=num>FFFF</h-><h- data-h=num_deco>L</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>uint</h-> <h- data-h=name>uint_val</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>100</h-><h- data-h=num_deco>u</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>ulong</h-> <h- data-h=name>ulong_val</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>100</h-><h- data-h=num_deco>UL</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>float</h-> <h- data-h=name>float_val</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h-><h- data-h=num_dlim>.</h-><h- data-h=num>5</h-><h- data-h=num_deco>f</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>float</h-> <h- data-h=name>float_exp</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-><h- data-h=num_dlim>.</h-><h- data-h=num>5</h-><h- data-h=num_dlim>e-</h-><h- data-h=num>10</h-><h- data-h=num_deco>f</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>double</h-> <h- data-h=name>double_val</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h-><h- data-h=num_dlim>.</h-><h- data-h=num>5</h-><h- data-h=num_deco>d</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>double</h-> <h- data-h=name>double_exp</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-><h- data-h=num_dlim>.</h-><h- data-h=num>5</h-><h- data-h=num_dlim>e</h-><h- data-h=num>10</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>double</h-> <h- data-h=name>hex_double</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num_deco>0x</h-><h- data-h=num>1</h-><h- data-h=sym_punc>.</h-><h- data-h=name>fffffeP</h-><h- data-h=sym_op>+</h-><h- data-h=num>127</h-><h- data-h=num_deco>d</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>decimal</h-> <h- data-h=name>decimal_val</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-><h- data-h=num_dlim>.</h-><h- data-h=num>2345</h-><h- data-h=num_deco>m</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Array types</h->
+    <h- data-h=kw_type>int</h-><h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>]</h-> <h- data-h=name>int_array</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw>new</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_sqr>[</h-><h- data-h=num>10</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-><h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>]</h-> <h- data-h=name>matrix</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw>new</h-> <h- data-h=kw_type>string</h-><h- data-h=sym_sqr>[</h-><h- data-h=num>5</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_sqr>[</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Nullable value types</h->
+    <h- data-h=kw_type>int</h-><h- data-h=sym_op>?</h-> <h- data-h=name>nullable_int</h-> <h- data-h=sym_punc>=</h-> <h- data-h=null>null</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Null coalescing</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>coalesce</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name>nullable_str</h-> <h- data-h=sym_op>??</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>default</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>nullable_str</h-> <h- data-h=sym_op>??=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>assigned</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Range operator</h->
+    <h- data-h=kw>var</h-> <h- data-h=name>range</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-><h- data-h=sym_op>..</h-><h- data-h=num>10</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>var</h-> <h- data-h=name>range_from_end</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_op>^</h-><h- data-h=num>1</h-><h- data-h=sym_op>..</h-><h- data-h=sym_op>^</h-><h- data-h=num>0</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Lambda expressions</h->
+    <h- data-h=name>Func</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=name>lambda</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name>x</h-> <h- data-h=sym_punc>=&gt;</h-> <h- data-h=name>x</h-> <h- data-h=sym_op>*</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Switch expression</h->
+    <h- data-h=kw>var</h-> <h- data-h=name>result</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name>x</h-> <h- data-h=kw_ctrl>switch</h->
+    <h- data-h=sym_brac>{</h->
+        <h- data-h=num>1</h-> <h- data-h=sym_punc>=&gt;</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>one</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h->
+        <h- data-h=num>2</h-> <h- data-h=sym_punc>=&gt;</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>two</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>,</h->
+        <h- data-h=kw>_</h-> <h- data-h=sym_punc>=&gt;</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>other</h-><h- data-h=str_dlim>"</h->
+    <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Pattern matching</h->
+    <h- data-h=kw_ctrl>if</h-> <h- data-h=sym_par>(</h-><h- data-h=name>obj</h-> <h- data-h=kw>is</h-> <h- data-h=kw_type>string</h-> <h- data-h=name>s</h-> <h- data-h=sym_op>&amp;&amp;</h-> <h- data-h=name>s</h-><h- data-h=sym_punc>.</h-><h- data-h=name>Length</h-> <h- data-h=sym_op>&gt;</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=sym_brac>}</h->
+    <h- data-h=kw_ctrl>if</h-> <h- data-h=sym_par>(</h-><h- data-h=name>obj</h-> <h- data-h=kw>is</h-> <h- data-h=kw_type>int</h-> <h- data-h=kw>or</h-> <h- data-h=kw_type>long</h-> <h- data-h=kw>or</h-> <h- data-h=kw_type>float</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=sym_brac>}</h->
+    <h- data-h=kw_ctrl>if</h-> <h- data-h=sym_par>(</h-><h- data-h=name>obj</h-> <h- data-h=kw>is</h-> <h- data-h=kw>not</h-> <h- data-h=null>null</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=sym_brac>}</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Method with modifiers</h->
+    <h- data-h=kw>public</h-> <h- data-h=kw>static</h-> <h- data-h=kw>async</h-> <h- data-h=name>Task</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=name>MethodAsync</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=name>x</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=&gt;</h-> <h- data-h=kw>await</h-> <h- data-h=name>Task</h-><h- data-h=sym_punc>.</h-><h- data-h=name>FromResult</h-><h- data-h=sym_par>(</h-><h- data-h=name>x</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Control flow</h->
+    <h- data-h=kw>public</h-> <h- data-h=kw_type>int</h-> <h- data-h=name>ControlDemo</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=name>x</h-><h- data-h=sym_par>)</h->
+    <h- data-h=sym_brac>{</h->
+        <h- data-h=kw_ctrl>if</h-> <h- data-h=sym_par>(</h-><h- data-h=name>x</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h->
+        <h- data-h=sym_brac>{</h->
+            <h- data-h=kw_ctrl>return</h-> <h- data-h=sym_op>-</h-><h- data-h=num>1</h-><h- data-h=sym_punc>;</h->
+        <h- data-h=sym_brac>}</h->
+        <h- data-h=kw_ctrl>else</h-> <h- data-h=kw_ctrl>if</h-> <h- data-h=sym_par>(</h-><h- data-h=name>x</h-> <h- data-h=sym_op>==</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h->
+        <h- data-h=sym_brac>{</h->
+            <h- data-h=kw_ctrl>return</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h->
+        <h- data-h=sym_brac>}</h->
+        <h- data-h=kw_ctrl>else</h->
+        <h- data-h=sym_brac>{</h->
+            <h- data-h=kw_ctrl>for</h-> <h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=name>j</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h-> <h- data-h=name>j</h-> <h- data-h=sym_op>&lt;</h-> <h- data-h=name>x</h-><h- data-h=sym_punc>;</h-> <h- data-h=name>j</h-><h- data-h=sym_op>++</h-><h- data-h=sym_par>)</h->
+            <h- data-h=sym_brac>{</h->
+                <h- data-h=name>Console</h-><h- data-h=sym_punc>.</h-><h- data-h=name>WriteLine</h-><h- data-h=sym_par>(</h-><h- data-h=name>j</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+            <h- data-h=sym_brac>}</h->
+
+            <h- data-h=kw_ctrl>while</h-> <h- data-h=sym_par>(</h-><h- data-h=name>x</h-> <h- data-h=sym_op>&gt;</h-> <h- data-h=num>10</h-><h- data-h=sym_par>)</h->
+            <h- data-h=sym_brac>{</h->
+                <h- data-h=name>x</h-> <h- data-h=sym_op>/=</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>;</h->
+            <h- data-h=sym_brac>}</h->
+
+            <h- data-h=kw_ctrl>do</h->
+            <h- data-h=sym_brac>{</h->
+                <h- data-h=name>x</h-><h- data-h=sym_op>--</h-><h- data-h=sym_punc>;</h->
+            <h- data-h=sym_brac>}</h-> <h- data-h=kw_ctrl>while</h-> <h- data-h=sym_par>(</h-><h- data-h=name>x</h-> <h- data-h=sym_op>&gt;</h-> <h- data-h=num>0</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+
+            <h- data-h=kw_ctrl>foreach</h-> <h- data-h=sym_par>(</h-><h- data-h=kw>var</h-> <h- data-h=name>item</h-> <h- data-h=kw_ctrl>in</h-> <h- data-h=name>items</h-><h- data-h=sym_par>)</h->
+            <h- data-h=sym_brac>{</h->
+                <h- data-h=name>Process</h-><h- data-h=sym_par>(</h-><h- data-h=name>item</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+            <h- data-h=sym_brac>}</h->
+        <h- data-h=sym_brac>}</h->
+
+        <h- data-h=kw_ctrl>switch</h-> <h- data-h=sym_par>(</h-><h- data-h=name>x</h-><h- data-h=sym_par>)</h->
+        <h- data-h=sym_brac>{</h->
+            <h- data-h=kw_ctrl>case</h-> <h- data-h=num>1</h-><h- data-h=sym_punc>:</h->
+                <h- data-h=kw_ctrl>goto</h-> <h- data-h=kw_ctrl>case</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>;</h->
+            <h- data-h=kw_ctrl>case</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>:</h->
+                <h- data-h=kw_ctrl>return</h-> <h- data-h=num>42</h-><h- data-h=sym_punc>;</h->
+            <h- data-h=kw_ctrl>default</h-><h- data-h=sym_punc>:</h->
+                <h- data-h=kw_ctrl>break</h-><h- data-h=sym_punc>;</h->
+        <h- data-h=sym_brac>}</h->
+
+        <h- data-h=kw_ctrl>try</h->
+        <h- data-h=sym_brac>{</h->
+            <h- data-h=name>DangerousOperation</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+        <h- data-h=sym_brac>}</h->
+        <h- data-h=kw_ctrl>catch</h-> <h- data-h=sym_par>(</h-><h- data-h=name>Exception</h-> <h- data-h=name>ex</h-><h- data-h=sym_par>)</h-> <h- data-h=kw>when</h-> <h- data-h=sym_par>(</h-><h- data-h=name>ex</h-><h- data-h=sym_punc>.</h-><h- data-h=name>Message</h-> <h- data-h=sym_op>!=</h-> <h- data-h=null>null</h-><h- data-h=sym_par>)</h->
+        <h- data-h=sym_brac>{</h->
+            <h- data-h=name>Console</h-><h- data-h=sym_punc>.</h-><h- data-h=name>WriteLine</h-><h- data-h=sym_par>(</h-><h- data-h=name>ex</h-><h- data-h=sym_punc>.</h-><h- data-h=name>Message</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+        <h- data-h=sym_brac>}</h->
+        <h- data-h=kw_ctrl>finally</h->
+        <h- data-h=sym_brac>{</h->
+            <h- data-h=name>Cleanup</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+        <h- data-h=sym_brac>}</h->
+
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=num>0</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=sym_brac>}</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> LINQ query expression</h->
+    <h- data-h=kw>public</h-> <h- data-h=name>IEnumerable</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=name>QueryDemo</h-><h- data-h=sym_par>(</h-><h- data-h=name>List</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=name>numbers</h-><h- data-h=sym_par>)</h->
+    <h- data-h=sym_brac>{</h->
+        <h- data-h=kw_ctrl>return</h-> <h- data-h=kw>from</h-> <h- data-h=name>n</h-> <h- data-h=kw_ctrl>in</h-> <h- data-h=name>numbers</h->
+               <h- data-h=kw>where</h-> <h- data-h=name>n</h-> <h- data-h=sym_op>&gt;</h-> <h- data-h=num>0</h->
+               <h- data-h=kw>orderby</h-> <h- data-h=name>n</h-> <h- data-h=kw>descending</h->
+               <h- data-h=kw>select</h-> <h- data-h=name>n</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=sym_brac>}</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Properties</h->
+    <h- data-h=kw>public</h-> <h- data-h=kw_type>string</h-> <h- data-h=name>Name</h-> <h- data-h=sym_brac>{</h-> <h- data-h=kw>get</h-><h- data-h=sym_punc>;</h-> <h- data-h=kw>set</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h->
+    <h- data-h=kw>public</h-> <h- data-h=kw_type>string</h-> <h- data-h=name>ReadOnlyName</h-> <h- data-h=sym_brac>{</h-> <h- data-h=kw>get</h-><h- data-h=sym_punc>;</h-> <h- data-h=kw>init</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h->
+    <h- data-h=kw>public</h-> <h- data-h=kw_type>int</h-> <h- data-h=name>Computed</h-> <h- data-h=sym_punc>=&gt;</h-> <h- data-h=num>42</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Events</h->
+    <h- data-h=kw>public</h-> <h- data-h=kw>event</h-> <h- data-h=name>EventHandler</h-> <h- data-h=name>Changed</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Indexer</h->
+    <h- data-h=kw>public</h-> <h- data-h=kw_type>string</h-> <h- data-h=kw_this>this</h-><h- data-h=sym_sqr>[</h-><h- data-h=kw_type>int</h-> <h- data-h=name>index</h-><h- data-h=sym_sqr>]</h->
+    <h- data-h=sym_brac>{</h->
+        <h- data-h=kw>get</h-> <h- data-h=sym_punc>=&gt;</h-> <h- data-h=name>_items</h-><h- data-h=sym_sqr>[</h-><h- data-h=name>index</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+        <h- data-h=kw>set</h-> <h- data-h=sym_punc>=&gt;</h-> <h- data-h=name>_items</h-><h- data-h=sym_sqr>[</h-><h- data-h=name>index</h-><h- data-h=sym_sqr>]</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw>value</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=sym_brac>}</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Operator overloading</h->
+    <h- data-h=kw>public</h-> <h- data-h=kw>static</h-> <h- data-h=name>CSharp</h-><h- data-h=sym_op>&lt;</h-><h- data-h=name>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=kw>operator</h-> <h- data-h=sym_op>+</h-><h- data-h=sym_par>(</h-><h- data-h=name>CSharp</h-><h- data-h=sym_op>&lt;</h-><h- data-h=name>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=name>a</h-><h- data-h=sym_punc>,</h-> <h- data-h=name>CSharp</h-><h- data-h=sym_op>&lt;</h-><h- data-h=name>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=name>b</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=&gt;</h-> <h- data-h=name>a</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Deconstructor</h->
+    <h- data-h=kw>public</h-> <h- data-h=kw_type>void</h-> <h- data-h=name>Deconstruct</h-><h- data-h=sym_par>(</h-><h- data-h=kw>out</h-> <h- data-h=kw_type>int</h-> <h- data-h=name>x</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw>out</h-> <h- data-h=kw_type>int</h-> <h- data-h=name>y</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name>x</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>1</h-><h- data-h=sym_punc>;</h-> <h- data-h=name>y</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>2</h-><h- data-h=sym_punc>;</h-> <h- data-h=sym_brac>}</h->
+    <h- data-h=kw>var</h-> <h- data-h=sym_par>(</h-><h- data-h=name>a</h-><h- data-h=sym_punc>,</h-> <h- data-h=name>b</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name>point</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Record declaration</h->
+    <h- data-h=kw>public</h-> <h- data-h=name>record</h-> <h- data-h=name>Point</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-> <h- data-h=name>X</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-> <h- data-h=name>Y</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Attributes</h->
+    <h- data-h=sym_sqr>[</h-><h- data-h=name>Obsolete</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Use NewMethod instead</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_sqr>]</h->
+    <h- data-h=sym_sqr>[</h-><h- data-h=name>MethodImpl</h-><h- data-h=sym_par>(</h-><h- data-h=name>MethodImplOptions</h-><h- data-h=sym_punc>.</h-><h- data-h=name>AggressiveInlining</h-><h- data-h=sym_par>)</h-><h- data-h=sym_sqr>]</h->
+    <h- data-h=kw>public</h-> <h- data-h=kw_type>void</h-> <h- data-h=name>OldMethod</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=sym_brac>}</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Unsafe code</h->
+    <h- data-h=kw>unsafe</h-> <h- data-h=kw_type>void</h-> <h- data-h=name>UnsafeMethod</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h->
+    <h- data-h=sym_brac>{</h->
+        <h- data-h=kw_type>int</h-> <h- data-h=name>x</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>42</h-><h- data-h=sym_punc>;</h->
+        <h- data-h=kw_type>int</h-><h- data-h=sym_op>*</h-> <h- data-h=name>ptr</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_op>&amp;</h-><h- data-h=name>x</h-><h- data-h=sym_punc>;</h->
+        <h- data-h=sym_op>*</h-><h- data-h=name>ptr</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>100</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=sym_brac>}</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Using declaration</h->
+    <h- data-h=kw>using</h-> <h- data-h=kw>var</h-> <h- data-h=kw>file</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw>new</h-> <h- data-h=name>StreamReader</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>test.txt</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Lock statement</h->
+    <h- data-h=kw>lock</h-> <h- data-h=sym_par>(</h-><h- data-h=name>_lockObject</h-><h- data-h=sym_par>)</h->
+    <h- data-h=sym_brac>{</h->
+        <h- data-h=name>_counter</h-><h- data-h=sym_op>++</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=sym_brac>}</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> With expression</h->
+    <h- data-h=kw>var</h-> <h- data-h=name>newPoint</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name>point</h-> <h- data-h=kw>with</h-> <h- data-h=sym_brac>{</h-> <h- data-h=name>X</h-> <h- data-h=sym_punc>=</h-> <h- data-h=num>10</h-> <h- data-h=sym_brac>}</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Target-typed new</h->
+    <h- data-h=name>CSharp</h-><h- data-h=sym_op>&lt;</h-><h- data-h=name>T</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=name>instance</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw>new</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Nameof expression</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>name</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw>nameof</h-><h- data-h=sym_par>(</h-><h- data-h=name>MethodAsync</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Sizeof expression</h->
+    <h- data-h=kw_type>int</h-> <h- data-h=name>size</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw>sizeof</h-><h- data-h=sym_par>(</h-><h- data-h=kw_type>int</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Typeof expression</h->
+    <h- data-h=name>Type</h-> <h- data-h=name>type</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw>typeof</h-><h- data-h=sym_par>(</h-><h- data-h=name>CSharp</h-><h- data-h=sym_op>&lt;</h-><h- data-h=name>T</h-><h- data-h=sym_op>&gt;</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Default values</h->
+    <h- data-h=kw_type>int</h-> <h- data-h=name>defaultInt</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw_ctrl>default</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=name>T</h-> <h- data-h=name>defaultT</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw_ctrl>default</h-><h- data-h=sym_par>(</h-><h- data-h=name>T</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Stackalloc</h->
+    <h- data-h=name>Span</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=name>span</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw>stackalloc</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_sqr>[</h-><h- data-h=num>10</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Checked/unchecked</h->
+    <h- data-h=kw>checked</h->
+    <h- data-h=sym_brac>{</h->
+        <h- data-h=kw_type>int</h-> <h- data-h=name>result</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name>x</h-> <h- data-h=sym_op>+</h-> <h- data-h=name>y</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=sym_brac>}</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Is expression</h->
+    <h- data-h=kw_ctrl>if</h-> <h- data-h=sym_par>(</h-><h- data-h=name>obj</h-> <h- data-h=kw>is</h-> <h- data-h=kw_type>string</h-><h- data-h=sym_par>)</h-> <h- data-h=sym_brac>{</h-> <h- data-h=sym_brac>}</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> As expression</h->
+    <h- data-h=kw>var</h-> <h- data-h=name>str2</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name>obj</h-> <h- data-h=kw>as</h-> <h- data-h=kw_type>string</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Ref local</h->
+    <h- data-h=kw>ref</h-> <h- data-h=kw_type>int</h-> <h- data-h=name>refLocal</h-> <h- data-h=sym_punc>=</h-> <h- data-h=kw>ref</h-> <h- data-h=name>array</h-><h- data-h=sym_sqr>[</h-><h- data-h=num>0</h-><h- data-h=sym_sqr>]</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Discard</h->
+    <h- data-h=kw>_</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name>ComputeSomething</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Function pointer (unsafe)</h->
+    <h- data-h=kw>delegate</h-><h- data-h=sym_op>*</h-><h- data-h=sym_op>&lt;</h-><h- data-h=kw_type>int</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_punc>,</h-> <h- data-h=kw_type>int</h-><h- data-h=sym_op>&gt;</h-> <h- data-h=name>funcPtr</h-> <h- data-h=sym_punc>=</h-> <h- data-h=sym_op>&amp;</h-><h- data-h=name>Add</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Escaped identifiers</h->
+    <h- data-h=kw>var</h-> <h- data-h=name_attr_dlim>@</h-><h- data-h=name>class</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>escaped</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw>var</h-> <h- data-h=name_attr_dlim>@</h-><h- data-h=name>for</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>also escaped</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+<h- data-h=sym_brac>}</h->

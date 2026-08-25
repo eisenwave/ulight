@@ -116,6 +116,7 @@ and a stable numeric ID whose value can be found in `include/ulight.h`.
 | C | `c`, `h` | `ULIGHT_LANG_C` |
 | COWEL | `cow`, `cowel` | `ULIGHT_LANG_COWEL` |
 | C++ | `c++`, `cc`, `cplusplus`, `cpp`, `cxx`, `h++`, `hpp` | `ULIGHT_LANG_CPP` |
+| C# | `c#`, `cs`, `csharp` | `ULIGHT_LANG_CSHARP` |
 | CSS | `css` | `ULIGHT_LANG_CSS` |
 | Diff | `diff`, `patch` | `ULIGHT_LANG_DIFF` |
 | EBNF | `ebnf` | `ULIGHT_LANG_EBNF` |

@@ -21,6 +21,7 @@ enum struct Lang : Underlying {
     c = ULIGHT_LANG_C,
     cowel = ULIGHT_LANG_COWEL,
     cpp = ULIGHT_LANG_CPP,
+    csharp = ULIGHT_LANG_CSHARP,
     css = ULIGHT_LANG_CSS,
     diff = ULIGHT_LANG_DIFF,
     ebnf = ULIGHT_LANG_EBNF,

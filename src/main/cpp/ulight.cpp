@@ -88,6 +88,7 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("atom", ULIGHT_LANG_XML),
     make_lang_entry("bash", ULIGHT_LANG_BASH),
     make_lang_entry("c", ULIGHT_LANG_C),
+    make_lang_entry("c#", ULIGHT_LANG_CSHARP),
     make_lang_entry("c++", ULIGHT_LANG_CPP),
     make_lang_entry("cc", ULIGHT_LANG_CPP),
     make_lang_entry("cjs", ULIGHT_LANG_JAVASCRIPT),
@@ -95,6 +96,8 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("cowel", ULIGHT_LANG_COWEL),
     make_lang_entry("cplusplus", ULIGHT_LANG_CPP),
     make_lang_entry("cpp", ULIGHT_LANG_CPP),
+    make_lang_entry("cs", ULIGHT_LANG_CSHARP),
+    make_lang_entry("csharp", ULIGHT_LANG_CSHARP),
     make_lang_entry("css", ULIGHT_LANG_CSS),
     make_lang_entry("cxx", ULIGHT_LANG_CPP),
     make_lang_entry("diff", ULIGHT_LANG_DIFF),
@@ -183,6 +186,7 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("Markdown"),
     make_sv("Java"),
     make_sv("YAML"),
+    make_sv("C#"),
 };
 // clang-format on
 
