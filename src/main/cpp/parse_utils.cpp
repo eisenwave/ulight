@@ -234,10 +234,12 @@ match_common_number(const std::u8string_view str, const Common_Number_Options& o
             result.exponent_sep = s.str.length();
             length += result.exponent_sep;
 
-            const std::size_t exp_digits = match_digits(str.substr(length));
-            result.exponent_digits += exp_digits;
-            result.erroneous |= exp_digits == 0;
-            length += exp_digits;
+            const Digits_Result exp
+                = match_separated_digits(str.substr(length), 10, options.exponent_digit_separator);
+            result.exponent_digits += exp.length;
+            result.erroneous |= exp.length == 0;
+            result.erroneous |= exp.erroneous;
+            length += exp.length;
             break;
         }
     }

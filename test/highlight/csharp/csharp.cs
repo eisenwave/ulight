@@ -26,6 +26,7 @@ public class CSharp<T> where T : IComparable<T>
     char escaped = '\n';
     char hex_escaped = '\x41';
     char unicode_escaped = '\u0048';
+    int unicode_identifier = \u0061;
     string str = "Hello, World!";
     object obj = null;
 

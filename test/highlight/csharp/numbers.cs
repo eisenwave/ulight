@@ -33,4 +33,7 @@ class NumberTest
     decimal m1 = 1.2345m;
     decimal m2 = 0.5M;
     int leading_zero = 0777;
+    int hex_sep = 0x_FF;
+    int bin_sep = 0b_10;
+    double exp_sep = 1e1_0;
 }

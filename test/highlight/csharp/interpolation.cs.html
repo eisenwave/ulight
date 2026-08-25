@@ -1,0 +1,35 @@
+<h- data-h=cmt_dlim>//</h-><h- data-h=cmt> C# String Interpolation Highlighting Test</h->
+
+<h- data-h=kw>class</h-> <h- data-h=name>InterpolationTest</h->
+<h- data-h=sym_brac>{</h->
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Interpolated regular strings</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>i1</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Hello, </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=name>name</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str>!</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>i2</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Value: </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=name>x</h-> <h- data-h=sym_op>+</h-> <h- data-h=name>y</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>i3</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Nested: </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=name>obj</h-><h- data-h=sym_punc>.</h-><h- data-h=name>ToString</h-><h- data-h=sym_par>(</h-><h- data-h=sym_par>)</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>i4</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Method: </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=name>M</h-><h- data-h=sym_par>(</h-><h- data-h=str_dlim>"</h-><h- data-h=str>arg</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_par>)</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Escaped braces</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>e1</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str_esc>{{</h-><h- data-h=str>not an expression</h-><h- data-h=str_esc>}}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>e2</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Mixed: </h-><h- data-h=str_esc>{{</h-><h- data-h=str>literal</h-><h- data-h=str_esc>}}</h-><h- data-h=str> and </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=name>expr</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Format and alignment</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>f1</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str_intp_dlim>{</h-><h- data-h=kw>value</h-><h- data-h=sym_punc>:</h-><h- data-h=name>X</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>f2</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str_intp_dlim>{</h-><h- data-h=kw>value</h-><h- data-h=sym_punc>,</h-><h- data-h=num>10</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>f3</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str_intp_dlim>{</h-><h- data-h=kw>value</h-><h- data-h=sym_punc>,</h-><h- data-h=num>10</h-><h- data-h=sym_punc>:</h-><h- data-h=name>F2</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Interpolated verbatim strings</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>v1</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$@</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Path: </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=name>path</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str>\file</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>v2</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>@$</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Path: </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=name>path</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str>\file</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>v3</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$@</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Line 1
+Line 2: </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=kw>value</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>v4</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$@</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Quote: </h-><h- data-h=str_esc>""</h-><h- data-h=str_esc>""</h-><h- data-h=str> and brace: </h-><h- data-h=str_esc>{{</h-><h- data-h=str_esc>}}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Interpolated raw strings</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>r1</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"""</h-><h- data-h=str>Value: </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=name>x</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>r2</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$$</h-><h- data-h=str_dlim>"""</h-><h- data-h=str>Value: </h-><h- data-h=str_intp_dlim>{{</h-><h- data-h=name>x</h-><h- data-h=str_intp_dlim>}}</h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>r3</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$$$</h-><h- data-h=str_dlim>"""</h-><h- data-h=str>Value: </h-><h- data-h=str_intp_dlim>{{{</h-><h- data-h=name>x</h-><h- data-h=str_intp_dlim>}}}</h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>r4</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$$</h-><h- data-h=str_dlim>"""</h-><h- data-h=str>Only single braces are literal: {x}</h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
+
+    <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Interpolated string with UTF-8 suffix</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>u1</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Hello</h-><h- data-h=str_dlim>"</h-><h- data-h=str_deco>u8</h-><h- data-h=sym_punc>;</h->
+<h- data-h=sym_brac>}</h->

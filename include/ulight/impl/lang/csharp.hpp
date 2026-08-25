@@ -8,14 +8,69 @@
 #include "ulight/impl/escapes.hpp"
 #include "ulight/impl/numbers.hpp"
 #include "ulight/impl/platform.h"
+#include "ulight/impl/unicode_chars.hpp"
 
 namespace ulight::csharp {
 
 // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/lexical-structure#634-white-space
-inline constexpr Charset256 is_csharp_whitespace {
-    //
-    u8"\t\v\f\r\n ", // horizontal tab, vertical tab, form feed, carriage return, line feed, space
-};
+// C# white-space consists of the Unicode Zs space separator category,
+// plus horizontal tab, vertical tab, and form feed.
+// Carriage return and line feed are included here so that newline tracking works,
+// even though they are line terminators rather than white-space.
+inline constexpr struct Is_CSharp_Whitespace {
+    static constexpr bool operator()(const char8_t c) = delete;
+
+    [[nodiscard]]
+    static constexpr bool operator()(const char32_t c) noexcept
+    {
+        return c == U'\t' // horizontal tab
+            || c == U'\v' // vertical tab
+            || c == U'\f' // form feed
+            || c == U'\r' // carriage return
+            || c == U'\n' // line feed
+            || c == U' ' // space
+            || c == U'\N{NO-BREAK SPACE}' // U+00A0
+            || c == U'\N{OGHAM SPACE MARK}' // U+1680
+            || (c >= U'\u2000' && c <= U'\u200A') // U+2000..U+200A
+            || c == U'\N{NARROW NO-BREAK SPACE}' // U+202F
+            || c == U'\N{MEDIUM MATHEMATICAL SPACE}' // U+205F
+            || c == U'\N{IDEOGRAPHIC SPACE}'; // U+3000
+    }
+} is_csharp_whitespace;
+
+/// @brief Returns `true` iff `c` is C# white-space that is not a line terminator.
+/// This is used to skip indentation and directive-leading whitespace
+/// without consuming CR/LF.
+inline constexpr struct Is_CSharp_Horizontal_Whitespace {
+    static constexpr bool operator()(const char8_t c) = delete;
+
+    [[nodiscard]]
+    static constexpr bool operator()(const char32_t c) noexcept
+    {
+        return is_csharp_whitespace(c) && c != U'\r' && c != U'\n';
+    }
+} is_csharp_horizontal_whitespace;
+
+// https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/lexical-structure#643-identifiers
+inline constexpr struct Is_CSharp_Identifier_Start {
+    static constexpr bool operator()(const char8_t c) = delete;
+
+    [[nodiscard]]
+    static constexpr bool operator()(const char32_t c) noexcept
+    {
+        return c == U'_' || is_xid_start(c);
+    }
+} is_csharp_identifier_start;
+
+inline constexpr struct Is_CSharp_Identifier_Continue {
+    static constexpr bool operator()(const char8_t c) = delete;
+
+    [[nodiscard]]
+    static constexpr bool operator()(const char32_t c) noexcept
+    {
+        return c == U'_' || is_xid_continue(c);
+    }
+} is_csharp_identifier_continue;
 
 // NOTE: Entries must be sorted by code (ASCIIbetical order) for binary search.
 #define ULIGHT_CSHARP_TOKEN_ENUM_DATA(F)                                                           \
@@ -213,6 +268,12 @@ Common_Number_Result match_number(std::u8string_view str);
 
 [[nodiscard]]
 std::optional<Token_Type> match_symbol(std::u8string_view str) noexcept;
+
+[[nodiscard]]
+std::size_t match_identifier(std::u8string_view str);
+
+[[nodiscard]]
+std::size_t match_unicode_escape(std::u8string_view str);
 
 } // namespace ulight::csharp
 

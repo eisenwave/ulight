@@ -4,10 +4,10 @@
 
 #include "ulight/impl/highlighter.hpp"
 
-#include "ulight/impl/lang/cpp.hpp"
 #include "ulight/impl/lang/csharp.hpp"
 #include "ulight/impl/lang/js.hpp"
 #include "ulight/impl/unicode.hpp"
+#include "ulight/impl/unicode_algorithm.hpp"
 
 namespace ulight {
 namespace csharp {
@@ -108,13 +108,35 @@ Common_Number_Result match_number(const std::u8string_view str)
         .exponent_separators = exponent_separators,
         .match_suffix = Constant<match_csharp_suffix> {},
         .digit_separator = digit_separator,
+        .exponent_digit_separator = digit_separator,
         .nonempty_fraction = true,
     };
     Common_Number_Result result = match_common_number(str, options);
-    // Reject results that consist solely of a digit separator (e.g. "_").
-    // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/lexical-structure#6453-integer-literals
-    if (result && result.integer > 0 && str[result.sign + result.prefix] == digit_separator) {
+    if (!result) {
         return {};
+    }
+
+    const std::size_t digits_start = result.sign + result.prefix;
+
+    if (result.integer > 0 && str[digits_start] == digit_separator) {
+        if (result.prefix == 0) {
+            // Decimal integer literals cannot start with a digit separator;
+            // e.g. "_", "_10", and "1__0" are all invalid.
+            // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/lexical-structure#6453-integer-literals
+            return {};
+        }
+
+        // C# 7.2+ permits a single digit separator immediately after a radix prefix,
+        // e.g. "0x_FF" and "0b_10".  The shared parser reports the leading separator
+        // as erroneous, so rescan the remaining digits here.
+        const std::u8string_view prefix_str = str.substr(result.sign, result.prefix);
+        const int base = prefix_str.starts_with(u8"0x") || prefix_str.starts_with(u8"0X") ? 16 : 2;
+        const Digits_Result rest
+            = match_separated_digits(str.substr(digits_start + 1), base, digit_separator);
+        if (rest.length == 0 || rest.erroneous) {
+            return {};
+        }
+        result.erroneous = false;
     }
     // If the number has a radix point but no fractional part and the next two chars are "..",
     // then we have a range expression like "1..10".  Truncate before the radix point.
@@ -154,7 +176,7 @@ Escape_Result match_escape_sequence(const std::u8string_view str)
 
     case u8'U': return match_common_escape<Common_Escape::hex_8>(str, 2);
 
-    case u8'x': return match_common_escape<Common_Escape::hex_1_to_inf>(str, 2);
+    case u8'x': return match_common_escape<Common_Escape::hex_1_to_4>(str, 2);
 
     default: return { .length = 1, .erroneous = true };
     }
@@ -221,11 +243,63 @@ std::optional<Token_Type> match_symbol(const std::u8string_view str) noexcept
     }
 }
 
-using cpp::match_identifier;
-
 using js::Comment_Result;
 using js::match_block_comment;
 using js::match_line_comment;
+
+[[nodiscard]]
+std::size_t match_unicode_escape(const std::u8string_view str)
+{
+    // \uXXXX or \UXXXXXXXX
+    if (!str.starts_with(u8'\\') || str.length() < 2) {
+        return 0;
+    }
+    const std::size_t digits = str[1] == u8'u' ? 4 : str[1] == u8'U' ? 8 : 0;
+    if (digits == 0 || str.length() < 2 + digits) {
+        return 0;
+    }
+    for (std::size_t i = 0; i < digits; ++i) {
+        if (!is_ascii_hex_digit(str[2 + i])) {
+            return 0;
+        }
+    }
+    return 2 + digits;
+}
+
+[[nodiscard]]
+std::size_t match_identifier(const std::u8string_view str)
+{
+    // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/lexical-structure#643-identifiers
+    std::size_t length = 0;
+
+    if (!str.empty()) {
+        if (const std::size_t escape = match_unicode_escape(str)) {
+            length += escape;
+        }
+        else {
+            const auto [code_point, units] = utf8::decode_and_length_or_replacement(str);
+            if (!is_csharp_identifier_start(code_point)) {
+                return 0;
+            }
+            length += std::size_t(units);
+        }
+    }
+
+    while (length < str.length()) {
+        const std::u8string_view rest = str.substr(length);
+        if (const std::size_t escape = match_unicode_escape(rest)) {
+            length += escape;
+            continue;
+        }
+        const auto [code_point, units] = utf8::decode_and_length_or_replacement(rest);
+        if (!is_csharp_identifier_continue(code_point)) {
+            break;
+        }
+        length += std::size_t(units);
+    }
+
+    return length;
+}
 
 namespace {
 
@@ -286,14 +360,14 @@ private:
     void consume_whitespace_and_track_newline()
     {
         // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/lexical-structure#634-white-space
-        const std::u8string_view whitespace
-            = remainder.substr(0, ascii::length_if(remainder, is_csharp_whitespace));
-        if (!whitespace.empty()) {
-            if (whitespace.find(u8'\n') != std::u8string_view::npos
-                || whitespace.find(u8'\r') != std::u8string_view::npos) {
+        const std::size_t whitespace = utf8::length_if(remainder, is_csharp_whitespace);
+        if (whitespace != 0) {
+            const std::u8string_view consumed = remainder.substr(0, whitespace);
+            if (consumed.find(u8'\n') != std::u8string_view::npos
+                || consumed.find(u8'\r') != std::u8string_view::npos) {
                 fresh_line = true;
             }
-            advance(whitespace.length());
+            advance(whitespace);
         }
     }
 
@@ -308,9 +382,11 @@ private:
         emit_and_advance(1, Highlight_Type::name_macro_delim);
         fresh_line = false;
 
-        while (!remainder.empty() && is_csharp_whitespace(remainder[0])) {
-            advance(1);
-        }
+        // Skip horizontal whitespace only.
+        // A directive name cannot continue onto the next line,
+        // so stop before CR/LF and let normal line handling resume there.
+        const std::size_t space = utf8::length_if(remainder, is_csharp_horizontal_whitespace);
+        advance(space);
 
         const std::size_t directive_length = match_identifier(remainder);
         if (directive_length != 0) {
@@ -392,7 +468,22 @@ private:
         switch (c0) {
         case u8'\'': return expect_character_literal();
 
-        case u8'$':
+        case u8'$': {
+            // Count the consecutive dollar signs.
+            // A dollar prefix followed by at least three quotes is an interpolated raw string,
+            // e.g. $"""..."{x}"...""" with one brace per dollar delimiting interpolation holes.
+            std::size_t dollar_count = 0;
+            while (dollar_count < remainder.length() && remainder[dollar_count] == u8'$') {
+                ++dollar_count;
+            }
+            std::size_t quote_count = 0;
+            while (dollar_count + quote_count < remainder.length()
+                   && remainder[dollar_count + quote_count] == u8'"') {
+                ++quote_count;
+            }
+            if (quote_count >= 3) {
+                return expect_interpolated_raw_string(dollar_count);
+            }
             if (c1 == u8'"') {
                 return expect_interpolated_regular_string();
             }
@@ -400,6 +491,7 @@ private:
                 return expect_interpolated_verbatim_string();
             }
             break;
+        }
 
         case u8'@':
             if (c1 == u8'"') {
@@ -437,7 +529,8 @@ private:
             );
         }
         else if (!remainder.empty() && remainder[0] != u8'\'' && !is_line_break(remainder[0])) {
-            emit_and_advance(1, Highlight_Type::string);
+            const auto [_, units] = utf8::decode_and_length_or_replacement(remainder);
+            emit_and_advance(std::size_t(units), Highlight_Type::string);
         }
         else if (!remainder.empty()) {
             emit_and_advance(1, Highlight_Type::error);
@@ -564,11 +657,7 @@ private:
 
         emit_and_advance(quote_count, Highlight_Type::string_delim);
 
-        std::size_t skip = 0;
-        while (skip < remainder.length() && is_csharp_whitespace(remainder[skip])
-               && !is_line_break(remainder[skip])) {
-            ++skip;
-        }
+        const std::size_t skip = utf8::length_if(remainder, is_csharp_horizontal_whitespace);
         if (skip < remainder.length() && is_line_break(remainder[skip])) {
             advance(skip);
             const std::size_t lb = match_line_break(remainder);
@@ -593,6 +682,9 @@ private:
                 if (closing_quotes >= quote_count) {
                     flush();
                     emit_and_advance(quote_count, Highlight_Type::string_delim);
+                    if (remainder.starts_with(u8"u8") || remainder.starts_with(u8"U8")) {
+                        emit_and_advance(2, Highlight_Type::string_decor);
+                    }
                     fresh_line = false;
                     return true;
                 }
@@ -625,8 +717,6 @@ private:
             }
         };
 
-        std::size_t brace_depth = 0;
-
         while (length < remainder.length()) {
             const char8_t c = remainder[length];
 
@@ -638,7 +728,10 @@ private:
                 }
                 flush();
                 emit_and_advance(1, Highlight_Type::string_interpolation_delim);
-                ++brace_depth;
+                consume_interpolation_body(1);
+                if (!remainder.empty() && remainder[0] == u8'}') {
+                    emit_and_advance(1, Highlight_Type::string_interpolation_delim);
+                }
                 continue;
             }
 
@@ -648,12 +741,7 @@ private:
                     emit_and_advance(2, Highlight_Type::string_escape);
                     continue;
                 }
-                if (brace_depth > 0) {
-                    flush();
-                    emit_and_advance(1, Highlight_Type::string_interpolation_delim);
-                    --brace_depth;
-                    continue;
-                }
+                // A lone '}' is literal string content.
                 ++length;
                 continue;
             }
@@ -711,8 +799,6 @@ private:
             }
         };
 
-        std::size_t brace_depth = 0;
-
         while (length < remainder.length()) {
             const char8_t c = remainder[length];
 
@@ -724,7 +810,10 @@ private:
                 }
                 flush();
                 emit_and_advance(1, Highlight_Type::string_interpolation_delim);
-                ++brace_depth;
+                consume_interpolation_body(1);
+                if (!remainder.empty() && remainder[0] == u8'}') {
+                    emit_and_advance(1, Highlight_Type::string_interpolation_delim);
+                }
                 continue;
             }
 
@@ -734,12 +823,7 @@ private:
                     emit_and_advance(2, Highlight_Type::string_escape);
                     continue;
                 }
-                if (brace_depth > 0) {
-                    flush();
-                    emit_and_advance(1, Highlight_Type::string_interpolation_delim);
-                    --brace_depth;
-                    continue;
-                }
+                // A lone '}' is literal string content.
                 ++length;
                 continue;
             }
@@ -765,6 +849,147 @@ private:
         flush();
         fresh_line = false;
         return true;
+    }
+
+    [[nodiscard]]
+    bool expect_interpolated_raw_string(const std::size_t dollar_count)
+    {
+        // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/lexical-structure#6456-string-literals
+        // $* """ ... """  - interpolated raw string
+        // The number of dollar signs equals the number of braces required
+        // to open and close an interpolation hole.
+        ULIGHT_DEBUG_ASSERT(dollar_count >= 1);
+        ULIGHT_DEBUG_ASSERT(remainder.length() >= dollar_count);
+        for (std::size_t i = 0; i < dollar_count; ++i) {
+            ULIGHT_DEBUG_ASSERT(remainder[i] == u8'$');
+        }
+
+        emit_and_advance(dollar_count, Highlight_Type::string_delim);
+
+        std::size_t quote_count = 0;
+        while (quote_count < remainder.length() && remainder[quote_count] == u8'"') {
+            ++quote_count;
+        }
+        ULIGHT_ASSERT(quote_count >= 3);
+        emit_and_advance(quote_count, Highlight_Type::string_delim);
+
+        const std::size_t skip = utf8::length_if(remainder, is_csharp_horizontal_whitespace);
+        if (skip < remainder.length() && is_line_break(remainder[skip])) {
+            advance(skip);
+            const std::size_t lb = match_line_break(remainder);
+            advance(lb);
+        }
+
+        const std::size_t brace_count = dollar_count;
+
+        std::size_t length = 0;
+        const auto flush = [&] {
+            if (length != 0) {
+                emit_and_advance(length, Highlight_Type::string);
+                length = 0;
+            }
+        };
+
+        while (length < remainder.length()) {
+            const char8_t c = remainder[length];
+
+            if (c == u8'"') {
+                std::size_t closing_quotes = 0;
+                while (length + closing_quotes < remainder.length()
+                       && remainder[length + closing_quotes] == u8'"') {
+                    ++closing_quotes;
+                }
+                if (closing_quotes >= quote_count) {
+                    flush();
+                    emit_and_advance(quote_count, Highlight_Type::string_delim);
+                    if (remainder.starts_with(u8"u8") || remainder.starts_with(u8"U8")) {
+                        emit_and_advance(2, Highlight_Type::string_decor);
+                    }
+                    fresh_line = false;
+                    return true;
+                }
+                length += closing_quotes;
+                continue;
+            }
+
+            if (c == u8'{') {
+                std::size_t open_braces = 0;
+                while (length + open_braces < remainder.length()
+                       && remainder[length + open_braces] == u8'{') {
+                    ++open_braces;
+                }
+                if (open_braces >= brace_count) {
+                    flush();
+                    emit_and_advance(brace_count, Highlight_Type::string_interpolation_delim);
+                    consume_interpolation_body(brace_count);
+                    if (!remainder.empty()) {
+                        std::size_t closing_braces = 0;
+                        while (closing_braces < remainder.length()
+                               && remainder[closing_braces] == u8'}') {
+                            ++closing_braces;
+                        }
+                        if (closing_braces >= brace_count) {
+                            emit_and_advance(
+                                brace_count, Highlight_Type::string_interpolation_delim
+                            );
+                        }
+                    }
+                    continue;
+                }
+                length += open_braces;
+                continue;
+            }
+
+            ++length;
+        }
+
+        flush();
+        fresh_line = false;
+        return true;
+    }
+
+    void consume_interpolation_body(const std::size_t brace_count)
+    {
+        // Lex a C# expression until the closing run of `brace_count` closing braces.
+        // The closing braces themselves are not consumed here;
+        // the caller emits them as interpolation delimiters.
+        std::size_t brace_depth = 0;
+        while (!remainder.empty()) {
+            consume_whitespace_and_track_newline();
+            if (eof()) {
+                break;
+            }
+
+            const char8_t c = remainder[0];
+            if (c == u8'{') {
+                ++brace_depth;
+                emit_and_advance(1, Highlight_Type::symbol_brace);
+                continue;
+            }
+            if (c == u8'}') {
+                std::size_t closing_braces = 0;
+                while (closing_braces < remainder.length() && remainder[closing_braces] == u8'}') {
+                    ++closing_braces;
+                }
+                if (brace_depth == 0 && closing_braces >= brace_count) {
+                    return;
+                }
+                if (brace_depth != 0) {
+                    --brace_depth;
+                }
+                emit_and_advance(1, Highlight_Type::symbol_brace);
+                continue;
+            }
+
+            if (expect_token()) {
+                continue;
+            }
+
+            const auto [_, error_length] = utf8::decode_and_length_or_replacement(remainder);
+            ULIGHT_ASSERT(error_length != 0);
+            fresh_line = false;
+            emit_and_advance(std::size_t(error_length), Highlight_Type::error, Coalescing::forced);
+        }
     }
 
     [[nodiscard]]

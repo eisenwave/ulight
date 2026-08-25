@@ -26,6 +26,7 @@
     <h- data-h=kw_type>char</h-> <h- data-h=name>escaped</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str_esc>\n</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>char</h-> <h- data-h=name>hex_escaped</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str_esc>\x41</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>char</h-> <h- data-h=name>unicode_escaped</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>'</h-><h- data-h=str_esc>\u0048</h-><h- data-h=str_dlim>'</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>int</h-> <h- data-h=name>unicode_identifier</h-> <h- data-h=sym_punc>=</h-> <h- data-h=name>\u0061</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>string</h-> <h- data-h=name>str</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>"</h-><h- data-h=str>Hello, World!</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>object</h-> <h- data-h=name>obj</h-> <h- data-h=sym_punc>=</h-> <h- data-h=null>null</h-><h- data-h=sym_punc>;</h->
 
@@ -60,9 +61,9 @@ Line 2
         </h-><h- data-h=str_dlim>"""</h-><h- data-h=sym_punc>;</h->
 
     <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> Interpolated strings</h->
-    <h- data-h=kw_type>string</h-> <h- data-h=name>interpolated</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Hello, </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=str>name</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str>!</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_type>string</h-> <h- data-h=name>interpolated_verbatim</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$@</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Path: </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=str>path</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str>\file</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
-    <h- data-h=kw_type>string</h-> <h- data-h=name>interpolated_at_dollar</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>@$</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Path: </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=str>path</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str>\file</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>interpolated</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Hello, </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=name>name</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str>!</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>interpolated_verbatim</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$@</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Path: </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=name>path</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str>\file</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
+    <h- data-h=kw_type>string</h-> <h- data-h=name>interpolated_at_dollar</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>@$</h-><h- data-h=str_dlim>"</h-><h- data-h=str>Path: </h-><h- data-h=str_intp_dlim>{</h-><h- data-h=name>path</h-><h- data-h=str_intp_dlim>}</h-><h- data-h=str>\file</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
     <h- data-h=kw_type>string</h-> <h- data-h=name>interpolated_escaped</h-> <h- data-h=sym_punc>=</h-> <h- data-h=str_dlim>$</h-><h- data-h=str_dlim>"</h-><h- data-h=str_esc>{{</h-><h- data-h=str>Not an expression</h-><h- data-h=str_esc>}}</h-><h- data-h=str_dlim>"</h-><h- data-h=sym_punc>;</h->
 
     <h- data-h=cmt_dlim>//</h-><h- data-h=cmt> UTF-8 string literals</h->

@@ -26,6 +26,7 @@ class StringTest
     string x1 = "\x41";
     string x2 = "\x0041";
     string x3 = "\x48\x65\x6c\x6c\x6f";
+    string x4 = "\x12345";
 
     // UTF-8 string literals
     string utf8_1 = "Hello"u8;
@@ -39,6 +40,7 @@ class StringTest
     char c5 = '\\';
     char c6 = '\u0048';
     char c7 = '\x41';
+    char c8 = 'é';
 
     // Verbatim string literals
     string v1 = @"";
@@ -62,6 +64,7 @@ Line 2";
     string r3 = """"
         Raw string with four quotes
         """";
+    string r4 = """raw"""u8;
 
     // Interpolated regular strings
     string i1 = $"Hello, {name}!";
@@ -83,6 +86,9 @@ Line 2: {value}";
     string iv4 = @$"Line 1
 Line 2: {value}";
     string iv5 = $@"Quote: """" and brace: {{}}";
+    string ir1 = $"""Value: {x}""";
+    string ir2 = $$"""Value: {{x}}""";
+    string in1 = $"{M("x")}";
 
     // Preprocessor directives
     #define DEBUG
