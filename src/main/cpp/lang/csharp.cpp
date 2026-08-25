@@ -130,8 +130,11 @@ Common_Number_Result match_number(const std::u8string_view str)
 Escape_Result match_escape_sequence(const std::u8string_view str)
 {
     // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/lexical-structure#6455-character-literals
-    if (str.length() < 2 || str[0] != u8'\\') {
+    if (!str.starts_with(u8'\\')) {
         return { .length = 0, .erroneous = true };
+    }
+    if (str.length() < 2) {
+        return { .length = 1, .erroneous = true };
     }
 
     switch (str[1]) {
