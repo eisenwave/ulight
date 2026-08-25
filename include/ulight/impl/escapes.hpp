@@ -38,6 +38,8 @@ enum struct Common_Escape : Underlying {
     octal_braced,
     /// @brief One or two hex digits.
     hex_1_to_2,
+    /// @brief One to four hex digits.
+    hex_1_to_4,
     /// @brief At least one hex digit.
     hex_1_to_inf,
     /// @brief Exactly two hex digits.
@@ -62,6 +64,7 @@ constexpr std::size_t escape_type_min_length(Common_Escape type)
     case octal_1_to_2:
     case octal_1_to_3:
     case hex_1_to_2:
+    case hex_1_to_4:
     case hex_1_to_inf:
     case lf_cr_crlf: return 1;
 
@@ -90,7 +93,8 @@ constexpr std::size_t escape_type_max_length(Common_Escape type)
     case octal_1_to_3:
     case octal_3: return 3;
 
-    case hex_4: return 4;
+    case hex_4:
+    case hex_1_to_4: return 4;
     case hex_8: return 8;
 
     case hex_1_to_inf:
@@ -145,8 +149,9 @@ constexpr Escape_Result match_common_escape(std::u8string_view str)
         return detail::match_common_braced_escape(str, octal_digit_lambda);
     }
 
-    else if constexpr (type == Common_Escape::hex_1_to_2) {
-        str = str.substr(0, min(2uz, str.length()));
+    else if constexpr (type == Common_Escape::hex_1_to_2 || type == Common_Escape::hex_1_to_4) {
+        constexpr std::size_t max_length = escape_type_max_length(type);
+        str = str.substr(0, min(max_length, str.length()));
         const std::size_t length = ascii::length_if(str, hex_digit_lambda);
         return { .length = length, .erroneous = length == 0 };
     }

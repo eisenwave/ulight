@@ -34,6 +34,7 @@ Highlight_Fn highlight_bash;
 Highlight_Fn highlight_c;
 Highlight_Fn highlight_cowel;
 Highlight_Fn highlight_cpp;
+Highlight_Fn highlight_csharp;
 Highlight_Fn highlight_css;
 Highlight_Fn highlight_diff;
 Highlight_Fn highlight_ebnf;
@@ -87,6 +88,7 @@ inline Status highlight(
         result[ULIGHT_LANG_C] = highlight_c;
         result[ULIGHT_LANG_COWEL] = highlight_cowel;
         result[ULIGHT_LANG_CPP] = highlight_cpp;
+        result[ULIGHT_LANG_CSHARP] = highlight_csharp;
         result[ULIGHT_LANG_CSS] = highlight_css;
         result[ULIGHT_LANG_DIFF] = highlight_diff;
         result[ULIGHT_LANG_EBNF] = highlight_ebnf;
