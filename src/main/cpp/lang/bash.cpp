@@ -32,19 +32,19 @@ constexpr Highlight_Type token_type_highlights[] {
 };
 
 [[nodiscard]] [[maybe_unused]]
-std::u8string_view token_type_code(Token_Type type)
+std::u8string_view token_type_code(const Token_Type type)
 {
     return token_type_codes[std::size_t(type)];
 }
 
 [[nodiscard]] [[maybe_unused]]
-std::size_t token_type_length(Token_Type type)
+std::size_t token_type_length(const Token_Type type)
 {
     return token_type_lengths[std::size_t(type)];
 }
 
 [[nodiscard]] [[maybe_unused]]
-Highlight_Type token_type_highlight(Token_Type type)
+Highlight_Type token_type_highlight(const Token_Type type)
 {
     return token_type_highlights[std::size_t(type)];
 }
@@ -98,40 +98,93 @@ std::optional<Token_Type> match_operator(std::u8string_view str)
         return {};
     }
     switch (str[0]) {
-    case u8'!': return exclamation;
+    case u8'!': return str.starts_with(u8"!=") ? exclamation_equal : exclamation;
     case u8'&':
         return str.starts_with(u8"&&") ? amp_amp
             : str.starts_with(u8"&>>") ? amp_greater_greater
             : str.starts_with(u8"&>")  ? amp_greater
+            : str.starts_with(u8"&=")  ? amp_equal
                                        : amp;
     case u8'(': return left_parens;
     case u8')': return right_parens;
-    case u8'*': return plus;
-    case u8'-': return minus;
+    case u8'*':
+        return str.starts_with(u8"**") ? asterisk_asterisk
+            : str.starts_with(u8"*=")  ? asterisk_equal
+                                       : asterisk;
+    case u8'+':
+        return str.starts_with(u8"++") ? plus_plus : str.starts_with(u8"+=") ? plus_equal : plus;
+    case u8'-':
+        return str.starts_with(u8"--") ? minus_minus
+            : str.starts_with(u8"-=")  ? minus_equal
+                                       : minus;
     case u8':': return colon;
     case u8';': return semicolon;
     case u8'<':
         return str.starts_with(u8"<<<") ? less_less_less
+            : str.starts_with(u8"<<=")  ? less_less_equal
             : str.starts_with(u8"<<")   ? less_less
             : str.starts_with(u8"<&")   ? less_amp
             : str.starts_with(u8"<>")   ? less_greater
+            : str.starts_with(u8"<=")   ? less_equal
                                         : less;
-    case u8'=': return equal;
+    case u8'=': return str.starts_with(u8"==") ? equal_equal : equal;
     case u8'>':
-        return str.starts_with(u8">>") ? greater_greater
-            : str.starts_with(u8">&")  ? greater_amp
-                                       : greater;
+        return str.starts_with(u8">>=") ? greater_greater_equal
+            : str.starts_with(u8">>")   ? greater_greater
+            : str.starts_with(u8">&")   ? greater_amp
+            : str.starts_with(u8">=")   ? greater_equal
+                                        : greater;
     case u8'?': return question;
     case u8'@': return at;
     case u8'[': return str.starts_with(u8"[[") ? left_square_square : left_square;
     case u8']': return str.starts_with(u8"]]") ? right_square_square : right_square;
     case u8'{': return left_brace;
-    case u8'|': return str.starts_with(u8"||") ? pipe_pipe : pipe;
+    case u8'|':
+        return str.starts_with(u8"||") ? pipe_pipe : str.starts_with(u8"|=") ? pipe_equal : pipe;
+    case u8'^': return str.starts_with(u8"^=") ? caret_equal : caret;
+    case u8',': return comma;
     case u8'}': return right_brace;
     case u8'~': return tilde;
+    case u8'/': return str.starts_with(u8"/=") ? slash_equal : slash;
+    case u8'%': return str.starts_with(u8"%=") ? percent_equal : percent;
     default: break;
     }
     return {};
+}
+
+Common_Number_Result match_arithmetic_number(const std::u8string_view str)
+{
+    // https://www.gnu.org/software/bash/manual/bash.html#Shell-Arithmetic
+    const std::size_t base_digits = ascii::length_if(str, is_ascii_digit);
+    if (base_digits < str.length() && str[base_digits] == u8'#' && base_digits != 0) {
+        int base = 0;
+        for (const char8_t digit : str.substr(0, base_digits)) {
+            if (base > 6) {
+                base = 63;
+                break;
+            }
+            base = base * 10 + int(digit - u8'0');
+        }
+        if (base >= 2 && base <= 62) {
+            const std::size_t integer = match_digits(str.substr(base_digits + 1), base);
+            if (integer != 0) {
+                return {
+                    .length = base_digits + 1 + integer,
+                    .prefix = base_digits + 1,
+                    .integer = integer,
+                };
+            }
+        }
+    }
+
+    static constexpr Number_Prefix prefixes[] { { u8"0x", 16 }, { u8"0X", 16 } };
+    static constexpr Common_Number_Options options {
+        .prefixes = prefixes,
+        .exponent_separators = {},
+        .default_leading_zero_base = 8,
+        .nonempty_integer = true,
+    };
+    return match_common_number(str, options);
 }
 
 namespace {
@@ -175,6 +228,10 @@ public:
 private:
     void consume_commands(Context context)
     {
+        if (context == Context::arith_sub) {
+            consume_arithmetic_expression();
+            return;
+        }
         while (!remainder.empty()) {
             switch (remainder[0]) {
             case u8'\\': {
@@ -276,6 +333,54 @@ private:
         }
     }
 
+    void consume_arithmetic_expression()
+    {
+        std::size_t nested_parens = 0;
+        while (!remainder.empty()) {
+            if (const std::size_t blank = match_blank(remainder)) {
+                advance(blank);
+                continue;
+            }
+            if (remainder[0] == u8')') {
+                if (nested_parens == 0) {
+                    if (remainder.starts_with(u8"))")) {
+                        emit_and_advance(2, Highlight_Type::string_interpolation_delim);
+                        return;
+                    }
+                    emit_and_advance(1, Highlight_Type::symbol_parens);
+                    continue;
+                }
+                --nested_parens;
+                emit_and_advance(1, Highlight_Type::symbol_parens);
+                continue;
+            }
+
+            if (const Common_Number_Result number = match_arithmetic_number(remainder)) {
+                highlight_number(number);
+                continue;
+            }
+            if (const std::size_t identifier = match_identifier(remainder)) {
+                emit_and_advance(identifier, Highlight_Type::name);
+                continue;
+            }
+            if (starts_with_substitution(remainder)) {
+                consume_substitution();
+                continue;
+            }
+
+            const std::optional<Token_Type> op = match_operator(remainder);
+            if (op) {
+                emit_and_advance(token_type_length(*op), token_type_highlight(*op));
+                if (*op == Token_Type::left_parens) {
+                    ++nested_parens;
+                }
+                continue;
+            }
+
+            emit_and_advance(1, Highlight_Type::error);
+        }
+    }
+
     void consume_word(Context context)
     {
         std::size_t length = 0;
@@ -372,26 +477,26 @@ private:
     void consume_substitution()
     {
         ULIGHT_ASSERT(remainder.size() >= 2 && remainder.starts_with(u8'$'));
-        const char8_t next = remainder[1];
-        if (next == u8'{') {
+        if (remainder.starts_with(u8"${")) {
             emit_and_advance(2, Highlight_Type::string_interpolation_delim);
             state = State::parameter_sub;
             consume_commands(Context::parameter_sub);
             return;
         }
-        if (next == u8'(') {
-            if (remainder.size() >= 3 && remainder[2] == u8'(') {
-                emit_and_advance(3, Highlight_Type::string_interpolation_delim);
-                state = State::before_command;
-                consume_commands(Context::arith_sub);
-                return;
-            }
+        if (remainder.starts_with(u8"$((")) {
+            emit_and_advance(3, Highlight_Type::string_interpolation_delim);
+            state = State::before_command;
+            consume_commands(Context::arith_sub);
+            return;
+        }
+        if (remainder.starts_with(u8"$(")) {
             emit_and_advance(2, Highlight_Type::string_interpolation_delim);
             state = State::before_command;
             consume_commands(Context::command_sub);
             return;
         }
 
+        const char8_t next = remainder[1];
         const auto update_state = [&] {
             if (state == State::before_command) {
                 state = State::in_command;
