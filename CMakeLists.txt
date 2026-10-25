@@ -172,6 +172,7 @@ else(NOT DEFINED EMSCRIPTEN)
 
         add_executable(ulight-test ${HEADERS}
             src/test/cpp/main.cpp
+            src/test/cpp/test_bash.cpp
             src/test/cpp/test_buffer.cpp
             src/test/cpp/test_chars_strings.cpp
             src/test/cpp/test_cowel.cpp

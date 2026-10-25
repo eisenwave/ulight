@@ -8,6 +8,7 @@
 
 #include "ulight/impl/ascii_chars.hpp"
 #include "ulight/impl/charset.hpp"
+#include "ulight/impl/numbers.hpp"
 #include "ulight/impl/platform.h"
 
 namespace ulight::bash {
@@ -58,36 +59,56 @@ inline constexpr auto is_bash_unquoted_terminator
 
 #define ULIGHT_BASH_TOKEN_ENUM_DATA(F)                                                             \
     F(exclamation, "!", symbol_op)                                                                 \
+    F(exclamation_equal, "!=", symbol_op)                                                          \
     F(dollar, "$", symbol)                                                                         \
     F(dollar_quote, "$'", symbol_parens)                                                           \
     F(dollar_parens, "$(", symbol_parens)                                                          \
     F(dollar_brace, "${", symbol_brace)                                                            \
+    F(percent, "%", symbol_op)                                                                     \
+    F(percent_equal, "%=", symbol_op)                                                              \
     F(amp, "&", symbol_op)                                                                         \
     F(amp_amp, "&&", symbol_op)                                                                    \
+    F(amp_equal, "&=", symbol_op)                                                                  \
     F(amp_greater, "&>", symbol_op)                                                                \
     F(amp_greater_greater, "&>>", symbol_op)                                                       \
     F(left_parens, "(", symbol_parens)                                                             \
     F(right_parens, ")", symbol_parens)                                                            \
     F(asterisk, "*", symbol_op)                                                                    \
+    F(asterisk_asterisk, "**", symbol_op)                                                          \
+    F(asterisk_equal, "*=", symbol_op)                                                             \
     F(plus, "+", symbol_op)                                                                        \
+    F(plus_plus, "++", symbol_op)                                                                  \
+    F(plus_equal, "+=", symbol_op)                                                                 \
+    F(comma, ",", symbol_punc)                                                                     \
     F(minus, "-", symbol_op)                                                                       \
+    F(minus_minus, "--", symbol_op)                                                                \
+    F(minus_equal, "-=", symbol_op)                                                                \
+    F(slash, "/", symbol_op)                                                                       \
+    F(slash_equal, "/=", symbol_op)                                                                \
     F(colon, ":", symbol_punc)                                                                     \
     F(semicolon, ";", symbol_punc)                                                                 \
     F(less, "<", symbol_op)                                                                        \
     F(less_amp, "<&", symbol_op)                                                                   \
     F(less_less, "<<", symbol_op)                                                                  \
     F(less_less_less, "<<<", symbol_op)                                                            \
+    F(less_less_equal, "<<=", symbol_op)                                                           \
+    F(less_equal, "<=", symbol_op)                                                                 \
     F(less_greater, "<>", symbol_op)                                                               \
     F(equal, "=", symbol_op)                                                                       \
+    F(equal_equal, "==", symbol_op)                                                                \
     F(greater, ">", symbol_op)                                                                     \
     F(greater_amp, ">&", symbol_op)                                                                \
+    F(greater_equal, ">=", symbol_op)                                                              \
     F(greater_greater, ">>", symbol_op)                                                            \
+    F(greater_greater_equal, ">>=", symbol_op)                                                     \
     F(question, "?", symbol_op)                                                                    \
     F(at, "@", symbol_op)                                                                          \
     F(left_square, "[", symbol_square)                                                             \
     F(left_square_square, "[[", symbol_square)                                                     \
     F(right_square, "]", symbol_square)                                                            \
     F(right_square_square, "]]", symbol_square)                                                    \
+    F(caret, "^", symbol_op)                                                                       \
+    F(caret_equal, "^=", symbol_op)                                                                \
     F(kw_case, "case", keyword_control)                                                            \
     F(kw_coproc, "coproc", keyword_control)                                                        \
     F(kw_do, "do", keyword_control)                                                                \
@@ -107,6 +128,7 @@ inline constexpr auto is_bash_unquoted_terminator
     F(kw_while, "while", keyword_control)                                                          \
     F(left_brace, "{", symbol_brace)                                                               \
     F(pipe, "|", symbol_op)                                                                        \
+    F(pipe_equal, "|=", symbol_op)                                                                 \
     F(pipe_pipe, "||", symbol_op)                                                                  \
     F(right_brace, "}", symbol_brace)                                                              \
     F(tilde, "~", symbol_op)
@@ -122,6 +144,12 @@ enum struct Token_Type : Underlying {
 
 [[nodiscard]]
 std::optional<Token_Type> match_operator(std::u8string_view str);
+
+/// @brief Matches an integer constant in a Bash arithmetic expression.
+///
+/// https://www.gnu.org/software/bash/manual/bash.html#Shell-Arithmetic
+[[nodiscard]]
+Common_Number_Result match_arithmetic_number(std::u8string_view str);
 
 struct String_Result {
     std::size_t length;
