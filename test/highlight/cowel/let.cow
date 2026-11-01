@@ -1,2 +1,4 @@
 \ let x = 0
 let y = 1
+\(let x = 0)
+\tag(let x = 0){}

@@ -2,3 +2,5 @@
 \ fun sqr(x) = x * x
 \ fun add(x, y) = x + y
 \(fun f() = 0)
+\(fun sqr(x) = x * x)
+\tag(fun f() = 0){}
