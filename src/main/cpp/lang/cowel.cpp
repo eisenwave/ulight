@@ -347,6 +347,35 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
     {
     }
 
+    /// @brief Temporarily sets whether a line terminator terminates the content
+    /// currently being highlighted,
+    /// restoring the previous value when the scope ends.
+    struct [[nodiscard]] Line_Terminator_Scope {
+        Highlighter& highlighter;
+        const bool previous;
+
+        Line_Terminator_Scope(Highlighter& highlighter, const bool value)
+            : highlighter { highlighter }
+            , previous { highlighter.line_terminator_terminates }
+        {
+            highlighter.line_terminator_terminates = value;
+        }
+
+        Line_Terminator_Scope(const Line_Terminator_Scope&) = delete;
+        Line_Terminator_Scope& operator=(const Line_Terminator_Scope&) = delete;
+
+        ~Line_Terminator_Scope()
+        {
+            highlighter.line_terminator_terminates = previous;
+        }
+    };
+
+    /// @brief Whether a line terminator terminates the content being highlighted.
+    /// This is the case within an expression-line-splice,
+    /// but is relaxed again within nested groups, blocks, and quoted strings,
+    /// which may span multiple lines.
+    bool line_terminator_terminates = false;
+
     bool operator()()
     {
         consume_markup_element_sequence(Text_Kind::document);
@@ -441,6 +470,10 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
 
         emit_and_advance(2, Highlight_Type::string_interpolation_delim);
 
+        // An expression-line-splice ends at the first line terminator.
+        // This is relaxed again within nested groups, blocks, and quoted strings.
+        const Line_Terminator_Scope line_terminator { *this, true };
+
         while (!eof()) {
             if (remainder.starts_with(u8"\r\n"sv)) {
                 advance(2);
@@ -456,7 +489,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
                 continue;
             }
 
-            const std::size_t whitespace = match_whitespace(remainder);
+            const std::size_t whitespace = match_contextual_whitespace(remainder);
             if (whitespace) {
                 advance(whitespace);
                 continue;
@@ -581,6 +614,10 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             return false;
         }
         emit_and_advance(1, Highlight_Type::symbol_parens);
+        // A line terminator ends an enclosing expression-line-splice,
+        // but not the contents of a group,
+        // so groups relax that rule for their contents.
+        const Line_Terminator_Scope line_terminator { *this, false };
 
         while (!eof()) {
             consume_blank();
@@ -711,7 +748,10 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         if (name_length == 0) {
             return false;
         }
-        const std::size_t blank_after_name = match_blank(remainder.substr(name_length));
+        // Detection must use the same rule for skipping blank as consumption,
+        // otherwise a directive-call name at the end of an expression-line-splice
+        // could be wrongly highlighted as a markup tag.
+        const std::size_t blank_after_name = match_contextual_blank(remainder.substr(name_length));
         if (name_length + blank_after_name >= remainder.length()) {
             return false;
         }
@@ -761,11 +801,20 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
 
         if (str == u8"unit"sv || str == u8"null"sv || str == u8"let"sv || str == u8"fun"sv) {
             emit_and_advance(length, Highlight_Type::keyword);
-            // TODO: Similarly handle let-expressions
             if (str == u8"fun"sv) {
                 consume_horizontal_blank();
                 if (const std::size_t func_name_len = match_identifier(remainder)) {
                     emit_and_advance(func_name_len, Highlight_Type::name_function_decl);
+                }
+                // The parameter list of a function must also be consumed,
+                // otherwise its parentheses are highlighted as an error.
+                expect_group();
+            }
+            else if (str == u8"let"sv) {
+                // The binding name of a let-expression is highlighted like a variable.
+                consume_horizontal_blank();
+                if (const std::size_t var_name_len = match_identifier(remainder)) {
+                    emit_and_advance(var_name_len, Highlight_Type::name_var);
                 }
             }
         }
@@ -808,6 +857,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             return false;
         }
         emit_and_advance(1, Highlight_Type::string_delim);
+        const Line_Terminator_Scope line_terminator { *this, false };
         consume_markup_element_sequence(Text_Kind::quoted_string);
         if (remainder.starts_with(u8'"')) {
             emit_and_advance(1, Highlight_Type::string_delim);
@@ -821,6 +871,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             return false;
         }
         emit_and_advance(1, Highlight_Type::markup_attr_delim);
+        const Line_Terminator_Scope line_terminator { *this, false };
         consume_markup_element_sequence(Text_Kind::quoted_member_name);
         if (remainder.starts_with(u8'"')) {
             emit_and_advance(1, Highlight_Type::markup_attr_delim);
@@ -834,6 +885,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
             return false;
         }
         emit_and_advance(1, Highlight_Type::symbol_brace);
+        const Line_Terminator_Scope line_terminator { *this, false };
         consume_markup_element_sequence(Text_Kind::block);
         if (remainder.starts_with(u8'}')) {
             emit_and_advance(1, Highlight_Type::symbol_brace);
@@ -841,10 +893,47 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         return true;
     }
 
+    /// @brief Matches whitespace,
+    /// respecting whether a line terminator terminates the current content.
+    /// @return The length of the matched whitespace.
+    [[nodiscard]]
+    std::size_t match_contextual_whitespace(const std::u8string_view str) const
+    {
+        if (line_terminator_terminates) {
+            return ascii::length_if(str, is_horizontal_whitespace);
+        }
+        return match_whitespace(str);
+    }
+
+    /// @brief Matches blank (whitespace and comments),
+    /// respecting whether a line terminator terminates the current content.
+    /// @return The length of the matched blank.
+    [[nodiscard]]
+    std::size_t match_contextual_blank(const std::u8string_view str) const
+    {
+        std::size_t length = 0;
+        while (length < str.length()) {
+            if (const std::size_t space = match_contextual_whitespace(str.substr(length))) {
+                length += space;
+                continue;
+            }
+            if (const std::size_t comment = match_line_comment(str.substr(length))) {
+                length += comment;
+                continue;
+            }
+            if (const Comment_Result comment = match_block_comment(str.substr(length))) {
+                length += comment.length;
+                continue;
+            }
+            break;
+        }
+        return length;
+    }
+
     void consume_blank()
     {
         while (!eof()) {
-            if (const std::size_t space = match_whitespace(remainder)) {
+            if (const std::size_t space = match_contextual_whitespace(remainder)) {
                 advance(space);
             }
             if (!expect_line_comment() && !expect_block_comment()) {
