@@ -604,7 +604,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         }
         emit_and_advance(1 + name_length, Highlight_Type::markup_tag);
         expect_group();
-        expect_block();
+        while (expect_block()) { }
         return true;
     }
 
@@ -763,7 +763,7 @@ struct [[nodiscard]] Highlighter : Highlighter_Base {
         consume_blank();
         expect_group();
         consume_blank();
-        expect_block();
+        while (expect_block()) { }
         return true;
     }
 
