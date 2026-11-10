@@ -554,8 +554,8 @@ std::optional<Token_Type> match_preprocessing_op_or_punc(std::u8string_view str,
 
 namespace {
 
-constexpr std::uint_fast8_t source_mask_all { 0b1111 };
 constexpr std::uint_fast8_t source_mask_standard_cpp { 0b1100 };
+constexpr std::uint_fast8_t source_mask_cpp_ext { 0b1101 };
 constexpr std::uint_fast8_t source_mask_standard_c { 0b1010 };
 constexpr std::uint_fast8_t source_mask_standard_c_ext { 0b1011 };
 
@@ -597,7 +597,7 @@ private:
         options.strict && c_or_cpp == Lang::c     ? source_mask_standard_c
         : options.strict && c_or_cpp == Lang::cpp ? source_mask_standard_cpp
         : c_or_cpp == Lang::c                     ? source_mask_standard_c_ext
-                                                  : source_mask_all;
+                                                  : source_mask_cpp_ext;
 
 public:
     Highlighter(

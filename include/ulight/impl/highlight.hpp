@@ -19,7 +19,7 @@ struct Highlight_Options {
     /// does not highlight keywords and other features from technical specifications,
     /// compiler extensions, from similar languages, and other "non-standard" sources.
     ///
-    /// For example, if `false`, C++ highlighting also includes all C keywords.
+    /// For example, if `false`, C++ highlighting also includes compiler extensions.
     bool strict = false;
 };
 
